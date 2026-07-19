@@ -2,16 +2,24 @@ const express = require('express');
 const cors = require('cors');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
+const productRoutes = require('./routes/productRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 const errorHandler = require('./middleware/errorHandler');
+const { UPLOAD_DIR } = require('./middleware/upload');
 
 const app = express();
 
 app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
 app.use(express.json());
+app.use('/uploads', express.static(UPLOAD_DIR));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/uploads', uploadRoutes);
 
 app.use(errorHandler);
 

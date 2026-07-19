@@ -3,10 +3,11 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Orders from './pages/Orders';
 import Invoice from './pages/Invoice';
+import Products from './pages/Products';
+import ProductForm from './pages/ProductForm';
 import ComingSoon from './pages/ComingSoon';
 
 const PLACEHOLDER_ROUTES = [
-  ['/products', 'Products'],
   ['/inventory', 'Inventory'],
   ['/categories', 'Categories'],
   ['/customers', 'Customers'],
@@ -36,6 +37,9 @@ function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/orders" element={<Orders />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/products/new" element={<ProductForm />} />
+              <Route path="/products/:id/edit" element={<ProductForm />} />
               {PLACEHOLDER_ROUTES.map(([path, title]) => (
                 <Route key={path} path={path} element={<ComingSoon title={title} />} />
               ))}
