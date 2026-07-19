@@ -20,15 +20,19 @@ shared API.
 cd backend
 cp .env.example .env   # set MONGODB_URI to your MongoDB instance
 npm install
-npm run dev             # http://localhost:5000
+npm run dev             # http://localhost:5001
 ```
+
+Note: port 5000 is avoided by default because it conflicts with macOS AirPlay
+Receiver. Change `PORT` in `.env` (and the proxy target in
+`admin/vite.config.js`) if you'd rather use a different port.
 
 ### Admin dashboard
 
 ```bash
 cd admin
 npm install
-npm run dev              # http://localhost:5173 (proxies /api to :5000)
+npm run dev              # http://localhost:5173 (proxies /api to :5001)
 ```
 
 ## Status
