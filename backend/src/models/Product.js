@@ -1,5 +1,14 @@
 const mongoose = require('mongoose');
 
+const mediaSchema = new mongoose.Schema(
+  {
+    url: { type: String, required: true },
+    type: { type: String, enum: ['image', 'video'], default: 'image' },
+    altText: { type: String, default: '' },
+  },
+  { _id: false }
+);
+
 const variantSchema = new mongoose.Schema(
   {
     color: String,
@@ -24,10 +33,7 @@ const productSchema = new mongoose.Schema(
     tags: [String],
     description: String,
     specifications: { type: Map, of: String },
-    featuredImage: String,
-    images: [String],
-    videos: [String],
-    altText: String,
+    media: [mediaSchema],
     variants: [variantSchema],
     seoTitle: String,
     metaDescription: String,

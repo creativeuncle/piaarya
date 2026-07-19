@@ -82,8 +82,8 @@ export default function Products() {
             {products.map((product) => (
               <tr key={product._id}>
                 <td className="px-4 py-3">
-                  {product.featuredImage ? (
-                    <img src={product.featuredImage} alt="" className="w-10 h-10 object-cover rounded" />
+                  {product.media?.[0] ? (
+                    <img src={product.media[0].url} alt="" className="w-10 h-10 object-cover rounded" />
                   ) : (
                     <div className="w-10 h-10 bg-gray-100 rounded" />
                   )}

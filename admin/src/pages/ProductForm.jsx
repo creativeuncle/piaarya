@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchProduct, createProduct, updateProduct } from '../api/products';
 import { fetchCategories, createCategory } from '../api/categories';
-import ImageUpload from '../components/ImageUpload';
-import MultiUpload from '../components/MultiUpload';
+import MediaManager from '../components/MediaManager';
 import VariantOptions, { deriveOptionsFromVariants } from '../components/VariantOptions';
 
 const EMPTY_PRODUCT = {
@@ -15,10 +14,7 @@ const EMPTY_PRODUCT = {
   tags: '',
   description: '',
   specifications: [],
-  featuredImage: '',
-  images: [],
-  videos: [],
-  altText: '',
+  media: [],
   variantOptions: [],
   variants: [],
   seoTitle: '',
@@ -236,12 +232,7 @@ export default function ProductForm() {
         </Section>
 
         <Section title="Media">
-          <ImageUpload label="Featured Image" value={product.featuredImage} onChange={(url) => set('featuredImage', url)} />
-          <MultiUpload label="Multiple Images" values={product.images} onChange={(v) => set('images', v)} />
-          <MultiUpload label="Product Videos" values={product.videos} onChange={(v) => set('videos', v)} accept="video/*" />
-          <Field label="Alt Text">
-            <input className="input" value={product.altText} onChange={(e) => set('altText', e.target.value)} />
-          </Field>
+          <MediaManager media={product.media} onChange={(m) => set('media', m)} />
         </Section>
 
         <Section title="Variants">
