@@ -4,8 +4,7 @@ import { fetchProduct, createProduct, updateProduct } from '../api/products';
 import { fetchCategories, createCategory } from '../api/categories';
 import ImageUpload from '../components/ImageUpload';
 import MultiUpload from '../components/MultiUpload';
-
-const EMPTY_VARIANT = { color: '', size: '', weight: '', material: '', price: '', sku: '', stock: '', image: '' };
+import VariantOptions, { deriveOptionsFromVariants } from '../components/VariantOptions';
 
 const EMPTY_PRODUCT = {
   name: '',
@@ -20,10 +19,12 @@ const EMPTY_PRODUCT = {
   images: [],
   videos: [],
   altText: '',
+  variantOptions: [],
   variants: [],
   seoTitle: '',
   metaDescription: '',
   price: '',
+  compareAtPrice: '',
   stock: '',
 };
 
@@ -54,6 +55,7 @@ export default function ProductForm() {
           subCategory: data.subCategory?._id || '',
           tags: (data.tags || []).join(', '),
           specifications: Object.entries(data.specifications || {}).map(([key, value]) => ({ key, value })),
+          variantOptions: deriveOptionsFromVariants(data.variants || []),
         })
       )
       .catch((err) => setError(err.message))
@@ -64,19 +66,8 @@ export default function ProductForm() {
     setProduct((prev) => ({ ...prev, [field]: value }));
   }
 
-  function setVariant(index, field, value) {
-    setProduct((prev) => ({
-      ...prev,
-      variants: prev.variants.map((v, i) => (i === index ? { ...v, [field]: value } : v)),
-    }));
-  }
-
-  function addVariant() {
-    setProduct((prev) => ({ ...prev, variants: [...prev.variants, { ...EMPTY_VARIANT }] }));
-  }
-
-  function removeVariant(index) {
-    setProduct((prev) => ({ ...prev, variants: prev.variants.filter((_, i) => i !== index) }));
+  function setVariantOptionsAndVariants(variantOptions, variants) {
+    setProduct((prev) => ({ ...prev, variantOptions, variants }));
   }
 
   function setSpec(index, field, value) {
@@ -111,9 +102,11 @@ export default function ProductForm() {
     setSaving(true);
     setError(null);
     try {
+      const { variantOptions, ...rest } = product;
       const payload = {
-        ...product,
+        ...rest,
         price: Number(product.price) || 0,
+        compareAtPrice: product.compareAtPrice === '' ? undefined : Number(product.compareAtPrice),
         stock: Number(product.stock) || 0,
         tags: product.tags
           .split(',')
@@ -194,7 +187,7 @@ export default function ProductForm() {
           <Field label="Tags (comma separated)">
             <input className="input" value={product.tags} onChange={(e) => set('tags', e.target.value)} />
           </Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <Field label="Price" required>
               <input
                 type="number"
@@ -202,6 +195,14 @@ export default function ProductForm() {
                 value={product.price}
                 onChange={(e) => set('price', e.target.value)}
                 required
+              />
+            </Field>
+            <Field label="Compare-at price">
+              <input
+                type="number"
+                className="input"
+                value={product.compareAtPrice}
+                onChange={(e) => set('compareAtPrice', e.target.value)}
               />
             </Field>
             <Field label="Stock Quantity">
@@ -243,23 +244,12 @@ export default function ProductForm() {
           </Field>
         </Section>
 
-        <Section title="Product Variants">
-          {product.variants.map((variant, i) => (
-            <div key={i} className="grid grid-cols-4 gap-2 mb-3 items-end border-b border-gray-100 pb-3">
-              <Field label="Color"><input className="input" value={variant.color} onChange={(e) => setVariant(i, 'color', e.target.value)} /></Field>
-              <Field label="Size"><input className="input" value={variant.size} onChange={(e) => setVariant(i, 'size', e.target.value)} /></Field>
-              <Field label="Weight"><input className="input" value={variant.weight} onChange={(e) => setVariant(i, 'weight', e.target.value)} /></Field>
-              <Field label="Material"><input className="input" value={variant.material} onChange={(e) => setVariant(i, 'material', e.target.value)} /></Field>
-              <Field label="Variant Price"><input type="number" className="input" value={variant.price} onChange={(e) => setVariant(i, 'price', e.target.value)} /></Field>
-              <Field label="Variant SKU"><input className="input" value={variant.sku} onChange={(e) => setVariant(i, 'sku', e.target.value)} /></Field>
-              <Field label="Variant Stock"><input type="number" className="input" value={variant.stock} onChange={(e) => setVariant(i, 'stock', e.target.value)} /></Field>
-              <div>
-                <ImageUpload label="Variant Image" value={variant.image} onChange={(url) => setVariant(i, 'image', url)} />
-                <button type="button" onClick={() => removeVariant(i)} className="text-red-600 text-sm mt-1">Remove variant</button>
-              </div>
-            </div>
-          ))}
-          <button type="button" onClick={addVariant} className="btn-secondary">+ Add Variant</button>
+        <Section title="Variants">
+          <VariantOptions
+            options={product.variantOptions}
+            variants={product.variants}
+            onChange={setVariantOptionsAndVariants}
+          />
         </Section>
 
         <Section title="SEO">

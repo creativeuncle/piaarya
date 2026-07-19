@@ -32,6 +32,7 @@ const productSchema = new mongoose.Schema(
     seoTitle: String,
     metaDescription: String,
     price: { type: Number, required: true },
+    compareAtPrice: { type: Number },
     stock: { type: Number, default: 0 },
   },
   { timestamps: true }
