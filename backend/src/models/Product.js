@@ -40,6 +40,10 @@ const productSchema = new mongoose.Schema(
     price: { type: Number, required: true },
     compareAtPrice: { type: Number },
     stock: { type: Number, default: 0 },
+    lowStockThreshold: { type: Number, default: 5 },
+    damagedStock: { type: Number, default: 0 },
+    reservedStock: { type: Number, default: 0 },
+    warehouse: { type: mongoose.Schema.Types.ObjectId, ref: 'Warehouse' },
   },
   { timestamps: true }
 );
