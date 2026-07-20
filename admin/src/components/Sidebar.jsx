@@ -13,6 +13,7 @@ import {
   StarIcon,
   ReturnRequestIcon,
   CreditCardIcon,
+  MarketingIcon,
 } from '@hugeicons/core-free-icons';
 
 const NAV_ITEMS = [
@@ -26,6 +27,7 @@ const NAV_ITEMS = [
   { to: '/reviews', label: 'Reviews', icon: StarIcon },
   { to: '/returns', label: 'Returns', icon: ReturnRequestIcon },
   { to: '/payments', label: 'Payments', icon: CreditCardIcon },
+  { to: '/marketing', label: 'Marketing', icon: MarketingIcon },
 ];
 
 export default function Sidebar() {
