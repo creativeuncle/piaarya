@@ -13,10 +13,11 @@ import CustomerDetail from './pages/CustomerDetail';
 import Coupons from './pages/Coupons';
 import CouponForm from './pages/CouponForm';
 import Reviews from './pages/Reviews';
+import Returns from './pages/Returns';
+import ReturnForm from './pages/ReturnForm';
 import ComingSoon from './pages/ComingSoon';
 
 const PLACEHOLDER_ROUTES = [
-  ['/returns', 'Returns'],
   ['/payments', 'Payments'],
 ];
 
@@ -53,6 +54,8 @@ function App() {
               <Route path="/coupons/new" element={<CouponForm />} />
               <Route path="/coupons/:id/edit" element={<CouponForm />} />
               <Route path="/reviews" element={<Reviews />} />
+              <Route path="/returns" element={<Returns />} />
+              <Route path="/returns/new" element={<ReturnForm />} />
               {PLACEHOLDER_ROUTES.map(([path, title]) => (
                 <Route key={path} path={path} element={<ComingSoon title={title} />} />
               ))}

@@ -10,6 +10,7 @@ const warehouseRoutes = require('./routes/warehouseRoutes');
 const customerRoutes = require('./routes/customerRoutes');
 const couponRoutes = require('./routes/couponRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const returnRoutes = require('./routes/returnRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const { UPLOAD_DIR } = require('./middleware/upload');
 
@@ -30,6 +31,7 @@ app.use('/api/warehouses', warehouseRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/returns', returnRoutes);
 
 app.use(errorHandler);
 
