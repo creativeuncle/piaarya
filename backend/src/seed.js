@@ -8,6 +8,9 @@ const Order = require('./models/Order');
 const Review = require('./models/Review');
 const PaymentTransaction = require('./models/PaymentTransaction');
 const Cart = require('./models/Cart');
+const TeamMember = require('./models/TeamMember');
+const Wishlist = require('./models/Wishlist');
+const bcrypt = require('bcryptjs');
 
 async function seed() {
   await connectDB();
@@ -20,6 +23,8 @@ async function seed() {
     Review.deleteMany({}),
     PaymentTransaction.deleteMany({}),
     Cart.deleteMany({}),
+    TeamMember.deleteMany({}),
+    Wishlist.deleteMany({}),
   ]);
 
   const category = await Category.create({ name: 'Apparel', slug: 'apparel' });
@@ -100,8 +105,20 @@ async function seed() {
     },
   ]);
 
+  const seedPasswordHash = await bcrypt.hash('seed-placeholder', 10);
+  const teamMembers = await TeamMember.insertMany([
+    { name: 'Tanvir', email: 'tanvir@piaarya.com', passwordHash: seedPasswordHash, role: 'super_admin' },
+    { name: 'Sharan', email: 'sharan@piaarya.com', passwordHash: seedPasswordHash, role: 'manager' },
+  ]);
+
+  const wishlistEntries = await Wishlist.insertMany([
+    { customer: customers[0]._id, product: products[1]._id },
+    { customer: customers[1]._id, product: products[1]._id },
+    { customer: customers[1]._id, product: products[0]._id },
+  ]);
+
   console.log(
-    `Seeded: ${products.length} products, ${customers.length} customers, ${orders.length} orders, ${reviews.length} reviews, ${transactions.length} payment transactions, ${carts.length} abandoned carts`
+    `Seeded: ${products.length} products, ${customers.length} customers, ${orders.length} orders, ${reviews.length} reviews, ${transactions.length} payment transactions, ${carts.length} abandoned carts, ${teamMembers.length} team members, ${wishlistEntries.length} wishlist entries`
   );
   await mongoose.disconnect();
 }

@@ -17,6 +17,8 @@ import Returns from './pages/Returns';
 import ReturnForm from './pages/ReturnForm';
 import Payments from './pages/Payments';
 import Marketing from './pages/Marketing';
+import Wishlist from './pages/Wishlist';
+import Team from './pages/Team';
 
 function AdminLayout({ children }) {
   return (
@@ -55,6 +57,8 @@ function App() {
               <Route path="/returns/new" element={<ReturnForm />} />
               <Route path="/payments" element={<Payments />} />
               <Route path="/marketing" element={<Marketing />} />
+              <Route path="/wishlist" element={<Wishlist />} />
+              <Route path="/team" element={<Team />} />
             </Routes>
           </AdminLayout>
         }

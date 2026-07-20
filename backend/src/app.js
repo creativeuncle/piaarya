@@ -13,6 +13,8 @@ const reviewRoutes = require('./routes/reviewRoutes');
 const returnRoutes = require('./routes/returnRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const marketingRoutes = require('./routes/marketingRoutes');
+const teamRoutes = require('./routes/teamRoutes');
+const wishlistRoutes = require('./routes/wishlistRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const { UPLOAD_DIR } = require('./middleware/upload');
 
@@ -36,6 +38,8 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/returns', returnRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/marketing', marketingRoutes);
+app.use('/api/team', teamRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 app.use(errorHandler);
 
