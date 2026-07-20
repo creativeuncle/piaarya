@@ -8,10 +8,11 @@ import ProductForm from './pages/ProductForm';
 import Inventory from './pages/Inventory';
 import Categories from './pages/Categories';
 import CategoryForm from './pages/CategoryForm';
+import Customers from './pages/Customers';
+import CustomerDetail from './pages/CustomerDetail';
 import ComingSoon from './pages/ComingSoon';
 
 const PLACEHOLDER_ROUTES = [
-  ['/customers', 'Customers'],
   ['/coupons', 'Coupons'],
   ['/reviews', 'Reviews'],
   ['/returns', 'Returns'],
@@ -45,6 +46,8 @@ function App() {
               <Route path="/categories" element={<Categories />} />
               <Route path="/categories/new" element={<CategoryForm />} />
               <Route path="/categories/:id/edit" element={<CategoryForm />} />
+              <Route path="/customers" element={<Customers />} />
+              <Route path="/customers/:id" element={<CustomerDetail />} />
               {PLACEHOLDER_ROUTES.map(([path, title]) => (
                 <Route key={path} path={path} element={<ComingSoon title={title} />} />
               ))}

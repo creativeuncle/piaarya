@@ -7,6 +7,7 @@ const productRoutes = require('./routes/productRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
 const warehouseRoutes = require('./routes/warehouseRoutes');
+const customerRoutes = require('./routes/customerRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const { UPLOAD_DIR } = require('./middleware/upload');
 
@@ -24,6 +25,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/warehouses', warehouseRoutes);
+app.use('/api/customers', customerRoutes);
 
 app.use(errorHandler);
 
