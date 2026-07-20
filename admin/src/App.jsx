@@ -15,11 +15,7 @@ import CouponForm from './pages/CouponForm';
 import Reviews from './pages/Reviews';
 import Returns from './pages/Returns';
 import ReturnForm from './pages/ReturnForm';
-import ComingSoon from './pages/ComingSoon';
-
-const PLACEHOLDER_ROUTES = [
-  ['/payments', 'Payments'],
-];
+import Payments from './pages/Payments';
 
 function AdminLayout({ children }) {
   return (
@@ -56,9 +52,7 @@ function App() {
               <Route path="/reviews" element={<Reviews />} />
               <Route path="/returns" element={<Returns />} />
               <Route path="/returns/new" element={<ReturnForm />} />
-              {PLACEHOLDER_ROUTES.map(([path, title]) => (
-                <Route key={path} path={path} element={<ComingSoon title={title} />} />
-              ))}
+              <Route path="/payments" element={<Payments />} />
             </Routes>
           </AdminLayout>
         }
