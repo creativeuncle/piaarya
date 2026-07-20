@@ -5,6 +5,7 @@ const Category = require('./models/Category');
 const Product = require('./models/Product');
 const Customer = require('./models/Customer');
 const Order = require('./models/Order');
+const Review = require('./models/Review');
 
 async function seed() {
   await connectDB();
@@ -14,6 +15,7 @@ async function seed() {
     Product.deleteMany({}),
     Customer.deleteMany({}),
     Order.deleteMany({}),
+    Review.deleteMany({}),
   ]);
 
   const category = await Category.create({ name: 'Apparel', slug: 'apparel' });
@@ -41,7 +43,34 @@ async function seed() {
 
   await Order.insertMany(orders);
 
-  console.log(`Seeded: ${products.length} products, ${customers.length} customers, ${orders.length} orders`);
+  const reviews = await Review.insertMany([
+    {
+      product: products[0]._id,
+      customer: customers[0]._id,
+      rating: 5,
+      comment: 'Great quality fabric, fits perfectly!',
+      status: 'approved',
+      isFeatured: true,
+    },
+    {
+      product: products[0]._id,
+      customer: customers[1]._id,
+      rating: 3,
+      comment: 'Decent, but runs a bit small.',
+      status: 'pending',
+    },
+    {
+      product: products[1]._id,
+      customer: customers[1]._id,
+      rating: 1,
+      comment: 'Received a damaged item.',
+      status: 'pending',
+    },
+  ]);
+
+  console.log(
+    `Seeded: ${products.length} products, ${customers.length} customers, ${orders.length} orders, ${reviews.length} reviews`
+  );
   await mongoose.disconnect();
 }
 
