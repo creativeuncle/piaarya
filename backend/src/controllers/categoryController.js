@@ -36,4 +36,44 @@ async function createCategory(req, res, next) {
   }
 }
 
-module.exports = { listCategories, createCategory };
+async function updateCategory(req, res, next) {
+  try {
+    const { name, slug, parent, image, banner, seoTitle, metaDescription } = req.body;
+    if (parent && parent === req.params.id) {
+      return res.status(400).json({ message: 'A category cannot be its own parent' });
+    }
+    const category = await Category.findByIdAndUpdate(
+      req.params.id,
+      {
+        name,
+        slug: slug ? slugify(slug) : slugify(name),
+        parent: parent || null,
+        image,
+        banner,
+        seoTitle,
+        metaDescription,
+      },
+      { new: true, runValidators: true }
+    );
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+    res.json(category);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function deleteCategory(req, res, next) {
+  try {
+    const hasChildren = await Category.exists({ parent: req.params.id });
+    if (hasChildren) {
+      return res.status(400).json({ message: 'Delete or reassign sub-categories before deleting this category' });
+    }
+    const category = await Category.findByIdAndDelete(req.params.id);
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+    res.json({ message: 'Category deleted' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { listCategories, createCategory, updateCategory, deleteCategory };
