@@ -94,10 +94,10 @@ export default function Products() {
                 <td className="px-4 py-3">₹{product.price}</td>
                 <td className="px-4 py-3">{product.stock}</td>
                 <td className="px-4 py-3 space-x-3">
-                  <Link to={`/products/${product._id}/edit`} className="text-blue-600 hover:underline">
+                  <Link to={`/products/${product._id}/edit`} className="btn-action btn-action-blue">
                     Edit
                   </Link>
-                  <button onClick={() => handleDelete(product._id)} className="text-red-600 hover:underline">
+                  <button onClick={() => handleDelete(product._id)} className="btn-action btn-action-red">
                     Delete
                   </button>
                 </td>

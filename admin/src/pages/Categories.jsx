@@ -77,8 +77,8 @@ export default function Categories() {
                 <td className="px-4 py-3 text-gray-500">{LEVEL_LABELS[category.depth]}</td>
                 <td className="px-4 py-3 text-gray-500">{category.slug}</td>
                 <td className="px-4 py-3 space-x-3">
-                  <Link to={`/categories/${category._id}/edit`} className="text-blue-600 hover:underline">Edit</Link>
-                  <button onClick={() => handleDelete(category._id)} className="text-red-600 hover:underline">Delete</button>
+                  <Link to={`/categories/${category._id}/edit`} className="btn-action btn-action-blue">Edit</Link>
+                  <button onClick={() => handleDelete(category._id)} className="btn-action btn-action-red">Delete</button>
                 </td>
               </tr>
             ))}

@@ -90,7 +90,7 @@ export default function Payments() {
                 <td className="px-4 py-3 text-gray-500">{new Date(t.createdAt).toLocaleDateString()}</td>
                 <td className="px-4 py-3">
                   {t.type === 'charge' && t.status === 'success' && t.order?.paymentStatus !== 'refunded' && (
-                    <button onClick={() => setRefundTarget(t)} className="text-blue-600 hover:underline">Refund</button>
+                    <button onClick={() => setRefundTarget(t)} className="btn-action btn-action-blue">Refund</button>
                   )}
                 </td>
               </tr>

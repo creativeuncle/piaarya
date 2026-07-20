@@ -129,8 +129,8 @@ export default function Coupons() {
                       )}
                     </td>
                     <td className="px-4 py-3 space-x-3">
-                      <Link to={`/coupons/${coupon._id}/edit`} className="text-blue-600 hover:underline">Edit</Link>
-                      <button onClick={() => handleDelete(coupon._id)} className="text-red-600 hover:underline">Delete</button>
+                      <Link to={`/coupons/${coupon._id}/edit`} className="btn-action btn-action-blue">Edit</Link>
+                      <button onClick={() => handleDelete(coupon._id)} className="btn-action btn-action-red">Delete</button>
                     </td>
                   </tr>
                 ))}

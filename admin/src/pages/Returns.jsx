@@ -120,8 +120,8 @@ export default function Returns() {
                 <td className="px-4 py-3">
                   {r.status === 'requested' ? (
                     <div className="space-x-2">
-                      <button onClick={() => handleStatus(r._id, 'approved')} className="text-green-600 hover:underline">Approve</button>
-                      <button onClick={() => handleStatus(r._id, 'rejected')} className="text-red-600 hover:underline">Reject</button>
+                      <button onClick={() => handleStatus(r._id, 'approved')} className="btn-action btn-action-green">Approve</button>
+                      <button onClick={() => handleStatus(r._id, 'rejected')} className="btn-action btn-action-red">Reject</button>
                     </div>
                   ) : (
                     <span className={`text-xs font-medium ${r.status === 'approved' ? 'text-green-600' : 'text-red-600'}`}>

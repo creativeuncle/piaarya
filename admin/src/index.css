@@ -11,3 +11,23 @@ body {
 .btn-secondary {
   @apply bg-white border border-gray-200 text-gray-700 text-sm px-4 py-2 rounded-md hover:bg-gray-50;
 }
+
+.btn-action {
+  @apply inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border transition-colors whitespace-nowrap;
+}
+
+.btn-action-blue {
+  @apply text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100;
+}
+
+.btn-action-red {
+  @apply text-red-700 bg-red-50 border-red-200 hover:bg-red-100;
+}
+
+.btn-action-green {
+  @apply text-green-700 bg-green-50 border-green-200 hover:bg-green-100;
+}
+
+.btn-action-gray {
+  @apply text-gray-700 bg-gray-50 border-gray-200 hover:bg-gray-100;
+}

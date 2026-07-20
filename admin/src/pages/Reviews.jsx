@@ -107,13 +107,13 @@ export default function Reviews() {
                 </td>
                 <td className="px-4 py-3 space-x-2 whitespace-nowrap">
                   {review.status !== 'approved' && (
-                    <button onClick={() => handleStatus(review._id, 'approved')} className="text-green-600 hover:underline">Approve</button>
+                    <button onClick={() => handleStatus(review._id, 'approved')} className="btn-action btn-action-green">Approve</button>
                   )}
                   {review.status !== 'rejected' && (
-                    <button onClick={() => handleStatus(review._id, 'rejected')} className="text-red-600 hover:underline">Reject</button>
+                    <button onClick={() => handleStatus(review._id, 'rejected')} className="btn-action btn-action-red">Reject</button>
                   )}
-                  <button onClick={() => setReplyTarget(review)} className="text-blue-600 hover:underline">Reply</button>
-                  <button onClick={() => handleFeatured(review)} className="text-gray-600 hover:underline">
+                  <button onClick={() => setReplyTarget(review)} className="btn-action btn-action-blue">Reply</button>
+                  <button onClick={() => handleFeatured(review)} className="btn-action btn-action-gray">
                     {review.isFeatured ? 'Unfeature' : 'Feature'}
                   </button>
                 </td>

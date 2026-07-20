@@ -150,8 +150,8 @@ export default function Inventory() {
                   <td className="px-4 py-3">{product.damagedStock}</td>
                   <td className="px-4 py-3">{product.reservedStock}</td>
                   <td className="px-4 py-3 space-x-3">
-                    <button onClick={() => setAdjustTarget(product)} className="text-blue-600 hover:underline">Adjust Stock</button>
-                    <button onClick={() => setHistoryTarget(product)} className="text-gray-600 hover:underline">History</button>
+                    <button onClick={() => setAdjustTarget(product)} className="btn-action btn-action-blue">Adjust Stock</button>
+                    <button onClick={() => setHistoryTarget(product)} className="btn-action btn-action-gray">History</button>
                   </td>
                 </tr>
               );

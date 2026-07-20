@@ -81,8 +81,8 @@ export default function Customers() {
                   )}
                 </td>
                 <td className="px-4 py-3 space-x-3">
-                  <Link to={`/customers/${customer._id}`} className="text-blue-600 hover:underline">View</Link>
-                  <button onClick={() => toggleBlock(customer)} className="text-gray-600 hover:underline">
+                  <Link to={`/customers/${customer._id}`} className="btn-action btn-action-blue">View</Link>
+                  <button onClick={() => toggleBlock(customer)} className="btn-action btn-action-gray">
                     {customer.isBlocked ? 'Unblock' : 'Block'}
                   </button>
                 </td>

@@ -97,7 +97,7 @@ export default function Orders() {
                   <Link
                     to={`/orders/${order._id}/invoice`}
                     target="_blank"
-                    className="text-blue-600 hover:underline"
+                    className="btn-action btn-action-blue"
                   >
                     Print Invoice
                   </Link>
