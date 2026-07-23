@@ -15,6 +15,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const marketingRoutes = require('./routes/marketingRoutes');
 const teamRoutes = require('./routes/teamRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
+const navigationRoutes = require('./routes/navigationRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const { UPLOAD_DIR } = require('./middleware/upload');
 
@@ -40,6 +41,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/marketing', marketingRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/navigation', navigationRoutes);
 
 app.use(errorHandler);
 

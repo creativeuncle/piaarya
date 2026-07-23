@@ -1,0 +1,15 @@
+export const PAGES = [
+  { label: 'Home', route: '/' },
+  { label: 'Orders', route: '/orders' },
+  { label: 'Products', route: '/products' },
+  { label: 'Inventory', route: '/inventory' },
+  { label: 'Categories', route: '/categories' },
+  { label: 'Customers', route: '/customers' },
+  { label: 'Coupons', route: '/coupons' },
+  { label: 'Reviews', route: '/reviews' },
+  { label: 'Returns', route: '/returns' },
+  { label: 'Payments', route: '/payments' },
+  { label: 'Marketing', route: '/marketing' },
+  { label: 'Wishlist', route: '/wishlist' },
+  { label: 'Team', route: '/team' },
+];

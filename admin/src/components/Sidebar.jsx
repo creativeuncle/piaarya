@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   SidebarLeftIcon,
@@ -16,6 +16,8 @@ import {
   MarketingIcon,
   UserMultiple02Icon,
   HeartIcon,
+  Settings01Icon,
+  ArrowDown01Icon,
 } from '@hugeicons/core-free-icons';
 
 const NAV_ITEMS = [
@@ -34,8 +36,18 @@ const NAV_ITEMS = [
   { to: '/team', label: 'Team', icon: UserMultiple02Icon },
 ];
 
+const SETTINGS_CHILDREN = [{ to: '/settings/navigation', label: 'Navigation' }];
+
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(false);
+  const location = useLocation();
+  const isSettingsRoute = SETTINGS_CHILDREN.some((c) => location.pathname.startsWith(c.to));
+  const [settingsOpen, setSettingsOpen] = useState(isSettingsRoute);
+
+  function handleSettingsClick() {
+    if (!expanded) setExpanded(true);
+    setSettingsOpen((v) => !v);
+  }
 
   return (
     <aside
@@ -76,6 +88,46 @@ export default function Sidebar() {
             )}
           </NavLink>
         ))}
+
+        <button
+          onClick={handleSettingsClick}
+          title={!expanded ? 'Settings' : undefined}
+          className={`group relative flex items-center gap-3 rounded-md text-sm px-3 py-2 ${
+            expanded ? '' : 'justify-center'
+          } ${isSettingsRoute ? 'bg-gray-700 text-white' : 'hover:bg-gray-800'}`}
+        >
+          <HugeiconsIcon icon={Settings01Icon} size={20} strokeWidth={1.5} className="shrink-0" />
+          {expanded && <span className="flex-1 text-left">Settings</span>}
+          {expanded && (
+            <HugeiconsIcon
+              icon={ArrowDown01Icon}
+              size={16}
+              strokeWidth={1.5}
+              className={`transition-transform ${settingsOpen ? 'rotate-180' : ''}`}
+            />
+          )}
+          {!expanded && (
+            <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md bg-gray-800 px-2 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 z-10">
+              Settings
+            </span>
+          )}
+        </button>
+
+        {expanded && settingsOpen && (
+          <div className="flex flex-col gap-1 pl-6">
+            {SETTINGS_CHILDREN.map((child) => (
+              <NavLink
+                key={child.to}
+                to={child.to}
+                className={({ isActive }) =>
+                  `rounded-md text-sm px-3 py-2 ${isActive ? 'bg-gray-700 text-white' : 'hover:bg-gray-800 text-gray-300'}`
+                }
+              >
+                {child.label}
+              </NavLink>
+            ))}
+          </div>
+        )}
       </nav>
     </aside>
   );
