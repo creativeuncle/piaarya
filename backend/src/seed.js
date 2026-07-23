@@ -27,16 +27,109 @@ async function seed() {
     Wishlist.deleteMany({}),
   ]);
 
-  const category = await Category.create({ name: 'Apparel', slug: 'apparel' });
+  const [apparel, electronics, accessories] = await Category.insertMany([
+    { name: 'Apparel', slug: 'apparel', image: 'https://picsum.photos/seed/apparel/400/400' },
+    { name: 'Electronics', slug: 'electronics', image: 'https://picsum.photos/seed/electronics/400/400' },
+    { name: 'Accessories', slug: 'accessories', image: 'https://picsum.photos/seed/accessories/400/400' },
+  ]);
+  const category = apparel;
+
+  function media(seed, alt) {
+    return [{ url: `https://picsum.photos/seed/${seed}/600/600`, type: 'image', altText: alt }];
+  }
 
   const products = await Product.insertMany([
-    { name: 'Classic T-Shirt', slug: 'classic-t-shirt', sku: 'TSHIRT-001', category: category._id, price: 499, stock: 100 },
-    { name: 'Denim Jacket', slug: 'denim-jacket', sku: 'JACKET-001', category: category._id, price: 1999, stock: 40 },
+    {
+      name: 'Classic T-Shirt',
+      slug: 'classic-t-shirt',
+      sku: 'TSHIRT-001',
+      category: apparel._id,
+      price: 499,
+      compareAtPrice: 699,
+      stock: 100,
+      tags: ['bestseller'],
+      media: media('tshirt', 'Classic T-Shirt'),
+    },
+    {
+      name: 'Denim Jacket',
+      slug: 'denim-jacket',
+      sku: 'JACKET-001',
+      category: apparel._id,
+      price: 1999,
+      stock: 40,
+      tags: ['bestseller', 'new'],
+      media: media('jacket', 'Denim Jacket'),
+    },
+    {
+      name: 'Wireless Earbuds',
+      slug: 'wireless-earbuds',
+      sku: 'AUDIO-001',
+      category: electronics._id,
+      price: 2499,
+      compareAtPrice: 2999,
+      stock: 60,
+      tags: ['bestseller'],
+      media: media('earbuds', 'Wireless Earbuds'),
+    },
+    {
+      name: 'Smart Fitness Band',
+      slug: 'smart-fitness-band',
+      sku: 'WEAR-001',
+      category: electronics._id,
+      price: 1799,
+      stock: 25,
+      tags: ['new'],
+      media: media('fitnessband', 'Smart Fitness Band'),
+    },
+    {
+      name: 'Leather Wallet',
+      slug: 'leather-wallet',
+      sku: 'WALLET-001',
+      category: accessories._id,
+      price: 899,
+      stock: 80,
+      tags: ['new'],
+      media: media('wallet', 'Leather Wallet'),
+    },
+    {
+      name: 'Canvas Backpack',
+      slug: 'canvas-backpack',
+      sku: 'BAG-001',
+      category: accessories._id,
+      price: 1599,
+      stock: 35,
+      tags: ['bestseller'],
+      media: media('backpack', 'Canvas Backpack'),
+    },
+    {
+      name: 'Starter Combo Pack',
+      slug: 'starter-combo-pack',
+      sku: 'BUNDLE-001',
+      category: apparel._id,
+      price: 2299,
+      compareAtPrice: 2997,
+      stock: 20,
+      tags: ['bundle'],
+      media: media('combopack', 'Starter Combo Pack'),
+    },
+    {
+      name: 'Travel Essentials Bundle',
+      slug: 'travel-essentials-bundle',
+      sku: 'BUNDLE-002',
+      category: accessories._id,
+      price: 2999,
+      compareAtPrice: 3599,
+      stock: 15,
+      tags: ['bundle'],
+      media: media('travelbundle', 'Travel Essentials Bundle'),
+    },
   ]);
 
   const customers = await Customer.insertMany([
     { name: 'Aditi Sharma', email: 'aditi@example.com', passwordHash: 'seed-placeholder' },
     { name: 'Rahul Verma', email: 'rahul@example.com', passwordHash: 'seed-placeholder' },
+    { name: 'Priya Singh', email: 'priya@example.com', passwordHash: 'seed-placeholder' },
+    { name: 'Karan Mehta', email: 'karan@example.com', passwordHash: 'seed-placeholder' },
   ]);
 
   const statuses = Order.ORDER_STATUSES;
@@ -84,6 +177,30 @@ async function seed() {
       rating: 1,
       comment: 'Received a damaged item.',
       status: 'pending',
+    },
+    {
+      product: products[2]._id,
+      customer: customers[2]._id,
+      rating: 5,
+      comment: 'Sound quality is amazing for the price!',
+      status: 'approved',
+      isFeatured: true,
+    },
+    {
+      product: products[5]._id,
+      customer: customers[3]._id,
+      rating: 4,
+      comment: 'Sturdy and spacious, great for daily commute.',
+      status: 'approved',
+      isFeatured: true,
+    },
+    {
+      product: products[6]._id,
+      customer: customers[2]._id,
+      rating: 5,
+      comment: 'Best value bundle I have bought this year.',
+      status: 'approved',
+      isFeatured: true,
     },
   ]);
 

@@ -11,9 +11,10 @@ function slugify(text) {
 
 async function listProducts(req, res, next) {
   try {
-    const { search, category, page = 1, limit = 20 } = req.query;
+    const { search, category, tag, sort, page = 1, limit = 20 } = req.query;
     const filter = {};
     if (category) filter.category = category;
+    if (tag) filter.tags = tag;
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
@@ -21,11 +22,13 @@ async function listProducts(req, res, next) {
       ];
     }
 
+    const sortOption = sort === 'oldest' ? { createdAt: 1 } : { createdAt: -1 };
+
     const [products, total] = await Promise.all([
       Product.find(filter)
         .populate('category', 'name')
         .populate('subCategory', 'name')
-        .sort({ createdAt: -1 })
+        .sort(sortOption)
         .skip((Number(page) - 1) * Number(limit))
         .limit(Number(limit)),
       Product.countDocuments(filter),
