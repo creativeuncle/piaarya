@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const BADGE_LABELS = {
   bestseller: 'Best Seller',
   new: 'New In',
@@ -9,7 +11,7 @@ export default function ProductCard({ product }) {
   const badge = product.tags?.find((t) => BADGE_LABELS[t]);
 
   return (
-    <div className="shrink-0 w-64 snap-start">
+    <Link to={`/products/${product._id}`} className="shrink-0 w-64 snap-start block">
       <div className="relative bg-gray-100 aspect-square overflow-hidden rounded-md mb-3">
         {badge && (
           <span className="absolute top-2 left-2 bg-blue-700 text-white text-xs font-semibold px-2 py-1 rounded uppercase tracking-wide">
@@ -29,6 +31,6 @@ export default function ProductCard({ product }) {
           <span className="text-sm text-gray-400 line-through">₹{product.compareAtPrice}</span>
         )}
       </div>
-    </div>
+    </Link>
   );
 }

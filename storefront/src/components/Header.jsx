@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Mail01Icon, Search01Icon, UserIcon, ShoppingBag01Icon } from '@hugeicons/core-free-icons';
 import { fetchNavigation } from '../api/navigation';
+import { useCart } from '../context/CartContext';
 
 const DEFAULT_MENUS = [
   { label: 'Shop by Category', route: '/categories', children: [] },
@@ -13,6 +14,7 @@ const DEFAULT_MENUS = [
 export default function Header() {
   const [menus, setMenus] = useState(DEFAULT_MENUS);
   const [openMenu, setOpenMenu] = useState(null);
+  const { count } = useCart();
 
   useEffect(() => {
     fetchNavigation()
@@ -64,7 +66,7 @@ export default function Header() {
           <div className="relative cursor-pointer">
             <HugeiconsIcon icon={ShoppingBag01Icon} size={20} strokeWidth={1.5} />
             <span className="absolute -top-2 -right-2 bg-white text-gray-900 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-              0
+              {count}
             </span>
           </div>
         </div>
