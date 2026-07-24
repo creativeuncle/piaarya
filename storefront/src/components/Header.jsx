@@ -14,7 +14,7 @@ const DEFAULT_MENUS = [
 export default function Header() {
   const [menus, setMenus] = useState(DEFAULT_MENUS);
   const [openMenu, setOpenMenu] = useState(null);
-  const { count } = useCart();
+  const { count, openDrawer } = useCart();
 
   useEffect(() => {
     fetchNavigation()
@@ -63,12 +63,12 @@ export default function Header() {
           <HugeiconsIcon icon={Mail01Icon} size={20} strokeWidth={1.5} className="cursor-pointer" />
           <HugeiconsIcon icon={Search01Icon} size={20} strokeWidth={1.5} className="cursor-pointer" />
           <HugeiconsIcon icon={UserIcon} size={20} strokeWidth={1.5} className="cursor-pointer" />
-          <div className="relative cursor-pointer">
+          <button onClick={openDrawer} className="relative cursor-pointer" aria-label="Open cart">
             <HugeiconsIcon icon={ShoppingBag01Icon} size={20} strokeWidth={1.5} />
             <span className="absolute -top-2 -right-2 bg-white text-gray-900 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
               {count}
             </span>
-          </div>
+          </button>
         </div>
       </div>
     </header>

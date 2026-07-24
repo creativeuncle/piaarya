@@ -18,6 +18,8 @@ function lineKey(item) {
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState(loadCart);
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
+  const [orderNote, setOrderNote] = useState('');
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
@@ -33,6 +35,7 @@ export function CartProvider({ children }) {
       }
       return [...prev, newItem];
     });
+    setDrawerOpen(true);
   }
 
   function removeFromCart(item) {
@@ -40,13 +43,29 @@ export function CartProvider({ children }) {
   }
 
   function updateQuantity(item, quantity) {
+    if (quantity < 1) return;
     setItems((prev) => prev.map((i) => (lineKey(i) === lineKey(item) ? { ...i, quantity } : i)));
   }
 
   const count = items.reduce((sum, i) => sum + i.quantity, 0);
+  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, count }}>
+    <CartContext.Provider
+      value={{
+        items,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        count,
+        subtotal,
+        isDrawerOpen,
+        openDrawer: () => setDrawerOpen(true),
+        closeDrawer: () => setDrawerOpen(false),
+        orderNote,
+        setOrderNote,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

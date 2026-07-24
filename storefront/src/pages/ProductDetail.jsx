@@ -42,9 +42,13 @@ export default function ProductDetail() {
   const inStock = stock > 0;
 
   function handleAddToCart() {
+    const variantLabel = selectedVariant
+      ? [selectedVariant.color, selectedVariant.size].filter(Boolean).join(' / ')
+      : '';
     addToCart({
       productId: product._id,
       variantSku: selectedVariant?.sku || '',
+      variantLabel,
       name: product.name,
       image: selectedVariant?.image || product.media?.[0]?.url,
       price,

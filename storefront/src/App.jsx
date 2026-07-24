@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import CartDrawer from './components/CartDrawer';
 import Home from './pages/Home';
 import ProductDetail from './pages/ProductDetail';
 
@@ -18,6 +19,7 @@ function App() {
         </main>
         <Footer />
       </div>
+      <CartDrawer />
     </CartProvider>
   );
 }
