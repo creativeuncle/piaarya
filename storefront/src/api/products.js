@@ -9,3 +9,8 @@ export async function fetchProduct(id) {
   const { data } = await client.get(`/products/${id}`);
   return data;
 }
+
+export async function fetchProductFacets() {
+  const { data } = await client.get('/products/facets');
+  return data;
+}

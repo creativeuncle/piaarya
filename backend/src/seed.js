@@ -48,7 +48,16 @@ async function seed() {
       compareAtPrice: 699,
       stock: 100,
       tags: ['bestseller'],
+      style: ['Casual'],
+      material: ['Cotton'],
+      occasion: ['Everyday'],
       media: media('tshirt', 'Classic T-Shirt'),
+      variants: [
+        { color: 'Black', size: 'S', price: 499, sku: 'TSHIRT-001-BLK-S', stock: 20 },
+        { color: 'Black', size: 'M', price: 499, sku: 'TSHIRT-001-BLK-M', stock: 25 },
+        { color: 'White', size: 'S', price: 499, sku: 'TSHIRT-001-WHT-S', stock: 15 },
+        { color: 'White', size: 'M', price: 499, sku: 'TSHIRT-001-WHT-M', stock: 0 },
+      ],
     },
     {
       name: 'Denim Jacket',
@@ -58,7 +67,14 @@ async function seed() {
       price: 1999,
       stock: 40,
       tags: ['bestseller', 'new'],
+      style: ['Casual', 'Streetwear'],
+      material: ['Denim'],
+      occasion: ['Everyday'],
       media: media('jacket', 'Denim Jacket'),
+      variants: [
+        { color: 'Blue', size: 'M', price: 1999, sku: 'JACKET-001-BLU-M', stock: 12 },
+        { color: 'Blue', size: 'L', price: 1999, sku: 'JACKET-001-BLU-L', stock: 8 },
+      ],
     },
     {
       name: 'Wireless Earbuds',
@@ -69,6 +85,9 @@ async function seed() {
       compareAtPrice: 2999,
       stock: 60,
       tags: ['bestseller'],
+      style: ['Modern'],
+      material: ['Plastic'],
+      occasion: ['Everyday'],
       media: media('earbuds', 'Wireless Earbuds'),
     },
     {
@@ -79,6 +98,9 @@ async function seed() {
       price: 1799,
       stock: 25,
       tags: ['new'],
+      style: ['Sporty'],
+      material: ['Silicone'],
+      occasion: ['Sports'],
       media: media('fitnessband', 'Smart Fitness Band'),
     },
     {
@@ -89,6 +111,9 @@ async function seed() {
       price: 899,
       stock: 80,
       tags: ['new'],
+      style: ['Formal'],
+      material: ['Leather'],
+      occasion: ['Office'],
       media: media('wallet', 'Leather Wallet'),
     },
     {
@@ -99,6 +124,9 @@ async function seed() {
       price: 1599,
       stock: 35,
       tags: ['bestseller'],
+      style: ['Casual'],
+      material: ['Canvas'],
+      occasion: ['Travel'],
       media: media('backpack', 'Canvas Backpack'),
     },
     {
@@ -110,6 +138,9 @@ async function seed() {
       compareAtPrice: 2997,
       stock: 20,
       tags: ['bundle'],
+      style: ['Casual'],
+      material: ['Cotton'],
+      occasion: ['Everyday'],
       media: media('combopack', 'Starter Combo Pack'),
     },
     {
@@ -121,6 +152,9 @@ async function seed() {
       compareAtPrice: 3599,
       stock: 15,
       tags: ['bundle'],
+      style: ['Casual'],
+      material: ['Canvas'],
+      occasion: ['Travel'],
       media: media('travelbundle', 'Travel Essentials Bundle'),
     },
   ]);

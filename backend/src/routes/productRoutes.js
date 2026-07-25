@@ -1,6 +1,7 @@
 const express = require('express');
 const {
   listProducts,
+  getFacets,
   getProduct,
   createProduct,
   updateProduct,
@@ -9,6 +10,7 @@ const {
 
 const router = express.Router();
 
+router.get('/facets', getFacets);
 router.get('/', listProducts);
 router.get('/:id', getProduct);
 router.post('/', createProduct);

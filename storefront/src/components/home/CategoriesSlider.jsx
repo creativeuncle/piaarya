@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchCategories } from '../../api/categories';
 import Carousel from '../Carousel';
 
@@ -22,7 +23,7 @@ export default function CategoriesSlider() {
       {!loading && (
         <Carousel>
           {categories.map((category) => (
-            <div key={category._id} className="shrink-0 w-56 snap-start text-center">
+            <Link key={category._id} to={`/products?category=${category._id}`} className="shrink-0 w-56 snap-start text-center block">
               <div className="bg-gray-100 aspect-square rounded-full overflow-hidden mb-3">
                 {category.image ? (
                   <img src={category.image} alt={category.name} className="w-full h-full object-cover" />
@@ -33,7 +34,7 @@ export default function CategoriesSlider() {
                 )}
               </div>
               <p className="text-sm font-medium text-gray-900">{category.name}</p>
-            </div>
+            </Link>
           ))}
         </Carousel>
       )}

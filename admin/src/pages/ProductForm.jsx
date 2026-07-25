@@ -12,6 +12,9 @@ const EMPTY_PRODUCT = {
   category: '',
   subCategory: '',
   tags: '',
+  style: '',
+  material: '',
+  occasion: '',
   description: '',
   specifications: [],
   media: [],
@@ -50,6 +53,9 @@ export default function ProductForm() {
           category: data.category?._id || '',
           subCategory: data.subCategory?._id || '',
           tags: (data.tags || []).join(', '),
+          style: (data.style || []).join(', '),
+          material: (data.material || []).join(', '),
+          occasion: (data.occasion || []).join(', '),
           specifications: Object.entries(data.specifications || {}).map(([key, value]) => ({ key, value })),
           variantOptions: deriveOptionsFromVariants(data.variants || []),
         })
@@ -105,6 +111,18 @@ export default function ProductForm() {
         compareAtPrice: product.compareAtPrice === '' ? undefined : Number(product.compareAtPrice),
         stock: Number(product.stock) || 0,
         tags: product.tags
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+        style: product.style
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+        material: product.material
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+        occasion: product.occasion
           .split(',')
           .map((t) => t.trim())
           .filter(Boolean),
@@ -183,6 +201,17 @@ export default function ProductForm() {
           <Field label="Tags (comma separated)">
             <input className="input" value={product.tags} onChange={(e) => set('tags', e.target.value)} />
           </Field>
+          <div className="grid grid-cols-3 gap-4">
+            <Field label="Style (comma separated)">
+              <input className="input" placeholder="Casual, Formal" value={product.style} onChange={(e) => set('style', e.target.value)} />
+            </Field>
+            <Field label="Material (comma separated)">
+              <input className="input" placeholder="Cotton, Leather" value={product.material} onChange={(e) => set('material', e.target.value)} />
+            </Field>
+            <Field label="Occasion (comma separated)">
+              <input className="input" placeholder="Party, Wedding" value={product.occasion} onChange={(e) => set('occasion', e.target.value)} />
+            </Field>
+          </div>
           <div className="grid grid-cols-3 gap-4">
             <Field label="Price" required>
               <input

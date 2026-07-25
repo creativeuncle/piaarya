@@ -6,12 +6,12 @@ const BADGE_LABELS = {
   bundle: 'Bundle',
 };
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, className = 'shrink-0 w-64 snap-start' }) {
   const image = product.media?.[0]?.url;
   const badge = product.tags?.find((t) => BADGE_LABELS[t]);
 
   return (
-    <Link to={`/products/${product._id}`} className="shrink-0 w-64 snap-start block">
+    <Link to={`/products/${product._id}`} className={`block ${className}`}>
       <div className="relative bg-gray-100 aspect-square overflow-hidden rounded-md mb-3">
         {badge && (
           <span className="absolute top-2 left-2 bg-blue-700 text-white text-xs font-semibold px-2 py-1 rounded uppercase tracking-wide">

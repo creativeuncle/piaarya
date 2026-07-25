@@ -9,12 +9,64 @@ function slugify(text) {
     .replace(/(^-|-$)/g, '');
 }
 
+function parseList(value) {
+  if (!value) return null;
+  const list = value
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean);
+  return list.length ? list : null;
+}
+
+const SORT_OPTIONS = {
+  newest: { createdAt: -1 },
+  oldest: { createdAt: 1 },
+  price_asc: { price: 1 },
+  price_desc: { price: -1 },
+  relevance: { createdAt: -1 },
+};
+
 async function listProducts(req, res, next) {
   try {
-    const { search, category, tag, sort, page = 1, limit = 20 } = req.query;
+    const {
+      search,
+      category,
+      tag,
+      color,
+      size,
+      style,
+      material,
+      occasion,
+      priceMin,
+      priceMax,
+      sort,
+      page = 1,
+      limit = 20,
+    } = req.query;
+
     const filter = {};
-    if (category) filter.category = category;
+    const categories = parseList(category);
+    if (categories) filter.category = categories.length > 1 ? { $in: categories } : categories[0];
     if (tag) filter.tags = tag;
+
+    const colors = parseList(color);
+    if (colors) filter['variants.color'] = { $in: colors };
+    const sizes = parseList(size);
+    if (sizes) filter['variants.size'] = { $in: sizes };
+
+    const styles = parseList(style);
+    if (styles) filter.style = { $in: styles };
+    const materials = parseList(material);
+    if (materials) filter.material = { $in: materials };
+    const occasions = parseList(occasion);
+    if (occasions) filter.occasion = { $in: occasions };
+
+    if (priceMin || priceMax) {
+      filter.price = {};
+      if (priceMin) filter.price.$gte = Number(priceMin);
+      if (priceMax) filter.price.$lte = Number(priceMax);
+    }
+
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
@@ -22,7 +74,7 @@ async function listProducts(req, res, next) {
       ];
     }
 
-    const sortOption = sort === 'oldest' ? { createdAt: 1 } : { createdAt: -1 };
+    const sortOption = SORT_OPTIONS[sort] || SORT_OPTIONS.relevance;
 
     const [products, total] = await Promise.all([
       Product.find(filter)
@@ -35,6 +87,31 @@ async function listProducts(req, res, next) {
     ]);
 
     res.json({ products, total, page: Number(page), limit: Number(limit) });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getFacets(req, res, next) {
+  try {
+    const [sizes, colors, styles, materials, occasions, priceStats] = await Promise.all([
+      Product.distinct('variants.size'),
+      Product.distinct('variants.color'),
+      Product.distinct('style'),
+      Product.distinct('material'),
+      Product.distinct('occasion'),
+      Product.aggregate([{ $group: { _id: null, min: { $min: '$price' }, max: { $max: '$price' } } }]),
+    ]);
+
+    res.json({
+      sizes: sizes.filter(Boolean).sort(),
+      colors: colors.filter(Boolean).sort(),
+      styles: styles.filter(Boolean).sort(),
+      materials: materials.filter(Boolean).sort(),
+      occasions: occasions.filter(Boolean).sort(),
+      priceMin: priceStats[0]?.min || 0,
+      priceMax: priceStats[0]?.max || 0,
+    });
   } catch (err) {
     next(err);
   }
@@ -93,4 +170,4 @@ async function deleteProduct(req, res, next) {
   }
 }
 
-module.exports = { listProducts, getProduct, createProduct, updateProduct, deleteProduct };
+module.exports = { listProducts, getFacets, getProduct, createProduct, updateProduct, deleteProduct };

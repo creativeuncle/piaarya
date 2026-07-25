@@ -6,7 +6,7 @@ import { fetchNavigation } from '../api/navigation';
 import { useCart } from '../context/CartContext';
 
 const DEFAULT_MENUS = [
-  { label: 'Shop by Category', route: '/categories', children: [] },
+  { label: 'Shop by Category', route: '/products', children: [] },
   { label: 'Collections', route: '/collections', children: [] },
   { label: 'Blog', route: '/blog', children: [] },
 ];
