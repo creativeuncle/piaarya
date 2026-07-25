@@ -55,8 +55,8 @@ export default function FilterDrawer({ open, onClose, facets, categories, applie
         }`}
       />
       <div
-        className={`fixed inset-y-0 right-0 w-full max-w-sm bg-white z-50 shadow-xl flex flex-col transition-transform duration-300 ${
-          open ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed inset-y-0 left-0 w-full max-w-sm bg-white z-50 shadow-xl flex flex-col transition-transform duration-300 ${
+          open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200">
