@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ShoppingBag01Icon, Cancel01Icon, SquareLock01Icon } from '@hugeicons/core-free-icons';
 import { useCart } from '../context/CartContext';
@@ -99,10 +100,14 @@ export default function CartDrawer() {
               <span>Shipping &amp; taxes calculated at checkout</span>
             </div>
 
-            <button className="w-full mt-4 bg-blue-700 hover:bg-blue-800 text-white font-semibold uppercase tracking-wide text-sm py-3.5 rounded-md flex items-center justify-center gap-2">
+            <Link
+              to="/cart"
+              onClick={closeDrawer}
+              className="w-full mt-4 bg-blue-700 hover:bg-blue-800 text-white font-semibold uppercase tracking-wide text-sm py-3.5 rounded-md flex items-center justify-center gap-2"
+            >
               <HugeiconsIcon icon={SquareLock01Icon} size={16} strokeWidth={1.5} />
               Checkout · ₹{subtotal}
-            </button>
+            </Link>
           </div>
         )}
       </div>
