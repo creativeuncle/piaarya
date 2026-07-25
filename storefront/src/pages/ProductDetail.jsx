@@ -5,10 +5,13 @@ import { HeartIcon, RulerIcon } from '@hugeicons/core-free-icons';
 import { fetchProduct } from '../api/products';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../hooks/useWishlist';
+import { recordView } from '../hooks/useRecentlyViewed';
 import ProductGallery from '../components/product/ProductGallery';
 import VariantSelector from '../components/product/VariantSelector';
 import SizeChartModal from '../components/product/SizeChartModal';
 import PincodeChecker from '../components/product/PincodeChecker';
+import RelatedProducts from '../components/product/RelatedProducts';
+import RecentlyViewedProducts from '../components/product/RecentlyViewedProducts';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -26,7 +29,10 @@ export default function ProductDetail() {
   useEffect(() => {
     setLoading(true);
     fetchProduct(id)
-      .then(setProduct)
+      .then((data) => {
+        setProduct(data);
+        recordView(data._id);
+      })
       .catch((err) => setError(err.response?.data?.message || err.message))
       .finally(() => setLoading(false));
   }, [id]);
@@ -59,6 +65,7 @@ export default function ProductDetail() {
   }
 
   return (
+    <>
     <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-2 gap-12">
       <ProductGallery media={selectedVariant?.image ? [{ url: selectedVariant.image, type: 'image', altText: product.name }, ...product.media] : product.media} />
 
@@ -142,5 +149,9 @@ export default function ProductDetail() {
 
       {showSizeChart && <SizeChartModal onClose={() => setShowSizeChart(false)} />}
     </div>
+
+    <RelatedProducts categoryId={product.category?._id} excludeProductId={product._id} />
+    <RecentlyViewedProducts excludeProductId={product._id} />
+    </>
   );
 }
