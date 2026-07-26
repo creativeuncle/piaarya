@@ -19,6 +19,11 @@ export async function addAddress(token, payload) {
   return data;
 }
 
+export async function updateAddress(token, index, payload) {
+  const { data } = await client.put(`/me/addresses/${index}`, payload, authHeaders(token));
+  return data;
+}
+
 export async function deleteAddress(token, index) {
   const { data } = await client.delete(`/me/addresses/${index}`, authHeaders(token));
   return data;

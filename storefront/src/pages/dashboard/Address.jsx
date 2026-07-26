@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Delete02Icon, Add01Icon } from '@hugeicons/core-free-icons';
+import { Delete02Icon, Add01Icon, Edit02Icon } from '@hugeicons/core-free-icons';
 import { useAuth } from '../../context/AuthContext';
-import { fetchAddresses, addAddress, deleteAddress } from '../../api/me';
+import { fetchAddresses, addAddress, updateAddress, deleteAddress } from '../../api/me';
 
 const EMPTY_FORM = { label: '', line1: '', line2: '', city: '', state: '', pincode: '', country: 'India', isDefault: false };
 
@@ -11,6 +11,7 @@ export default function Address() {
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingIndex, setEditingIndex] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
 
@@ -24,14 +25,41 @@ export default function Address() {
 
   useEffect(load, [token]);
 
-  async function handleAdd(e) {
+  function openAddForm() {
+    setEditingIndex(null);
+    setForm(EMPTY_FORM);
+    setShowForm((s) => (editingIndex === null ? !s : true));
+  }
+
+  function openEditForm(index) {
+    const addr = addresses[index];
+    setEditingIndex(index);
+    setForm({
+      label: addr.label || '',
+      line1: addr.line1 || '',
+      line2: addr.line2 || '',
+      city: addr.city || '',
+      state: addr.state || '',
+      pincode: addr.pincode || '',
+      country: addr.country || 'India',
+      isDefault: Boolean(addr.isDefault),
+    });
+    setShowForm(true);
+  }
+
+  function cancelForm() {
+    setShowForm(false);
+    setEditingIndex(null);
+    setForm(EMPTY_FORM);
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault();
     setSaving(true);
     try {
-      const updated = await addAddress(token, form);
+      const updated = editingIndex !== null ? await updateAddress(token, editingIndex, form) : await addAddress(token, form);
       setAddresses(updated);
-      setForm(EMPTY_FORM);
-      setShowForm(false);
+      cancelForm();
     } catch {
       // ignore
     } finally {
@@ -42,6 +70,7 @@ export default function Address() {
   async function handleDelete(index) {
     const updated = await deleteAddress(token, index);
     setAddresses(updated);
+    if (editingIndex === index) cancelForm();
   }
 
   return (
@@ -49,7 +78,7 @@ export default function Address() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-gray-900">Your Address</h1>
         <button
-          onClick={() => setShowForm((s) => !s)}
+          onClick={openAddForm}
           className="flex items-center gap-1.5 text-sm font-medium text-gray-900 border border-gray-300 rounded-md px-3 py-1.5"
         >
           <HugeiconsIcon icon={Add01Icon} size={16} strokeWidth={1.5} />
@@ -58,7 +87,7 @@ export default function Address() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleAdd} className="border border-gray-200 rounded-lg p-4 mb-6 space-y-3 max-w-md">
+        <form onSubmit={handleSubmit} className="border border-gray-200 rounded-lg p-4 mb-6 space-y-3 max-w-md">
           <input
             placeholder="Label (e.g. Home, Office)"
             value={form.label}
@@ -117,13 +146,18 @@ export default function Address() {
             />
             Set as default address
           </label>
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-gray-900 text-white font-medium px-6 py-2.5 rounded-md text-sm disabled:opacity-60"
-          >
-            {saving ? 'Saving...' : 'Save Address'}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={saving}
+              className="bg-gray-900 text-white font-medium px-6 py-2.5 rounded-md text-sm disabled:opacity-60"
+            >
+              {saving ? 'Saving...' : editingIndex !== null ? 'Update Address' : 'Save Address'}
+            </button>
+            <button type="button" onClick={cancelForm} className="text-sm text-gray-500">
+              Cancel
+            </button>
+          </div>
         </form>
       )}
 
@@ -153,9 +187,14 @@ export default function Address() {
               </p>
               <p className="text-sm text-gray-600">{addr.country}</p>
             </div>
-            <button onClick={() => handleDelete(index)} aria-label="Delete address" className="text-gray-400 hover:text-red-500">
-              <HugeiconsIcon icon={Delete02Icon} size={18} strokeWidth={1.5} />
-            </button>
+            <div className="flex items-center gap-3 shrink-0">
+              <button onClick={() => openEditForm(index)} aria-label="Edit address" className="text-gray-400 hover:text-gray-900">
+                <HugeiconsIcon icon={Edit02Icon} size={18} strokeWidth={1.5} />
+              </button>
+              <button onClick={() => handleDelete(index)} aria-label="Delete address" className="text-gray-400 hover:text-red-500">
+                <HugeiconsIcon icon={Delete02Icon} size={18} strokeWidth={1.5} />
+              </button>
+            </div>
           </div>
         ))}
       </div>

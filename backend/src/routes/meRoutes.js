@@ -4,6 +4,7 @@ const {
   updateProfile,
   getAddresses,
   addAddress,
+  updateAddress,
   deleteAddress,
   getOrders,
   getRequests,
@@ -18,6 +19,7 @@ router.get('/', getProfile);
 router.put('/', updateProfile);
 router.get('/addresses', getAddresses);
 router.post('/addresses', addAddress);
+router.put('/addresses/:index', updateAddress);
 router.delete('/addresses/:index', deleteAddress);
 router.get('/orders', getOrders);
 router.get('/requests', getRequests);

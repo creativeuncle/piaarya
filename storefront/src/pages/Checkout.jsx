@@ -1,34 +1,52 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { createOrder } from '../api/orders';
+import { fetchAddresses, addAddress } from '../api/me';
 
-function emptyForm(customer) {
-  return {
-    name: customer?.name || '',
-    email: customer?.email || '',
-    phone: customer?.phone || '',
-    line1: '',
-    line2: '',
-    city: '',
-    state: '',
-    pincode: '',
-    country: 'India',
-  };
+function emptyForm() {
+  return { label: '', line1: '', line2: '', city: '', state: '', pincode: '', country: 'India' };
 }
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const { isAuthenticated, customer } = useAuth();
+  const { isAuthenticated, customer, token } = useAuth();
   const { items, subtotal, discount, total, appliedCoupon, clearCart } = useCart();
-  const [form, setForm] = useState(() => emptyForm(customer));
+
+  const [contact, setContact] = useState({ name: customer?.name || '', email: customer?.email || '', phone: customer?.phone || '' });
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [addressesLoading, setAddressesLoading] = useState(true);
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [newAddress, setNewAddress] = useState(emptyForm());
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState(null);
 
-  function set(field, value) {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    fetchAddresses(token)
+      .then((addresses) => {
+        setSavedAddresses(addresses);
+        if (addresses.length > 0) {
+          const defaultIndex = addresses.findIndex((a) => a.isDefault);
+          setSelectedIndex(defaultIndex >= 0 ? defaultIndex : 0);
+          setShowNewForm(false);
+        } else {
+          setShowNewForm(true);
+        }
+      })
+      .catch(() => setShowNewForm(true))
+      .finally(() => setAddressesLoading(false));
+  }, [isAuthenticated, token]);
+
+  function setContactField(field, value) {
+    setContact((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function setNewAddressField(field, value) {
+    setNewAddress((prev) => ({ ...prev, [field]: value }));
   }
 
   if (!isAuthenticated) {
@@ -49,19 +67,30 @@ export default function Checkout() {
 
   async function handlePlaceOrder(e) {
     e.preventDefault();
-    setPlacing(true);
     setError(null);
+
+    const usingSaved = !showNewForm && selectedIndex !== null && savedAddresses[selectedIndex];
+    const shippingAddress = usingSaved
+      ? savedAddresses[selectedIndex]
+      : {
+          line1: newAddress.line1,
+          line2: newAddress.line2,
+          city: newAddress.city,
+          state: newAddress.state,
+          pincode: newAddress.pincode,
+          country: newAddress.country,
+        };
+
+    if (!shippingAddress.line1 || !shippingAddress.city || !shippingAddress.state || !shippingAddress.pincode) {
+      setError('Please fill in a complete shipping address.');
+      return;
+    }
+
+    setPlacing(true);
     try {
       const data = await createOrder({
-        customer: { name: form.name, email: form.email, phone: form.phone },
-        shippingAddress: {
-          line1: form.line1,
-          line2: form.line2,
-          city: form.city,
-          state: form.state,
-          pincode: form.pincode,
-          country: form.country,
-        },
+        customer: contact,
+        shippingAddress,
         items: items.map((item) => ({
           productId: item.productId,
           variantSku: item.variantSku || undefined,
@@ -70,6 +99,11 @@ export default function Checkout() {
         couponCode: appliedCoupon?.code,
         paymentMethod,
       });
+
+      if (!usingSaved) {
+        addAddress(token, { ...newAddress, isDefault: savedAddresses.length === 0 }).catch(() => {});
+      }
+
       clearCart();
       navigate('/order-confirmation', { state: { orderNumber: data.orderNumber, totalAmount: data.totalAmount } });
     } catch (err) {
@@ -90,43 +124,119 @@ export default function Checkout() {
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Contact</h2>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Full Name" required>
-              <input className="input" value={form.name} onChange={(e) => set('name', e.target.value)} required />
+              <input className="input" value={contact.name} onChange={(e) => setContactField('name', e.target.value)} required />
             </Field>
             <Field label="Phone" required>
-              <input className="input" value={form.phone} onChange={(e) => set('phone', e.target.value)} required />
+              <input className="input" value={contact.phone} onChange={(e) => setContactField('phone', e.target.value)} required />
             </Field>
           </div>
           <div className="mt-4">
             <Field label="Email" required>
-              <input type="email" className="input" value={form.email} onChange={(e) => set('email', e.target.value)} required />
+              <input type="email" className="input" value={contact.email} onChange={(e) => setContactField('email', e.target.value)} required />
             </Field>
           </div>
         </div>
 
         <div>
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Shipping Address</h2>
-          <div className="space-y-4">
-            <Field label="Address Line 1" required>
-              <input className="input" value={form.line1} onChange={(e) => set('line1', e.target.value)} required />
-            </Field>
-            <Field label="Address Line 2">
-              <input className="input" value={form.line2} onChange={(e) => set('line2', e.target.value)} />
-            </Field>
-            <div className="grid grid-cols-3 gap-4">
-              <Field label="City" required>
-                <input className="input" value={form.city} onChange={(e) => set('city', e.target.value)} required />
+
+          {addressesLoading && <p className="text-sm text-gray-500">Loading addresses...</p>}
+
+          {!addressesLoading && savedAddresses.length > 0 && (
+            <div className="space-y-3 mb-4">
+              {savedAddresses.map((addr, index) => (
+                <label
+                  key={index}
+                  className={`flex items-start gap-3 border rounded-md px-4 py-3 cursor-pointer ${
+                    !showNewForm && selectedIndex === index ? 'border-gray-900' : 'border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="shippingAddress"
+                    checked={!showNewForm && selectedIndex === index}
+                    onChange={() => {
+                      setSelectedIndex(index);
+                      setShowNewForm(false);
+                    }}
+                    className="mt-1"
+                  />
+                  <div className="text-sm">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="font-medium text-gray-900">{addr.label || 'Address'}</span>
+                      {addr.isDefault && (
+                        <span className="text-[10px] uppercase tracking-wide bg-gray-900 text-white px-2 py-0.5 rounded-full">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-gray-600">
+                      {addr.line1}
+                      {addr.line2 ? `, ${addr.line2}` : ''}
+                    </p>
+                    <p className="text-gray-600">
+                      {addr.city}, {addr.state} {addr.pincode}, {addr.country}
+                    </p>
+                  </div>
+                </label>
+              ))}
+
+              {!showNewForm && (
+                <button
+                  type="button"
+                  onClick={() => setShowNewForm(true)}
+                  className="text-sm font-medium text-gray-900 underline"
+                >
+                  + Add different address
+                </button>
+              )}
+            </div>
+          )}
+
+          {showNewForm && (
+            <div className="space-y-4">
+              {savedAddresses.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowNewForm(false);
+                    setSelectedIndex((prev) => (prev === null ? 0 : prev));
+                  }}
+                  className="text-sm font-medium text-gray-900 underline"
+                >
+                  ← Use a saved address
+                </button>
+              )}
+              <Field label="Label">
+                <input
+                  className="input"
+                  placeholder="e.g. Home, Office"
+                  value={newAddress.label}
+                  onChange={(e) => setNewAddressField('label', e.target.value)}
+                />
               </Field>
-              <Field label="State" required>
-                <input className="input" value={form.state} onChange={(e) => set('state', e.target.value)} required />
+              <Field label="Address Line 1" required>
+                <input className="input" value={newAddress.line1} onChange={(e) => setNewAddressField('line1', e.target.value)} required />
               </Field>
-              <Field label="Pincode" required>
-                <input className="input" value={form.pincode} onChange={(e) => set('pincode', e.target.value)} required />
+              <Field label="Address Line 2">
+                <input className="input" value={newAddress.line2} onChange={(e) => setNewAddressField('line2', e.target.value)} />
+              </Field>
+              <div className="grid grid-cols-3 gap-4">
+                <Field label="City" required>
+                  <input className="input" value={newAddress.city} onChange={(e) => setNewAddressField('city', e.target.value)} required />
+                </Field>
+                <Field label="State" required>
+                  <input className="input" value={newAddress.state} onChange={(e) => setNewAddressField('state', e.target.value)} required />
+                </Field>
+                <Field label="Pincode" required>
+                  <input className="input" value={newAddress.pincode} onChange={(e) => setNewAddressField('pincode', e.target.value)} required />
+                </Field>
+              </div>
+              <Field label="Country" required>
+                <input className="input" value={newAddress.country} onChange={(e) => setNewAddressField('country', e.target.value)} required />
               </Field>
             </div>
-            <Field label="Country" required>
-              <input className="input" value={form.country} onChange={(e) => set('country', e.target.value)} required />
-            </Field>
-          </div>
+          )}
         </div>
 
         <div>

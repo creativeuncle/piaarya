@@ -58,6 +58,32 @@ async function addAddress(req, res, next) {
   }
 }
 
+async function updateAddress(req, res, next) {
+  try {
+    const { label, line1, line2, city, state, pincode, country, isDefault } = req.body;
+    const customer = await Customer.findById(req.customerId);
+    if (!customer) return res.status(404).json({ message: 'Customer not found' });
+
+    const address = customer.addresses[Number(req.params.index)];
+    if (!address) return res.status(404).json({ message: 'Address not found' });
+
+    if (isDefault) customer.addresses.forEach((a) => (a.isDefault = false));
+    address.label = label;
+    address.line1 = line1;
+    address.line2 = line2;
+    address.city = city;
+    address.state = state;
+    address.pincode = pincode;
+    address.country = country;
+    address.isDefault = Boolean(isDefault);
+    await customer.save();
+
+    res.json(customer.addresses);
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function deleteAddress(req, res, next) {
   try {
     const customer = await Customer.findById(req.customerId);
@@ -96,4 +122,4 @@ async function getRequests(req, res, next) {
   }
 }
 
-module.exports = { getProfile, updateProfile, getAddresses, addAddress, deleteAddress, getOrders, getRequests };
+module.exports = { getProfile, updateProfile, getAddresses, addAddress, updateAddress, deleteAddress, getOrders, getRequests };
