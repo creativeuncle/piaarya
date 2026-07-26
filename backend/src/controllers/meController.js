@@ -2,6 +2,8 @@ const Customer = require('../models/Customer');
 const Order = require('../models/Order');
 const ReturnRequest = require('../models/ReturnRequest');
 
+const CANCEL_WINDOW_MS = 10 * 60 * 1000;
+
 function toPublicCustomer(customer) {
   return {
     id: customer._id,
@@ -109,6 +111,45 @@ async function getOrders(req, res, next) {
   }
 }
 
+async function getOrderById(req, res, next) {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, customer: req.customerId }).populate(
+      'items.product',
+      'name media'
+    );
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    const cancellable =
+      order.status !== 'cancelled' && Date.now() - new Date(order.createdAt).getTime() <= CANCEL_WINDOW_MS;
+
+    res.json({ ...order.toObject(), cancellable });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function cancelOrder(req, res, next) {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, customer: req.customerId });
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    if (order.status === 'cancelled') {
+      return res.status(400).json({ message: 'Order is already cancelled' });
+    }
+
+    if (Date.now() - new Date(order.createdAt).getTime() > CANCEL_WINDOW_MS) {
+      return res.status(400).json({ message: 'Cancellation window has expired' });
+    }
+
+    order.status = 'cancelled';
+    await order.save();
+
+    res.json(order);
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function getRequests(req, res, next) {
   try {
     const orderIds = await Order.find({ customer: req.customerId }).distinct('_id');
@@ -122,4 +163,15 @@ async function getRequests(req, res, next) {
   }
 }
 
-module.exports = { getProfile, updateProfile, getAddresses, addAddress, updateAddress, deleteAddress, getOrders, getRequests };
+module.exports = {
+  getProfile,
+  updateProfile,
+  getAddresses,
+  addAddress,
+  updateAddress,
+  deleteAddress,
+  getOrders,
+  getOrderById,
+  cancelOrder,
+  getRequests,
+};

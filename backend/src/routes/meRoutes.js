@@ -7,6 +7,8 @@ const {
   updateAddress,
   deleteAddress,
   getOrders,
+  getOrderById,
+  cancelOrder,
   getRequests,
 } = require('../controllers/meController');
 const { requireAuth } = require('../middleware/auth');
@@ -22,6 +24,8 @@ router.post('/addresses', addAddress);
 router.put('/addresses/:index', updateAddress);
 router.delete('/addresses/:index', deleteAddress);
 router.get('/orders', getOrders);
+router.get('/orders/:id', getOrderById);
+router.put('/orders/:id/cancel', cancelOrder);
 router.get('/requests', getRequests);
 
 module.exports = router;

@@ -25,25 +25,36 @@ export default function Orders() {
       <div className="space-y-4">
         {orders.map((order) => (
           <div key={order._id} className="border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-3">
               <p className="font-medium text-gray-900 text-sm">Order #{order.orderNumber}</p>
               <span className="text-xs uppercase tracking-wide bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
                 {order.status}
               </span>
             </div>
-            <p className="text-xs text-gray-500 mb-2">
+            <p className="text-xs text-gray-500 mb-3">
               {new Date(order.createdAt).toLocaleDateString()}
             </p>
-            <div className="space-y-1 mb-2">
+            <div className="space-y-3 mb-3">
               {order.items?.map((item, idx) => (
-                <p key={idx} className="text-sm text-gray-700">
-                  {item.product?.name || 'Product'} × {item.quantity}
-                </p>
+                <div key={idx} className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden shrink-0">
+                    {item.product?.media?.[0]?.url && (
+                      <img
+                        src={item.product.media[0].url}
+                        alt={item.product?.name}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-700">
+                    {item.product?.name || 'Product'} × {item.quantity}
+                  </p>
+                </div>
               ))}
             </div>
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-gray-900">₹{order.total}</p>
-              <Link to={`/order-confirmation?order=${order._id}`} className="text-sm text-gray-600 underline">
+              <p className="text-sm font-semibold text-gray-900">₹{order.totalAmount}</p>
+              <Link to={`/dashboard/orders/${order._id}`} className="text-sm text-gray-600 underline">
                 View details
               </Link>
             </div>

@@ -34,6 +34,16 @@ export async function fetchMyOrders(token) {
   return data;
 }
 
+export async function fetchMyOrder(token, id) {
+  const { data } = await client.get(`/me/orders/${id}`, authHeaders(token));
+  return data;
+}
+
+export async function cancelMyOrder(token, id) {
+  const { data } = await client.put(`/me/orders/${id}/cancel`, {}, authHeaders(token));
+  return data;
+}
+
 export async function fetchMyRequests(token) {
   const { data } = await client.get('/me/requests', authHeaders(token));
   return data;
