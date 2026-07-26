@@ -5,7 +5,7 @@ import { ShoppingBag01Icon, Cancel01Icon, SquareLock01Icon } from '@hugeicons/co
 import { useCart } from '../context/CartContext';
 
 export default function CartDrawer() {
-  const { items, count, subtotal, removeFromCart, updateQuantity, isDrawerOpen, closeDrawer, orderNote, setOrderNote } = useCart();
+  const { items, count, total, removeFromCart, updateQuantity, isDrawerOpen, closeDrawer, orderNote, setOrderNote } = useCart();
   const [showNote, setShowNote] = useState(false);
 
   return (
@@ -106,7 +106,7 @@ export default function CartDrawer() {
               className="w-full mt-4 bg-blue-700 hover:bg-blue-800 text-white font-semibold uppercase tracking-wide text-sm py-3.5 rounded-md flex items-center justify-center gap-2"
             >
               <HugeiconsIcon icon={SquareLock01Icon} size={16} strokeWidth={1.5} />
-              Checkout · ₹{subtotal}
+              Checkout · ₹{total}
             </Link>
           </div>
         )}

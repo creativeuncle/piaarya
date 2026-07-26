@@ -6,14 +6,21 @@ import { useCart } from '../context/CartContext';
 import { validateCoupon } from '../api/coupons';
 
 export default function Cart() {
-  const { items, subtotal, removeFromCart, updateQuantity, orderNote, setOrderNote } = useCart();
+  const {
+    items,
+    subtotal,
+    discount,
+    total,
+    appliedCoupon,
+    setAppliedCoupon,
+    removeFromCart,
+    updateQuantity,
+    orderNote,
+    setOrderNote,
+  } = useCart();
   const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState(null);
   const [checking, setChecking] = useState(false);
-
-  const discount = appliedCoupon?.discountAmount || 0;
-  const total = Math.max(subtotal - discount, 0);
 
   async function handleApplyCoupon(e) {
     e.preventDefault();
@@ -169,13 +176,13 @@ export default function Cart() {
             </div>
           </div>
 
-          <button className="w-full mt-5 bg-blue-700 hover:bg-blue-800 text-white font-semibold uppercase tracking-wide text-sm py-3.5 rounded-md flex items-center justify-center gap-2">
+          <Link
+            to="/checkout"
+            className="w-full mt-5 bg-blue-700 hover:bg-blue-800 text-white font-semibold uppercase tracking-wide text-sm py-3.5 rounded-md flex items-center justify-center gap-2"
+          >
             <HugeiconsIcon icon={SquareLock01Icon} size={16} strokeWidth={1.5} />
             Checkout
-          </button>
-          <p className="text-xs text-gray-400 mt-3 text-center">
-            Checkout and payment aren't wired up yet — this is the next step once a payment gateway is integrated.
-          </p>
+          </Link>
         </div>
       </div>
     </div>
