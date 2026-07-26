@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Mail01Icon, Search01Icon, UserIcon, ShoppingBag01Icon } from '@hugeicons/core-free-icons';
+import { Mail01Icon, Search01Icon, UserIcon, ShoppingBag01Icon, DashboardSquare01Icon, Logout01Icon } from '@hugeicons/core-free-icons';
 import { fetchNavigation } from '../api/navigation';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -15,8 +15,16 @@ const DEFAULT_MENUS = [
 export default function Header() {
   const [menus, setMenus] = useState(DEFAULT_MENUS);
   const [openMenu, setOpenMenu] = useState(null);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const { count, openDrawer } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    setAccountMenuOpen(false);
+    logout();
+    navigate('/');
+  }
 
   useEffect(() => {
     fetchNavigation()
@@ -64,9 +72,36 @@ export default function Header() {
         <div className="flex items-center gap-5">
           <HugeiconsIcon icon={Mail01Icon} size={20} strokeWidth={1.5} className="cursor-pointer" />
           <HugeiconsIcon icon={Search01Icon} size={20} strokeWidth={1.5} className="cursor-pointer" />
-          <Link to={isAuthenticated ? '/account' : '/login'} aria-label="Account">
-            <HugeiconsIcon icon={UserIcon} size={20} strokeWidth={1.5} className="cursor-pointer" />
-          </Link>
+          {isAuthenticated ? (
+            <div
+              className="relative"
+              onMouseEnter={() => setAccountMenuOpen(true)}
+              onMouseLeave={() => setAccountMenuOpen(false)}
+            >
+              <Link to="/dashboard/profile" aria-label="Account">
+                <HugeiconsIcon icon={UserIcon} size={20} strokeWidth={1.5} className="cursor-pointer" />
+              </Link>
+              {accountMenuOpen && (
+                <div className="absolute top-full right-0 mt-2 bg-white text-gray-900 rounded-md shadow-lg py-2 min-w-[160px] z-20">
+                  <Link to="/dashboard/profile" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-50">
+                    <HugeiconsIcon icon={DashboardSquare01Icon} size={16} strokeWidth={1.5} />
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-gray-50"
+                  >
+                    <HugeiconsIcon icon={Logout01Icon} size={16} strokeWidth={1.5} />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link to="/login" aria-label="Account">
+              <HugeiconsIcon icon={UserIcon} size={20} strokeWidth={1.5} className="cursor-pointer" />
+            </Link>
+          )}
           <button onClick={openDrawer} className="relative cursor-pointer" aria-label="Open cart">
             <HugeiconsIcon icon={ShoppingBag01Icon} size={20} strokeWidth={1.5} />
             <span className="absolute -top-2 -right-2 bg-white text-gray-900 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">

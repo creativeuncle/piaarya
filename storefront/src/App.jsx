@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import Header from './components/Header';
@@ -12,7 +12,11 @@ import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Account from './pages/Account';
+import DashboardLayout from './pages/dashboard/DashboardLayout';
+import DashboardProfile from './pages/dashboard/Profile';
+import DashboardOrders from './pages/dashboard/Orders';
+import DashboardAddress from './pages/dashboard/Address';
+import DashboardRequests from './pages/dashboard/Requests';
 
 function App() {
   return (
@@ -30,7 +34,13 @@ function App() {
               <Route path="/order-confirmation" element={<OrderConfirmation />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/account" element={<Account />} />
+              <Route path="/dashboard" element={<DashboardLayout />}>
+                <Route index element={<Navigate to="/dashboard/profile" replace />} />
+                <Route path="profile" element={<DashboardProfile />} />
+                <Route path="orders" element={<DashboardOrders />} />
+                <Route path="address" element={<DashboardAddress />} />
+                <Route path="requests" element={<DashboardRequests />} />
+              </Route>
             </Routes>
           </main>
           <Footer />
