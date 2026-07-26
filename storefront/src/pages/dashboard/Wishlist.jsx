@@ -50,39 +50,39 @@ export default function Wishlist() {
         </p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {entries.map((entry) => {
           const product = entry.product;
           if (!product) return null;
           return (
-            <div key={entry._id} className="border border-gray-200 rounded-lg p-4 flex gap-4">
-              <Link to={`/products/${product._id}`} className="w-20 h-20 bg-gray-100 rounded-md overflow-hidden shrink-0">
+            <div key={entry._id} className="border border-gray-200 rounded-lg overflow-hidden flex flex-col">
+              <Link to={`/products/${product._id}`} className="block w-full aspect-square bg-gray-100 overflow-hidden">
                 {product.media?.[0]?.url && (
                   <img src={product.media[0].url} alt={product.name} className="w-full h-full object-cover" />
                 )}
               </Link>
-              <div className="flex-1 flex flex-col justify-between">
-                <div>
-                  <Link to={`/products/${product._id}`} className="text-sm font-medium text-gray-900 hover:underline">
-                    {product.name}
-                  </Link>
-                  {product.category?.name && <p className="text-xs text-gray-500">{product.category.name}</p>}
-                  <p className="text-sm text-gray-900 font-semibold mt-1">₹{product.price}</p>
-                </div>
-                <div className="flex items-center gap-3 mt-2">
-                  <button
-                    onClick={() => handleAddToCart(product)}
-                    className="bg-gray-900 text-white text-xs font-medium px-3 py-1.5 rounded-md"
-                  >
-                    Add to Cart
-                  </button>
-                  <button
-                    onClick={() => handleRemove(product._id)}
-                    className="text-xs text-gray-500 underline"
-                  >
-                    Remove from Wishlist
-                  </button>
-                </div>
+
+              <div className="p-4 flex-1 flex flex-col">
+                <Link to={`/products/${product._id}`} className="text-sm font-medium text-gray-900 hover:underline">
+                  {product.name}
+                </Link>
+                {product.category?.name && <p className="text-xs text-gray-500 mt-0.5">{product.category.name}</p>}
+                <p className="text-sm text-gray-900 font-semibold mt-1">₹{product.price}</p>
+              </div>
+
+              <div className="p-4 pt-0 flex flex-col gap-2">
+                <button
+                  onClick={() => handleAddToCart(product)}
+                  className="w-full bg-gray-900 text-white text-sm font-medium py-2.5 rounded-md hover:bg-gray-800"
+                >
+                  Add to Cart
+                </button>
+                <button
+                  onClick={() => handleRemove(product._id)}
+                  className="w-full border border-gray-300 text-gray-700 text-sm font-medium py-2.5 rounded-md hover:bg-gray-50"
+                >
+                  Remove from Wishlist
+                </button>
               </div>
             </div>
           );
