@@ -168,8 +168,9 @@ async function createOrder(req, res, next) {
       const { clientOrigin } = req.body;
       const origin = clientOrigin || process.env.CLIENT_URL || 'http://localhost:5174';
 
+      const orderObj = order.toObject();
       const session = await createStripeCheckoutSession({
-        order: { ...order.toObject(), items: order.items.map((oi, idx) => ({ ...oi, name: orderItemNames[idx] })) },
+        order: { ...orderObj, items: orderObj.items.map((oi, idx) => ({ ...oi, name: orderItemNames[idx] })) },
         successUrl: `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${origin}/checkout`,
       });
