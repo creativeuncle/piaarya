@@ -36,7 +36,10 @@ const NAV_ITEMS = [
   { to: '/team', label: 'Team', icon: UserMultiple02Icon },
 ];
 
-const SETTINGS_CHILDREN = [{ to: '/settings/navigation', label: 'Navigation' }];
+const SETTINGS_CHILDREN = [
+  { to: '/settings/navigation', label: 'Navigation' },
+  { to: '/settings/payments', label: 'Payments' },
+];
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(false);

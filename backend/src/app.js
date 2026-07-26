@@ -18,6 +18,7 @@ const wishlistRoutes = require('./routes/wishlistRoutes');
 const navigationRoutes = require('./routes/navigationRoutes');
 const authRoutes = require('./routes/authRoutes');
 const meRoutes = require('./routes/meRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const { UPLOAD_DIR } = require('./middleware/upload');
 
@@ -46,6 +47,7 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/navigation', navigationRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/me', meRoutes);
+app.use('/api/settings', settingsRoutes);
 
 app.use(errorHandler);
 

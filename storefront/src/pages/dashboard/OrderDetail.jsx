@@ -19,10 +19,16 @@ export default function OrderDetail() {
   const [cancelling, setCancelling] = useState(false);
 
   const [requestModal, setRequestModal] = useState(null); // 'return' | 'exchange' | null
+  const [requestStep, setRequestStep] = useState(1);
   const [reasons, setReasons] = useState([]);
   const [selectedItems, setSelectedItems] = useState({});
   const [reason, setReason] = useState('');
   const [notes, setNotes] = useState('');
+  const [refundMethod, setRefundMethod] = useState('upi');
+  const [upiId, setUpiId] = useState('');
+  const [accountHolderName, setAccountHolderName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [ifsc, setIfsc] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [requestMessage, setRequestMessage] = useState('');
 
@@ -67,9 +73,15 @@ export default function OrderDetail() {
 
   function openRequestModal(type) {
     setRequestModal(type);
+    setRequestStep(1);
     setSelectedItems({});
     setReason('');
     setNotes('');
+    setRefundMethod('upi');
+    setUpiId('');
+    setAccountHolderName('');
+    setAccountNumber('');
+    setIfsc('');
     setRequestMessage('');
   }
 
@@ -82,7 +94,7 @@ export default function OrderDetail() {
     });
   }
 
-  async function handleSubmitRequest(e) {
+  function handleContinueToPaymentStep(e) {
     e.preventDefault();
     const items = Object.values(selectedItems);
     if (items.length === 0) {
@@ -93,16 +105,53 @@ export default function OrderDetail() {
       setRequestMessage('Please select a reason.');
       return;
     }
+    setRequestMessage('');
 
+    if (requestModal === 'exchange') {
+      submitRequest(items);
+    } else {
+      setRequestStep(2);
+    }
+  }
+
+  async function submitRequest(items, refundDetails) {
     setSubmitting(true);
     try {
-      await createReturnRequest({ order: id, items, type: requestModal, reason, notes });
+      await createReturnRequest({
+        order: id,
+        items,
+        type: requestModal,
+        reason,
+        notes,
+        refundMethod: requestModal === 'return' ? refundMethod : undefined,
+        refundDetails: requestModal === 'return' ? refundDetails : undefined,
+      });
       setRequestMessage('Your request has been submitted. You can track it under Requests.');
+      setRequestStep(3);
     } catch (err) {
       setRequestMessage(err.response?.data?.message || err.message);
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleSubmitPaymentStep(e) {
+    e.preventDefault();
+    const items = Object.values(selectedItems);
+
+    if (refundMethod === 'upi' && !upiId) {
+      setRequestMessage('Please enter your UPI ID.');
+      return;
+    }
+    if (refundMethod === 'bank' && (!accountHolderName || !accountNumber || !ifsc)) {
+      setRequestMessage('Please fill in all bank account details.');
+      return;
+    }
+    setRequestMessage('');
+
+    const refundDetails =
+      refundMethod === 'upi' ? { upiId } : { accountHolderName, accountNumber, ifsc };
+    submitRequest(items, refundDetails);
   }
 
   if (loading) return <p className="text-sm text-gray-500">Loading...</p>;
@@ -216,72 +265,175 @@ export default function OrderDetail() {
       {requestModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-6">
           <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <h3 className="text-base font-semibold text-gray-900 mb-4">
+            <h3 className="text-base font-semibold text-gray-900 mb-1">
               {requestModal === 'return' ? 'Request Return' : 'Request Exchange'}
             </h3>
+            {requestModal === 'return' && requestStep < 3 && (
+              <p className="text-xs text-gray-400 mb-4">Step {requestStep} of 2</p>
+            )}
 
-            <form onSubmit={handleSubmitRequest} className="space-y-4">
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">Select item(s)</p>
-                <div className="space-y-2">
-                  {order.items?.map((item, idx) => (
-                    <label key={idx} className="flex items-center gap-2 text-sm text-gray-700">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(selectedItems[idx])}
-                        onChange={() => toggleItem(idx, item)}
-                      />
-                      {item.product?.name || 'Product'} × {item.quantity}
-                    </label>
-                  ))}
+            {requestStep === 1 && (
+              <form onSubmit={handleContinueToPaymentStep} className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Select item(s)</p>
+                  <div className="space-y-2">
+                    {order.items?.map((item, idx) => (
+                      <label key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(selectedItems[idx])}
+                          onChange={() => toggleItem(idx, item)}
+                        />
+                        {item.product?.name || 'Product'} × {item.quantity}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                  <select
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  >
+                    <option value="">Select a reason</option>
+                    {reasons.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    rows={3}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  />
+                </div>
+
+                {requestMessage && <p className="text-sm text-gray-600">{requestMessage}</p>}
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRequestModal(null)}
+                    className="text-sm text-gray-600 px-4 py-2"
+                  >
+                    Close
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="bg-gray-900 text-white text-sm font-medium px-5 py-2.5 rounded-md disabled:opacity-60"
+                  >
+                    {submitting ? 'Submitting...' : requestModal === 'return' ? 'Next' : 'Submit Request'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {requestStep === 2 && requestModal === 'return' && (
+              <form onSubmit={handleSubmitPaymentStep} className="space-y-4">
+                <p className="text-sm font-medium text-gray-700">Payment Transfer</p>
+                <p className="text-xs text-gray-500 -mt-2">
+                  Tell us where to send your refund once the return is approved.
+                </p>
+
+                <div className="flex gap-3">
+                  <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="radio"
+                      name="refundMethod"
+                      checked={refundMethod === 'upi'}
+                      onChange={() => setRefundMethod('upi')}
+                    />
+                    UPI
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="radio"
+                      name="refundMethod"
+                      checked={refundMethod === 'bank'}
+                      onChange={() => setRefundMethod('bank')}
+                    />
+                    Bank Account
+                  </label>
+                </div>
+
+                {refundMethod === 'upi' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">UPI ID</label>
+                    <input
+                      value={upiId}
+                      onChange={(e) => setUpiId(e.target.value)}
+                      placeholder="yourname@upi"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                    />
+                  </div>
+                )}
+
+                {refundMethod === 'bank' && (
+                  <div className="space-y-3">
+                    <input
+                      value={accountHolderName}
+                      onChange={(e) => setAccountHolderName(e.target.value)}
+                      placeholder="Account Holder Name"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                    />
+                    <input
+                      value={accountNumber}
+                      onChange={(e) => setAccountNumber(e.target.value)}
+                      placeholder="Account Number"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                    />
+                    <input
+                      value={ifsc}
+                      onChange={(e) => setIfsc(e.target.value)}
+                      placeholder="IFSC Code"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                    />
+                  </div>
+                )}
+
+                {requestMessage && <p className="text-sm text-gray-600">{requestMessage}</p>}
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRequestStep(1)}
+                    className="text-sm text-gray-600 px-4 py-2"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="bg-gray-900 text-white text-sm font-medium px-5 py-2.5 rounded-md disabled:opacity-60"
+                  >
+                    {submitting ? 'Submitting...' : 'Submit Request'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {requestStep === 3 && (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-700">{requestMessage}</p>
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setRequestModal(null)}
+                    className="bg-gray-900 text-white text-sm font-medium px-5 py-2.5 rounded-md"
+                  >
+                    Done
+                  </button>
                 </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
-                <select
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                >
-                  <option value="">Select a reason</option>
-                  {reasons.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                />
-              </div>
-
-              {requestMessage && <p className="text-sm text-gray-600">{requestMessage}</p>}
-
-              <div className="flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRequestModal(null)}
-                  className="text-sm text-gray-600 px-4 py-2"
-                >
-                  Close
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="bg-gray-900 text-white text-sm font-medium px-5 py-2.5 rounded-md disabled:opacity-60"
-                >
-                  {submitting ? 'Submitting...' : 'Submit Request'}
-                </button>
-              </div>
-            </form>
+            )}
           </div>
         </div>
       )}

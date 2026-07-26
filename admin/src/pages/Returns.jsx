@@ -27,6 +27,7 @@ export default function Returns() {
   const [returns, setReturns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selected, setSelected] = useState(null);
 
   function load() {
     setLoading(true);
@@ -42,7 +43,9 @@ export default function Returns() {
   async function handleStatus(id, status) {
     try {
       const updated = await setReturnStatus(id, status);
-      setReturns((prev) => prev.map((r) => (r._id === id ? { ...r, status: updated.status } : r)));
+      const patch = { status: updated.status, refundStatus: updated.refundStatus, refundResult: updated.refundResult };
+      setReturns((prev) => prev.map((r) => (r._id === id ? { ...r, ...patch } : r)));
+      setSelected((prev) => (prev && prev._id === id ? { ...prev, ...patch } : prev));
     } catch (err) {
       setError(err.message);
     }
@@ -52,6 +55,7 @@ export default function Returns() {
     try {
       await setPickupStatus(id, pickupStatus);
       setReturns((prev) => prev.map((r) => (r._id === id ? { ...r, pickupStatus } : r)));
+      setSelected((prev) => (prev && prev._id === id ? { ...prev, pickupStatus } : prev));
     } catch (err) {
       setError(err.message);
     }
@@ -61,6 +65,7 @@ export default function Returns() {
     try {
       await setRefundStatus(id, refundStatus);
       setReturns((prev) => prev.map((r) => (r._id === id ? { ...r, refundStatus } : r)));
+      setSelected((prev) => (prev && prev._id === id ? { ...prev, refundStatus } : prev));
     } catch (err) {
       setError(err.message);
     }
@@ -100,8 +105,8 @@ export default function Returns() {
               <th className="px-4 py-3">Type</th>
               <th className="px-4 py-3">Reason</th>
               <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Pickup Status</th>
               <th className="px-4 py-3">Refund Status</th>
+              <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -118,37 +123,133 @@ export default function Returns() {
                 <td className="px-4 py-3 capitalize">{r.type}</td>
                 <td className="px-4 py-3">{r.reason}</td>
                 <td className="px-4 py-3">
-                  {r.status === 'requested' ? (
-                    <div className="space-x-2">
-                      <button onClick={() => handleStatus(r._id, 'approved')} className="btn-action btn-action-green">Approve</button>
-                      <button onClick={() => handleStatus(r._id, 'rejected')} className="btn-action btn-action-red">Reject</button>
-                    </div>
-                  ) : (
-                    <span className={`text-xs font-medium ${r.status === 'approved' ? 'text-green-600' : 'text-red-600'}`}>
-                      {r.status}
-                    </span>
-                  )}
+                  <span className={`text-xs font-medium capitalize ${
+                    r.status === 'approved' ? 'text-green-600' : r.status === 'rejected' ? 'text-red-600' : 'text-gray-600'
+                  }`}>
+                    {r.status}
+                  </span>
                 </td>
+                <td className="px-4 py-3 capitalize">{r.refundStatus.replace('_', ' ')}</td>
                 <td className="px-4 py-3">
-                  <select className="input" value={r.pickupStatus} onChange={(e) => handlePickup(r._id, e.target.value)}>
-                    {PICKUP_OPTIONS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
-                  </select>
-                </td>
-                <td className="px-4 py-3">
-                  <select
-                    className="input"
-                    value={r.refundStatus}
-                    onChange={(e) => handleRefund(r._id, e.target.value)}
-                    disabled={r.type === 'exchange'}
-                  >
-                    {REFUND_OPTIONS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
-                  </select>
+                  <button onClick={() => setSelected(r)} className="btn-action">View</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {selected && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-6">
+          <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {selected.type === 'exchange' ? 'Exchange' : 'Return'} Request
+              </h2>
+              <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-700 text-sm">
+                Close
+              </button>
+            </div>
+
+            <div className="space-y-4 text-sm">
+              <div>
+                <p className="text-gray-500">Order</p>
+                <p className="font-medium text-gray-900">{selected.order?.orderNumber || '—'}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Customer</p>
+                <p className="font-medium text-gray-900">{selected.order?.customer?.name || '—'}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 mb-1">Items</p>
+                <div className="space-y-1">
+                  {selected.items?.map((item, idx) => (
+                    <p key={idx} className="text-gray-800">
+                      {item.product?.name || 'Product'} {item.variantSku ? `(${item.variantSku})` : ''} × {item.quantity}
+                    </p>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-gray-500">Reason</p>
+                <p className="text-gray-800">{selected.reason}</p>
+              </div>
+              {selected.notes && (
+                <div>
+                  <p className="text-gray-500">Notes</p>
+                  <p className="text-gray-800">{selected.notes}</p>
+                </div>
+              )}
+
+              {selected.type === 'return' && (
+                <div>
+                  <p className="text-gray-500 mb-1">Refund Transfer To</p>
+                  {selected.refundMethod === 'upi' && (
+                    <p className="text-gray-800">UPI — {selected.refundDetails?.upiId || '—'}</p>
+                  )}
+                  {selected.refundMethod === 'bank' && (
+                    <p className="text-gray-800">
+                      Bank — {selected.refundDetails?.accountHolderName}, A/C {selected.refundDetails?.accountNumber}, IFSC{' '}
+                      {selected.refundDetails?.ifsc}
+                    </p>
+                  )}
+                  {!selected.refundMethod && <p className="text-gray-400">Not provided</p>}
+                </div>
+              )}
+
+              {selected.refundResult?.reference && (
+                <div className="bg-green-50 border border-green-100 rounded-md p-3">
+                  <p className="text-green-700 font-medium">Refund processed via {selected.refundResult.gateway}</p>
+                  <p className="text-green-600 text-xs">
+                    ₹{selected.refundResult.amount} · Ref: {selected.refundResult.reference}
+                  </p>
+                  <p className="text-green-600 text-xs mt-1">
+                    Simulated transfer — no live gateway credentials are connected yet.
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-gray-500 mb-1">Pickup Status</p>
+                  <select
+                    className="input w-full"
+                    value={selected.pickupStatus}
+                    onChange={(e) => handlePickup(selected._id, e.target.value)}
+                  >
+                    {PICKUP_OPTIONS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <p className="text-gray-500 mb-1">Refund Status</p>
+                  <select
+                    className="input w-full"
+                    value={selected.refundStatus}
+                    onChange={(e) => handleRefund(selected._id, e.target.value)}
+                    disabled={selected.type === 'exchange'}
+                  >
+                    {REFUND_OPTIONS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-gray-100 pt-4">
+                <span className={`text-sm font-medium capitalize ${
+                  selected.status === 'approved' ? 'text-green-600' : selected.status === 'rejected' ? 'text-red-600' : 'text-gray-600'
+                }`}>
+                  Status: {selected.status}
+                </span>
+                {selected.status === 'requested' && (
+                  <div className="space-x-2">
+                    <button onClick={() => handleStatus(selected._id, 'approved')} className="btn-action btn-action-green">Approve</button>
+                    <button onClick={() => handleStatus(selected._id, 'rejected')} className="btn-action btn-action-red">Reject</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
