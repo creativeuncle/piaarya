@@ -78,8 +78,9 @@ export default function Header() {
               onMouseEnter={() => setAccountMenuOpen(true)}
               onMouseLeave={() => setAccountMenuOpen(false)}
             >
-              <Link to="/dashboard/profile" aria-label="Account">
-                <HugeiconsIcon icon={UserIcon} size={20} strokeWidth={1.5} className="cursor-pointer" />
+              <Link to="/dashboard/profile" aria-label="Account" className="relative flex items-center justify-center w-8 h-8 rounded-full bg-white/10 cursor-pointer">
+                <HugeiconsIcon icon={UserIcon} size={18} strokeWidth={1.5} />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full ring-2 ring-gray-900" />
               </Link>
               {accountMenuOpen && (
                 <div className="absolute top-full right-0 mt-2 bg-white text-gray-900 rounded-md shadow-lg py-2 min-w-[160px] z-20">

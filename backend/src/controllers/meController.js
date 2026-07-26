@@ -155,7 +155,7 @@ async function getRequests(req, res, next) {
     const orderIds = await Order.find({ customer: req.customerId }).distinct('_id');
     const requests = await ReturnRequest.find({ order: { $in: orderIds } })
       .populate('order', 'orderNumber')
-      .populate('items.product', 'name')
+      .populate('items.product', 'name media')
       .sort({ createdAt: -1 });
     res.json(requests);
   } catch (err) {
