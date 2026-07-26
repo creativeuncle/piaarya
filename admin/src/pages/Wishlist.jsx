@@ -1,19 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { HeartIcon } from '@hugeicons/core-free-icons';
 import { fetchWishlist, fetchPopularWishlistProducts, removeWishlistEntry } from '../api/wishlist';
 
 export default function Wishlist() {
+  const [allEntries, setAllEntries] = useState([]);
   const [entries, setEntries] = useState([]);
   const [popular, setPopular] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [productFilter, setProductFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
 
   function load() {
     setLoading(true);
     setError(null);
     fetchWishlist()
-      .then(setEntries)
+      .then((data) => {
+        setAllEntries(data);
+        setEntries(data);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }
@@ -23,10 +29,34 @@ export default function Wishlist() {
     fetchPopularWishlistProducts().then(setPopular).catch(() => {});
   }, []);
 
+  const productOptions = useMemo(() => {
+    const map = new Map();
+    allEntries.forEach((entry) => {
+      if (entry.product?._id) map.set(entry.product._id, entry.product.name);
+    });
+    return Array.from(map, ([id, name]) => ({ id, name }));
+  }, [allEntries]);
+
+  const categoryOptions = useMemo(() => {
+    const map = new Map();
+    allEntries.forEach((entry) => {
+      const cat = entry.product?.category;
+      if (cat?._id) map.set(cat._id, cat.name);
+    });
+    return Array.from(map, ([id, name]) => ({ id, name }));
+  }, [allEntries]);
+
+  useEffect(() => {
+    let filtered = allEntries;
+    if (productFilter) filtered = filtered.filter((e) => e.product?._id === productFilter);
+    if (categoryFilter) filtered = filtered.filter((e) => e.product?.category?._id === categoryFilter);
+    setEntries(filtered);
+  }, [productFilter, categoryFilter, allEntries]);
+
   async function handleRemove(id) {
     try {
       await removeWishlistEntry(id);
-      setEntries((prev) => prev.filter((e) => e._id !== id));
+      setAllEntries((prev) => prev.filter((e) => e._id !== id));
     } catch (err) {
       setError(err.message);
     }
@@ -56,6 +86,44 @@ export default function Wishlist() {
         </div>
       )}
 
+      <div className="flex flex-wrap gap-3 mb-4">
+        <select
+          value={productFilter}
+          onChange={(e) => setProductFilter(e.target.value)}
+          className="border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700 bg-white"
+        >
+          <option value="">All Products</option>
+          {productOptions.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700 bg-white"
+        >
+          <option value="">All Categories</option>
+          {categoryOptions.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        {(productFilter || categoryFilter) && (
+          <button
+            onClick={() => {
+              setProductFilter('');
+              setCategoryFilter('');
+            }}
+            className="text-sm text-gray-500 underline"
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+
       <div className="bg-white rounded-lg shadow border border-gray-100 overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 text-left text-gray-500">
@@ -63,6 +131,7 @@ export default function Wishlist() {
               <th className="px-4 py-3"></th>
               <th className="px-4 py-3">Customer</th>
               <th className="px-4 py-3">Product</th>
+              <th className="px-4 py-3">Category</th>
               <th className="px-4 py-3">Price</th>
               <th className="px-4 py-3">Added</th>
               <th className="px-4 py-3">Actions</th>
@@ -70,10 +139,10 @@ export default function Wishlist() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={6}>Loading...</td></tr>
+              <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>Loading...</td></tr>
             )}
             {!loading && entries.length === 0 && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={6}>No wishlist entries yet.</td></tr>
+              <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>No wishlist entries found.</td></tr>
             )}
             {entries.map((entry) => (
               <tr key={entry._id}>
@@ -82,6 +151,7 @@ export default function Wishlist() {
                 </td>
                 <td className="px-4 py-3 font-medium text-gray-900">{entry.customer?.name || '—'}</td>
                 <td className="px-4 py-3">{entry.product?.name || '—'}</td>
+                <td className="px-4 py-3">{entry.product?.category?.name || '—'}</td>
                 <td className="px-4 py-3">₹{entry.product?.price ?? '—'}</td>
                 <td className="px-4 py-3 text-gray-500">{new Date(entry.createdAt).toLocaleDateString()}</td>
                 <td className="px-4 py-3">

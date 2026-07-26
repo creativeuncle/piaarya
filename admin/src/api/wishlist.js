@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-export async function fetchWishlist() {
-  const { data } = await axios.get('/api/wishlist');
+export async function fetchWishlist(params = {}) {
+  const { data } = await axios.get('/api/wishlist', { params });
   return data;
 }
 
