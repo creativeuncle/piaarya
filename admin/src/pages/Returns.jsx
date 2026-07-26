@@ -193,6 +193,9 @@ export default function Returns() {
                       {selected.refundDetails?.ifsc}
                     </p>
                   )}
+                  {selected.refundMethod === 'original_payment_method' && (
+                    <p className="text-gray-800">Original Payment Method (Stripe)</p>
+                  )}
                   {!selected.refundMethod && <p className="text-gray-400">Not provided</p>}
                 </div>
               )}
@@ -204,7 +207,9 @@ export default function Returns() {
                     ₹{selected.refundResult.amount} · Ref: {selected.refundResult.reference}
                   </p>
                   <p className="text-green-600 text-xs mt-1">
-                    Simulated transfer — no live gateway credentials are connected yet.
+                    {selected.refundResult.simulated === false
+                      ? 'Real refund issued via Stripe.'
+                      : 'Simulated transfer — no live gateway credentials are connected yet.'}
                   </p>
                 </div>
               )}

@@ -71,13 +71,15 @@ export default function OrderDetail() {
     }
   }
 
+  const canRefundToOriginalMethod = order?.paymentMethod === 'stripe' && Boolean(order?.paymentReference?.paymentIntentId);
+
   function openRequestModal(type) {
     setRequestModal(type);
     setRequestStep(1);
     setSelectedItems({});
     setReason('');
     setNotes('');
-    setRefundMethod('upi');
+    setRefundMethod(canRefundToOriginalMethod ? 'original_payment_method' : 'upi');
     setUpiId('');
     setAccountHolderName('');
     setAccountNumber('');
@@ -149,8 +151,11 @@ export default function OrderDetail() {
     }
     setRequestMessage('');
 
-    const refundDetails =
-      refundMethod === 'upi' ? { upiId } : { accountHolderName, accountNumber, ifsc };
+    let refundDetails;
+    if (refundMethod === 'upi') refundDetails = { upiId };
+    else if (refundMethod === 'bank') refundDetails = { accountHolderName, accountNumber, ifsc };
+    else refundDetails = {};
+
     submitRequest(items, refundDetails);
   }
 
@@ -344,7 +349,18 @@ export default function OrderDetail() {
                   Tell us where to send your refund once the return is approved.
                 </p>
 
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
+                  {canRefundToOriginalMethod && (
+                    <label className="flex items-center gap-2 text-sm text-gray-700">
+                      <input
+                        type="radio"
+                        name="refundMethod"
+                        checked={refundMethod === 'original_payment_method'}
+                        onChange={() => setRefundMethod('original_payment_method')}
+                      />
+                      Original Payment Method
+                    </label>
+                  )}
                   <label className="flex items-center gap-2 text-sm text-gray-700">
                     <input
                       type="radio"
@@ -364,6 +380,12 @@ export default function OrderDetail() {
                     Bank Account
                   </label>
                 </div>
+
+                {refundMethod === 'original_payment_method' && (
+                  <p className="text-xs text-gray-500">
+                    Your refund will be sent back to the card you paid with via Stripe.
+                  </p>
+                )}
 
                 {refundMethod === 'upi' && (
                   <div>

@@ -5,6 +5,7 @@ const Customer = require('../models/Customer');
 const Product = require('../models/Product');
 const Coupon = require('../models/Coupon');
 const PaymentTransaction = require('../models/PaymentTransaction');
+const { createStripeCheckoutSession, retrieveStripeSession, isStripeConfigured } = require('../services/paymentGateway');
 
 async function listOrders(req, res, next) {
   try {
@@ -78,8 +79,11 @@ async function createOrder(req, res, next) {
     if (!items?.length) {
       return res.status(400).json({ message: 'Cart is empty' });
     }
-    if (paymentMethod !== 'cod') {
-      return res.status(400).json({ message: 'Only Cash on Delivery is available right now' });
+    if (!['cod', 'stripe'].includes(paymentMethod)) {
+      return res.status(400).json({ message: 'Payment method must be cod or stripe' });
+    }
+    if (paymentMethod === 'stripe' && !(await isStripeConfigured())) {
+      return res.status(400).json({ message: 'Stripe is not configured yet. Add a Stripe secret key in Settings > Payments.' });
     }
 
     let customer = await Customer.findOne({ email: customerInfo.email.toLowerCase().trim() });
@@ -94,6 +98,7 @@ async function createOrder(req, res, next) {
     }
 
     const orderItems = [];
+    const orderItemNames = [];
     let totalAmount = 0;
 
     for (const item of items) {
@@ -108,6 +113,7 @@ async function createOrder(req, res, next) {
       totalAmount += price * quantity;
 
       orderItems.push({ product: product._id, variantSku: item.variantSku || undefined, quantity, price });
+      orderItemNames.push(product.name);
 
       if (variant) variant.stock = Math.max(0, variant.stock - quantity);
       else product.stock = Math.max(0, product.stock - quantity);
@@ -139,9 +145,10 @@ async function createOrder(req, res, next) {
       customer: customer._id,
       items: orderItems,
       totalAmount,
-      status: 'new',
+      status: paymentMethod === 'stripe' ? 'pending' : 'new',
       shippingAddress,
       paymentStatus: 'pending',
+      paymentMethod,
     });
 
     await PaymentTransaction.create({
@@ -157,10 +164,60 @@ async function createOrder(req, res, next) {
       await appliedCoupon.save();
     }
 
+    if (paymentMethod === 'stripe') {
+      const { clientOrigin } = req.body;
+      const origin = clientOrigin || process.env.CLIENT_URL || 'http://localhost:5174';
+
+      const session = await createStripeCheckoutSession({
+        order: { ...order.toObject(), items: order.items.map((oi, idx) => ({ ...oi, name: orderItemNames[idx] })) },
+        successUrl: `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${origin}/checkout`,
+      });
+
+      order.paymentReference = {
+        gateway: 'stripe',
+        checkoutSessionId: session.id,
+        paymentIntentId: session.payment_intent,
+      };
+      await order.save();
+
+      return res.status(201).json({ orderNumber: order.orderNumber, orderId: order._id, totalAmount, checkoutUrl: session.url });
+    }
+
     res.status(201).json({ orderNumber: order.orderNumber, orderId: order._id, totalAmount });
   } catch (err) {
     next(err);
   }
 }
 
-module.exports = { listOrders, getOrder, createOrder, updateOrderStatus, getInvoice };
+async function confirmStripeOrder(req, res, next) {
+  try {
+    const { sessionId } = req.params;
+    const session = await retrieveStripeSession(sessionId);
+
+    const order = await Order.findOne({ 'paymentReference.checkoutSessionId': sessionId });
+    if (!order) return res.status(404).json({ message: 'Order not found for this Stripe session' });
+
+    if (session.payment_status !== 'paid') {
+      return res.json({ status: 'pending', orderNumber: order.orderNumber, totalAmount: order.totalAmount });
+    }
+
+    if (order.paymentStatus !== 'paid') {
+      order.paymentStatus = 'paid';
+      order.status = 'confirmed';
+      order.paymentReference.paymentIntentId = session.payment_intent;
+      await order.save();
+
+      await PaymentTransaction.findOneAndUpdate(
+        { order: order._id, type: 'charge', status: 'pending' },
+        { status: 'success' }
+      );
+    }
+
+    res.json({ status: 'paid', orderNumber: order.orderNumber, totalAmount: order.totalAmount });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { listOrders, getOrder, createOrder, updateOrderStatus, getInvoice, confirmStripeOrder };

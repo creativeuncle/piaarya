@@ -65,20 +65,22 @@ async function updateStatus(req, res, next) {
         return sum + (orderItem ? orderItem.price * returnItem.quantity : 0);
       }, 0);
 
-      const gateway = await getActiveGateway();
-      const result = await processRefund({
-        gateway,
-        amount: refundAmount,
-        destination:
-          returnRequest.refundMethod === 'upi'
-            ? { method: 'upi', upiId: returnRequest.refundDetails?.upiId }
-            : {
-                method: 'bank',
-                accountHolderName: returnRequest.refundDetails?.accountHolderName,
-                accountNumber: returnRequest.refundDetails?.accountNumber,
-                ifsc: returnRequest.refundDetails?.ifsc,
-              },
-      });
+      let destination;
+      if (returnRequest.refundMethod === 'upi') {
+        destination = { method: 'upi', upiId: returnRequest.refundDetails?.upiId };
+      } else if (returnRequest.refundMethod === 'bank') {
+        destination = {
+          method: 'bank',
+          accountHolderName: returnRequest.refundDetails?.accountHolderName,
+          accountNumber: returnRequest.refundDetails?.accountNumber,
+          ifsc: returnRequest.refundDetails?.ifsc,
+        };
+      } else {
+        destination = { method: 'original_payment_method' };
+      }
+
+      const gateway = order.paymentReference?.gateway || (await getActiveGateway());
+      const result = await processRefund({ gateway, amount: refundAmount, destination, order });
 
       const priorRefunds = await PaymentTransaction.find({
         order: order._id,
@@ -106,6 +108,7 @@ async function updateStatus(req, res, next) {
         reference: result.reference,
         amount: refundAmount,
         processedAt: result.processedAt,
+        simulated: result.simulated,
       };
     }
 

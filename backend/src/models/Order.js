@@ -31,6 +31,12 @@ const orderSchema = new mongoose.Schema(
     status: { type: String, enum: ORDER_STATUSES, default: 'new' },
     shippingAddress: { type: Object },
     paymentStatus: { type: String, enum: ['pending', 'paid', 'failed', 'refunded', 'partially_refunded'], default: 'pending' },
+    paymentMethod: { type: String, enum: ['cod', 'stripe'], default: 'cod' },
+    paymentReference: {
+      gateway: String,
+      checkoutSessionId: String,
+      paymentIntentId: String,
+    },
   },
   { timestamps: true }
 );

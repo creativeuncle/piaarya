@@ -104,6 +104,11 @@ export default function Checkout() {
         addAddress(token, { ...newAddress, isDefault: savedAddresses.length === 0 }).catch(() => {});
       }
 
+      if (paymentMethod === 'stripe' && data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+
       clearCart();
       navigate('/order-confirmation', { state: { orderNumber: data.orderNumber, totalAmount: data.totalAmount } });
     } catch (err) {
@@ -251,9 +256,14 @@ export default function Checkout() {
               />
               <span className="text-sm text-gray-900 font-medium">Cash on Delivery</span>
             </label>
-            <label className="flex items-center gap-3 border border-gray-200 rounded-md px-4 py-3 opacity-50 cursor-not-allowed">
-              <input type="radio" name="paymentMethod" disabled />
-              <span className="text-sm text-gray-500">Card / UPI — Coming soon</span>
+            <label className="flex items-center gap-3 border border-gray-300 rounded-md px-4 py-3 cursor-pointer">
+              <input
+                type="radio"
+                name="paymentMethod"
+                checked={paymentMethod === 'stripe'}
+                onChange={() => setPaymentMethod('stripe')}
+              />
+              <span className="text-sm text-gray-900 font-medium">Pay Online (Card, via Stripe — test mode)</span>
             </label>
           </div>
         </div>
