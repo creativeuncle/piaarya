@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ShoppingBag01Icon, Cancel01Icon, SquareLock01Icon } from '@hugeicons/core-free-icons';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function CartDrawer() {
   const { items, count, total, removeFromCart, updateQuantity, isDrawerOpen, closeDrawer, orderNote, setOrderNote } = useCart();
+  const { isAuthenticated } = useAuth();
   const [showNote, setShowNote] = useState(false);
 
   return (
@@ -101,7 +103,7 @@ export default function CartDrawer() {
             </div>
 
             <Link
-              to="/cart"
+              to={isAuthenticated ? '/checkout' : '/login?redirect=/checkout'}
               onClick={closeDrawer}
               className="w-full mt-4 bg-blue-700 hover:bg-blue-800 text-white font-semibold uppercase tracking-wide text-sm py-3.5 rounded-md flex items-center justify-center gap-2"
             >

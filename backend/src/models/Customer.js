@@ -23,6 +23,8 @@ const customerSchema = new mongoose.Schema(
     addresses: [addressSchema],
     rewardPoints: { type: Number, default: 0 },
     isBlocked: { type: Boolean, default: false },
+    otpCode: { type: String, select: false },
+    otpExpiresAt: { type: Date, select: false },
   },
   { timestamps: true }
 );

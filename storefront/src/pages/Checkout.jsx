@@ -1,30 +1,38 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { createOrder } from '../api/orders';
 
-const EMPTY_FORM = {
-  name: '',
-  email: '',
-  phone: '',
-  line1: '',
-  line2: '',
-  city: '',
-  state: '',
-  pincode: '',
-  country: 'India',
-};
+function emptyForm(customer) {
+  return {
+    name: customer?.name || '',
+    email: customer?.email || '',
+    phone: customer?.phone || '',
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    pincode: '',
+    country: 'India',
+  };
+}
 
 export default function Checkout() {
   const navigate = useNavigate();
+  const { isAuthenticated, customer } = useAuth();
   const { items, subtotal, discount, total, appliedCoupon, clearCart } = useCart();
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm] = useState(() => emptyForm(customer));
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState(null);
 
   function set(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login?redirect=/checkout" replace />;
   }
 
   if (items.length === 0) {

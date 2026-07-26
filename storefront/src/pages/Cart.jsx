@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { SquareLock01Icon, ShoppingBag01Icon } from '@hugeicons/core-free-icons';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { validateCoupon } from '../api/coupons';
 
 export default function Cart() {
+  const { isAuthenticated } = useAuth();
   const {
     items,
     subtotal,
@@ -177,7 +179,7 @@ export default function Cart() {
           </div>
 
           <Link
-            to="/checkout"
+            to={isAuthenticated ? '/checkout' : '/login?redirect=/checkout'}
             className="w-full mt-5 bg-blue-700 hover:bg-blue-800 text-white font-semibold uppercase tracking-wide text-sm py-3.5 rounded-md flex items-center justify-center gap-2"
           >
             <HugeiconsIcon icon={SquareLock01Icon} size={16} strokeWidth={1.5} />

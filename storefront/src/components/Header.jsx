@@ -4,6 +4,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { Mail01Icon, Search01Icon, UserIcon, ShoppingBag01Icon } from '@hugeicons/core-free-icons';
 import { fetchNavigation } from '../api/navigation';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 const DEFAULT_MENUS = [
   { label: 'Shop by Category', route: '/products', children: [] },
@@ -15,6 +16,7 @@ export default function Header() {
   const [menus, setMenus] = useState(DEFAULT_MENUS);
   const [openMenu, setOpenMenu] = useState(null);
   const { count, openDrawer } = useCart();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     fetchNavigation()
@@ -62,7 +64,9 @@ export default function Header() {
         <div className="flex items-center gap-5">
           <HugeiconsIcon icon={Mail01Icon} size={20} strokeWidth={1.5} className="cursor-pointer" />
           <HugeiconsIcon icon={Search01Icon} size={20} strokeWidth={1.5} className="cursor-pointer" />
-          <HugeiconsIcon icon={UserIcon} size={20} strokeWidth={1.5} className="cursor-pointer" />
+          <Link to={isAuthenticated ? '/account' : '/login'} aria-label="Account">
+            <HugeiconsIcon icon={UserIcon} size={20} strokeWidth={1.5} className="cursor-pointer" />
+          </Link>
           <button onClick={openDrawer} className="relative cursor-pointer" aria-label="Open cart">
             <HugeiconsIcon icon={ShoppingBag01Icon} size={20} strokeWidth={1.5} />
             <span className="absolute -top-2 -right-2 bg-white text-gray-900 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
