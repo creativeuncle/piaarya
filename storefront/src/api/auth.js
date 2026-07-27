@@ -20,12 +20,12 @@ export async function forgotPassword(email) {
   return data;
 }
 
-export async function requestOtp(email) {
-  const { data } = await client.post('/auth/otp/request', { email });
+export async function requestOtp(phone) {
+  const { data } = await client.post('/auth/otp/request', { phone });
   return data;
 }
 
-export async function verifyOtp(email, otp) {
-  const { data } = await client.post('/auth/otp/verify', { email, otp });
+export async function verifyOtp(phone, otp) {
+  const { data } = await client.post('/auth/otp/verify', { phone, otp });
   return data;
 }

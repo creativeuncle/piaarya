@@ -39,8 +39,8 @@ export function AuthProvider({ children }) {
     return data;
   }
 
-  async function loginWithOtp(email, otp) {
-    const data = await authApi.verifyOtp(email, otp);
+  async function loginWithOtp(phone, otp) {
+    const data = await authApi.verifyOtp(phone, otp);
     setAuth(data);
     return data;
   }

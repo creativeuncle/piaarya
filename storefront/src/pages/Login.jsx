@@ -14,6 +14,7 @@ export default function Login() {
   const [mode, setMode] = useState('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [otpPhone, setOtpPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [devOtp, setDevOtp] = useState(null);
@@ -41,7 +42,7 @@ export default function Login() {
     setLoading(true);
     setError(null);
     try {
-      const data = await requestOtp(email);
+      const data = await requestOtp(otpPhone);
       setOtpSent(true);
       setDevOtp(data.otp);
       setOtpStatusMessage(data.message);
@@ -57,7 +58,7 @@ export default function Login() {
     setLoading(true);
     setError(null);
     try {
-      await loginWithOtp(email, otp);
+      await loginWithOtp(otpPhone, otp);
       navigate(redirectTo);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
@@ -116,12 +117,13 @@ export default function Login() {
 
       {mode === 'otp' && (
         <form onSubmit={otpSent ? handleVerifyOtp : handleSendOtp} className="space-y-4">
-          <Field label="Email">
+          <Field label="Phone Number">
             <input
-              type="email"
+              type="tel"
               className="input"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="10-digit mobile number"
+              value={otpPhone}
+              onChange={(e) => setOtpPhone(e.target.value)}
               disabled={otpSent}
               required
             />
