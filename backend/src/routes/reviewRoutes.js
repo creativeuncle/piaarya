@@ -6,9 +6,11 @@ const {
   updateFeatured,
   deleteReview,
 } = require('../controllers/reviewController');
+const Review = require('../models/Review');
 
 const router = express.Router();
 
+router.get('/tags', (req, res) => res.json(Review.REVIEW_TAGS));
 router.get('/', listReviews);
 router.patch('/:id/status', updateStatus);
 router.patch('/:id/reply', updateReply);

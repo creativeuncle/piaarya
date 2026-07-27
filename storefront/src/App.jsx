@@ -6,6 +6,7 @@ import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import Home from './pages/Home';
 import ProductDetail from './pages/ProductDetail';
+import ProductReviews from './pages/ProductReviews';
 import ProductListing from './pages/ProductListing';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
@@ -31,6 +32,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/products" element={<ProductListing />} />
               <Route path="/products/:id" element={<ProductDetail />} />
+              <Route path="/products/:id/reviews" element={<ProductReviews />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-confirmation" element={<OrderConfirmation />} />

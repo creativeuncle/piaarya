@@ -2,15 +2,19 @@ const Review = require('../models/Review');
 
 async function listReviews(req, res, next) {
   try {
-    const { status, featured } = req.query;
+    const { status, featured, product, tag, sort } = req.query;
     const filter = {};
     if (status && status !== 'all') filter.status = status;
     if (featured === 'true') filter.isFeatured = true;
+    if (product) filter.product = product;
+    if (tag) filter.tags = tag;
+
+    const sortOption = sort === 'recent' ? { createdAt: -1 } : sort === 'helpful' ? { helpfulCount: -1, createdAt: -1 } : { createdAt: -1 };
 
     const reviews = await Review.find(filter)
       .populate('product', 'name')
       .populate('customer', 'name')
-      .sort({ createdAt: -1 });
+      .sort(sortOption);
 
     res.json(reviews);
   } catch (err) {

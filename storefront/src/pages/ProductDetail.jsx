@@ -12,6 +12,7 @@ import SizeChartModal from '../components/product/SizeChartModal';
 import PincodeChecker from '../components/product/PincodeChecker';
 import RelatedProducts from '../components/product/RelatedProducts';
 import RecentlyViewedProducts from '../components/product/RecentlyViewedProducts';
+import ProductReviews from '../components/product/ProductReviews';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -66,8 +67,10 @@ export default function ProductDetail() {
 
   return (
     <>
-    <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-2 gap-12">
-      <ProductGallery media={selectedVariant?.image ? [{ url: selectedVariant.image, type: 'image', altText: product.name }, ...product.media] : product.media} />
+    <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+      <div className="md:sticky md:top-24">
+        <ProductGallery media={selectedVariant?.image ? [{ url: selectedVariant.image, type: 'image', altText: product.name }, ...product.media] : product.media} />
+      </div>
 
       <div>
         <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
@@ -125,14 +128,14 @@ export default function ProductDetail() {
 
         {product.description && (
           <div className="mt-8 border-t border-gray-200 pt-6">
-            <h2 className="text-sm font-semibold text-gray-900 mb-2">Description</h2>
-            <p className="text-sm text-gray-600 whitespace-pre-line">{product.description}</p>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">Description</h2>
+            <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">{product.description}</p>
           </div>
         )}
 
         {product.specifications && Object.keys(product.specifications).length > 0 && (
           <div className="mt-8 border-t border-gray-200 pt-6">
-            <h2 className="text-sm font-semibold text-gray-900 mb-3">Specifications</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">Specifications</h2>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-100">
                 {Object.entries(product.specifications).map(([key, value]) => (
@@ -150,6 +153,7 @@ export default function ProductDetail() {
       {showSizeChart && <SizeChartModal onClose={() => setShowSizeChart(false)} />}
     </div>
 
+    <ProductReviews productId={product._id} />
     <RelatedProducts categoryId={product.category?._id} excludeProductId={product._id} />
     <RecentlyViewedProducts excludeProductId={product._id} />
     </>
