@@ -1,6 +1,6 @@
-import { NavLink, Navigate, Outlet } from 'react-router-dom';
+import { NavLink, Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { UserIcon, ShoppingBag01Icon, Location01Icon, ReturnRequestIcon, HeartIcon } from '@hugeicons/core-free-icons';
+import { UserIcon, ShoppingBag01Icon, Location01Icon, ReturnRequestIcon, HeartIcon, Logout01Icon } from '@hugeicons/core-free-icons';
 import { useAuth } from '../../context/AuthContext';
 
 const NAV_ITEMS = [
@@ -12,9 +12,15 @@ const NAV_ITEMS = [
 ];
 
 export default function DashboardLayout() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
   if (!isAuthenticated) return <Navigate to="/login?redirect=/dashboard" replace />;
+
+  function handleLogout() {
+    logout();
+    navigate('/');
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-10">
@@ -34,6 +40,13 @@ export default function DashboardLayout() {
               {item.label}
             </NavLink>
           ))}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 text-left"
+          >
+            <HugeiconsIcon icon={Logout01Icon} size={18} strokeWidth={1.5} />
+            Logout
+          </button>
         </nav>
       </aside>
 

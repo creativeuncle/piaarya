@@ -4,13 +4,22 @@ const RewardPointsLog = require('../models/RewardPointsLog');
 
 async function listCustomers(req, res, next) {
   try {
-    const { search } = req.query;
+    const { search, product, dateFrom, dateTo } = req.query;
     const filter = {};
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
       ];
+    }
+    if (dateFrom || dateTo) {
+      filter.createdAt = {};
+      if (dateFrom) filter.createdAt.$gte = new Date(dateFrom);
+      if (dateTo) filter.createdAt.$lte = new Date(`${dateTo}T23:59:59.999Z`);
+    }
+    if (product) {
+      const customerIds = await Order.find({ 'items.product': product }).distinct('customer');
+      filter._id = { $in: customerIds };
     }
 
     const customers = await Customer.find(filter).sort({ createdAt: -1 }).lean();

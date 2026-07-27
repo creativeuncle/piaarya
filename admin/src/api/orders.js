@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-export async function fetchOrders(status) {
-  const params = status && status !== 'all' ? { status } : {};
+export async function fetchOrders(params = {}) {
   const { data } = await axios.get('/api/orders', { params });
   return data;
 }

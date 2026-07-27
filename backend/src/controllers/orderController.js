@@ -9,9 +9,16 @@ const { createStripeCheckoutSession, retrieveStripeSession, isStripeConfigured }
 
 async function listOrders(req, res, next) {
   try {
-    const { status, page = 1, limit = 20 } = req.query;
+    const { status, customer, product, dateFrom, dateTo, page = 1, limit = 20 } = req.query;
     const filter = {};
     if (status && status !== 'all') filter.status = status;
+    if (customer) filter.customer = customer;
+    if (product) filter['items.product'] = product;
+    if (dateFrom || dateTo) {
+      filter.createdAt = {};
+      if (dateFrom) filter.createdAt.$gte = new Date(dateFrom);
+      if (dateTo) filter.createdAt.$lte = new Date(`${dateTo}T23:59:59.999Z`);
+    }
 
     const [orders, total] = await Promise.all([
       Order.find(filter)
