@@ -6,6 +6,13 @@ const Product = require('../models/Product');
 const Coupon = require('../models/Coupon');
 const PaymentTransaction = require('../models/PaymentTransaction');
 const { createStripeCheckoutSession, retrieveStripeSession, isStripeConfigured } = require('../services/paymentGateway');
+const { triggerNotification } = require('../services/notificationService');
+
+const STATUS_EVENT_MAP = {
+  processing: 'order_processing',
+  delivered: 'order_delivered',
+  cancelled: 'order_cancelled',
+};
 
 async function listOrders(req, res, next) {
   try {
@@ -55,9 +62,19 @@ async function updateOrderStatus(req, res, next) {
     }
     const order = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true }).populate(
       'customer',
-      'name email'
+      'name email phone'
     );
     if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    const eventKey = STATUS_EVENT_MAP[status];
+    if (eventKey) {
+      triggerNotification(eventKey, {
+        customer: order.customer,
+        order,
+        vars: { customerName: order.customer?.name, orderNumber: order.orderNumber, amount: order.totalAmount },
+      });
+    }
+
     res.json(order);
   } catch (err) {
     next(err);
@@ -192,6 +209,12 @@ async function createOrder(req, res, next) {
       return res.status(201).json({ orderNumber: order.orderNumber, orderId: order._id, totalAmount, checkoutUrl: session.url });
     }
 
+    triggerNotification('order_placed', {
+      customer,
+      order,
+      vars: { customerName: customer.name, orderNumber: order.orderNumber, amount: totalAmount },
+    });
+
     res.status(201).json({ orderNumber: order.orderNumber, orderId: order._id, totalAmount });
   } catch (err) {
     next(err);
@@ -203,7 +226,10 @@ async function confirmStripeOrder(req, res, next) {
     const { sessionId } = req.params;
     const session = await retrieveStripeSession(sessionId);
 
-    const order = await Order.findOne({ 'paymentReference.checkoutSessionId': sessionId });
+    const order = await Order.findOne({ 'paymentReference.checkoutSessionId': sessionId }).populate(
+      'customer',
+      'name email phone'
+    );
     if (!order) return res.status(404).json({ message: 'Order not found for this Stripe session' });
 
     if (session.payment_status !== 'paid') {
@@ -220,6 +246,12 @@ async function confirmStripeOrder(req, res, next) {
         { order: order._id, type: 'charge', status: 'pending' },
         { status: 'success' }
       );
+
+      triggerNotification('order_placed', {
+        customer: order.customer,
+        order,
+        vars: { customerName: order.customer?.name, orderNumber: order.orderNumber, amount: order.totalAmount },
+      });
     }
 
     res.json({ status: 'paid', orderNumber: order.orderNumber, totalAmount: order.totalAmount });

@@ -2,6 +2,7 @@ const ReturnRequest = require('../models/ReturnRequest');
 const Order = require('../models/Order');
 const PaymentTransaction = require('../models/PaymentTransaction');
 const { getActiveGateway, processRefund } = require('../services/paymentGateway');
+const { triggerNotification } = require('../services/notificationService');
 
 async function listReturns(req, res, next) {
   try {
@@ -34,6 +35,16 @@ async function createReturn(req, res, next) {
       refundDetails: type === 'return' ? refundDetails : undefined,
       refundStatus: type === 'exchange' ? 'not_applicable' : 'pending',
     });
+
+    const relatedOrder = await Order.findById(order).populate('customer', 'name email phone');
+    if (relatedOrder?.customer) {
+      triggerNotification(type === 'exchange' ? 'exchange_requested' : 'return_requested', {
+        customer: relatedOrder.customer,
+        order: relatedOrder,
+        vars: { customerName: relatedOrder.customer.name, orderNumber: relatedOrder.orderNumber, amount: relatedOrder.totalAmount },
+      });
+    }
+
     res.status(201).json(returnRequest);
   } catch (err) {
     next(err);
@@ -53,7 +64,7 @@ async function updateStatus(req, res, next) {
     returnRequest.status = status;
 
     if (status === 'approved' && returnRequest.type === 'return' && returnRequest.refundStatus !== 'processed') {
-      const order = await Order.findById(returnRequest.order);
+      const order = await Order.findById(returnRequest.order).populate('customer', 'name email phone');
       if (!order) return res.status(404).json({ message: 'Order for this return was not found' });
 
       const refundAmount = returnRequest.items.reduce((sum, returnItem) => {
@@ -110,6 +121,12 @@ async function updateStatus(req, res, next) {
         processedAt: result.processedAt,
         simulated: result.simulated,
       };
+
+      triggerNotification('refund_processed', {
+        customer: order.customer,
+        order,
+        vars: { customerName: order.customer?.name, orderNumber: order.orderNumber, amount: refundAmount },
+      });
     }
 
     if (status === 'rejected' && returnRequest.refundStatus === 'pending') {

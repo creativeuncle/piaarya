@@ -1,6 +1,7 @@
 const Customer = require('../models/Customer');
 const Order = require('../models/Order');
 const ReturnRequest = require('../models/ReturnRequest');
+const { triggerNotification } = require('../services/notificationService');
 
 const CANCEL_WINDOW_MS = 10 * 60 * 1000;
 
@@ -143,6 +144,13 @@ async function cancelOrder(req, res, next) {
 
     order.status = 'cancelled';
     await order.save();
+
+    const customer = await Customer.findById(req.customerId);
+    triggerNotification('order_cancelled', {
+      customer,
+      order,
+      vars: { customerName: customer?.name, orderNumber: order.orderNumber, amount: order.totalAmount },
+    });
 
     res.json(order);
   } catch (err) {

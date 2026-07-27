@@ -13,6 +13,14 @@ const settingsSchema = new mongoose.Schema(
       publishableKey: String,
       secretKey: String,
     },
+    notifications: {
+      channels: {
+        email: { type: Boolean, default: true },
+        sms: { type: Boolean, default: true },
+        whatsapp: { type: Boolean, default: true },
+      },
+      events: { type: mongoose.Schema.Types.Mixed, default: {} },
+    },
   },
   { timestamps: true }
 );

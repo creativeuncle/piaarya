@@ -1,5 +1,7 @@
 const Settings = require('../models/Settings');
+const NotificationLog = require('../models/NotificationLog');
 const { GATEWAYS } = require('../services/paymentGateway');
+const { EVENTS: NOTIFICATION_EVENTS, getNotificationSettings } = require('../services/notificationService');
 
 function maskSecret(secret) {
   if (!secret) return '';
@@ -7,7 +9,8 @@ function maskSecret(secret) {
   return `${'*'.repeat(secret.length - 4)}${secret.slice(-4)}`;
 }
 
-function toPublicSettings(settings) {
+async function toPublicSettings(settings) {
+  const notifications = await getNotificationSettings();
   return {
     paymentGateway: settings?.paymentGateway || 'razorpay',
     razorpay: {
@@ -22,13 +25,15 @@ function toPublicSettings(settings) {
       secretKeyMasked: maskSecret(settings?.stripe?.secretKey),
       hasSecretKey: Boolean(settings?.stripe?.secretKey),
     },
+    notifications,
+    notificationEventDefinitions: NOTIFICATION_EVENTS.map((e) => ({ key: e.key, label: e.label })),
   };
 }
 
 async function getSettings(req, res, next) {
   try {
     const settings = await Settings.findOne();
-    res.json(toPublicSettings(settings));
+    res.json(await toPublicSettings(settings));
   } catch (err) {
     next(err);
   }
@@ -36,7 +41,7 @@ async function getSettings(req, res, next) {
 
 async function updateSettings(req, res, next) {
   try {
-    const { paymentGateway, razorpay, stripe } = req.body;
+    const { paymentGateway, razorpay, stripe, notifications } = req.body;
 
     if (paymentGateway && !GATEWAYS.includes(paymentGateway)) {
       return res.status(400).json({ message: `paymentGateway must be one of: ${GATEWAYS.join(', ')}` });
@@ -64,16 +69,52 @@ async function updateSettings(req, res, next) {
       };
     }
 
+    if (notifications) {
+      const validKeys = NOTIFICATION_EVENTS.map((e) => e.key);
+      const events = { ...(existing?.notifications?.events || {}) };
+      if (notifications.events) {
+        Object.entries(notifications.events).forEach(([key, value]) => {
+          if (!validKeys.includes(key)) return;
+          events[key] = {
+            enabled: Boolean(value.enabled),
+            message: value.message || '',
+          };
+        });
+      }
+
+      update.notifications = {
+        channels: {
+          email: notifications.channels?.email ?? existing?.notifications?.channels?.email ?? true,
+          sms: notifications.channels?.sms ?? existing?.notifications?.channels?.sms ?? true,
+          whatsapp: notifications.channels?.whatsapp ?? existing?.notifications?.channels?.whatsapp ?? true,
+        },
+        events,
+      };
+    }
+
     const settings = await Settings.findOneAndUpdate({}, update, {
       upsert: true,
       new: true,
       setDefaultsOnInsert: true,
     });
 
-    res.json(toPublicSettings(settings));
+    res.json(await toPublicSettings(settings));
   } catch (err) {
     next(err);
   }
 }
 
-module.exports = { getSettings, updateSettings };
+async function listNotificationLogs(req, res, next) {
+  try {
+    const logs = await NotificationLog.find()
+      .populate('customer', 'name email')
+      .populate('order', 'orderNumber')
+      .sort({ createdAt: -1 })
+      .limit(50);
+    res.json(logs);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { getSettings, updateSettings, listNotificationLogs };

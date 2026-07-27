@@ -21,6 +21,7 @@ import Wishlist from './pages/Wishlist';
 import Team from './pages/Team';
 import Navigation from './pages/Navigation';
 import PaymentSettings from './pages/PaymentSettings';
+import NotificationSettings from './pages/NotificationSettings';
 
 function AdminLayout({ children }) {
   return (
@@ -63,6 +64,7 @@ function App() {
               <Route path="/team" element={<Team />} />
               <Route path="/settings/navigation" element={<Navigation />} />
               <Route path="/settings/payments" element={<PaymentSettings />} />
+              <Route path="/settings/notifications" element={<NotificationSettings />} />
             </Routes>
           </AdminLayout>
         }

@@ -39,6 +39,7 @@ const NAV_ITEMS = [
 const SETTINGS_CHILDREN = [
   { to: '/settings/navigation', label: 'Navigation' },
   { to: '/settings/payments', label: 'Payments' },
+  { to: '/settings/notifications', label: 'Notifications' },
 ];
 
 export default function Sidebar() {
