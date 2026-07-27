@@ -19,6 +19,12 @@ function Toggle({ checked, onChange, label }) {
   );
 }
 
+const TABS = [
+  { key: 'email', label: 'Email Provider — Brevo' },
+  { key: 'sms', label: 'SMS Provider — Fast2SMS' },
+  { key: 'events', label: 'Event Notifications' },
+];
+
 const CHANNEL_LABELS = {
   email: 'Email Notifications',
   sms: 'SMS Notifications',
@@ -48,6 +54,7 @@ const EMPTY_SMS_CONFIG = {
 };
 
 export default function NotificationSettings() {
+  const [activeTab, setActiveTab] = useState('email');
   const [channels, setChannels] = useState({ email: true, sms: true, whatsapp: true });
   const [events, setEvents] = useState({});
   const [eventDefs, setEventDefs] = useState([]);
@@ -165,141 +172,165 @@ export default function NotificationSettings() {
       <h1 className="text-2xl font-semibold text-gray-900 mb-2">Notifications</h1>
       <p className="text-sm text-gray-500 mb-6 max-w-2xl">
         Control which channels customer notifications go out on, and customize the message for each order/return
-        event. Connect Brevo for real emails and Fast2SMS for real SMS below — WhatsApp has no live provider
-        connected yet, so it still records as simulated activity.
+        event. Connect Brevo for real emails and Fast2SMS for real SMS — WhatsApp has no live provider connected
+        yet, so it still records as simulated activity.
       </p>
 
-      <div className="bg-white rounded-lg shadow border border-gray-100 p-6 max-w-3xl mb-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-1">Email Provider — Brevo</h2>
-        <p className="text-xs text-gray-500 mb-4">
-          Get your API key from Brevo → Settings (gear icon) → SMTP &amp; API → API Keys → Generate a new API key.
-          The sender email must be a verified sender in your Brevo account.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="sm:col-span-2">
-            <label className="block text-xs text-gray-500 mb-1">Brevo API Key</label>
-            <input
-              type="password"
-              className="input w-full"
-              placeholder={emailConfig.hasBrevoApiKey ? emailConfig.brevoApiKeyMasked : 'xkeysib-xxxxxxxxxxxx'}
-              value={emailConfig.brevoApiKey}
-              onChange={(e) => setEmailField('brevoApiKey', e.target.value)}
-            />
-            {emailConfig.hasBrevoApiKey && (
-              <p className="text-xs text-gray-400 mt-1">Currently saved: {emailConfig.brevoApiKeyMasked}. Leave blank to keep it.</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Sender Name</label>
-            <input
-              className="input w-full"
-              placeholder="Piaarya"
-              value={emailConfig.senderName}
-              onChange={(e) => setEmailField('senderName', e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Sender Email (verified in Brevo)</label>
-            <input
-              type="email"
-              className="input w-full"
-              placeholder="orders@yourdomain.com"
-              value={emailConfig.senderEmail}
-              onChange={(e) => setEmailField('senderEmail', e.target.value)}
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <label className="block text-xs text-gray-500 mb-1">Admin Notification Email</label>
-            <input
-              type="email"
-              className="input w-full"
-              placeholder="you@yourdomain.com"
-              value={emailConfig.adminEmail}
-              onChange={(e) => setEmailField('adminEmail', e.target.value)}
-            />
-            <p className="text-xs text-gray-400 mt-1">
-              Gets a copy of Order Placed, Processing, Delivered, Return Requested, and Exchange Requested emails.
-            </p>
-          </div>
-        </div>
+      <div className="flex flex-wrap gap-2 mb-4">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`px-3 py-1.5 rounded-md text-sm border ${
+              activeTab === tab.key
+                ? 'bg-gray-900 text-white border-gray-900'
+                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      <div className="bg-white rounded-lg shadow border border-gray-100 p-6 max-w-3xl mb-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-1">SMS Provider — Fast2SMS</h2>
-        <p className="text-xs text-gray-500 mb-4">
-          Get your API key from Fast2SMS → Dev API. Used for both login-with-OTP delivery and order/return SMS
-          updates. Numbers are sent as plain 10-digit Indian mobile numbers.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="sm:col-span-2">
-            <label className="block text-xs text-gray-500 mb-1">Fast2SMS API Key</label>
-            <input
-              type="password"
-              className="input w-full"
-              placeholder={smsConfig.hasFast2smsApiKey ? smsConfig.fast2smsApiKeyMasked : 'Enter API Key'}
-              value={smsConfig.fast2smsApiKey}
-              onChange={(e) => setSmsField('fast2smsApiKey', e.target.value)}
-            />
-            {smsConfig.hasFast2smsApiKey && (
-              <p className="text-xs text-gray-400 mt-1">Currently saved: {smsConfig.fast2smsApiKeyMasked}. Leave blank to keep it.</p>
-            )}
-          </div>
-          <div className="sm:col-span-2">
-            <label className="block text-xs text-gray-500 mb-1">Admin Notification Phone</label>
-            <input
-              type="tel"
-              className="input w-full"
-              placeholder="9876543210"
-              value={smsConfig.adminPhone}
-              onChange={(e) => setSmsField('adminPhone', e.target.value)}
-            />
-            <p className="text-xs text-gray-400 mt-1">
-              Gets a copy of Order Placed, Processing, Delivered, Return Requested, and Exchange Requested SMS.
-            </p>
+      {activeTab === 'email' && (
+        <div className="bg-white rounded-lg shadow border border-gray-100 p-6 max-w-3xl mb-6">
+          <h2 className="text-base font-semibold text-gray-900 mb-1">Email Provider — Brevo</h2>
+          <p className="text-xs text-gray-500 mb-4">
+            Get your API key from Brevo → Settings (gear icon) → SMTP &amp; API → API Keys → Generate a new API key.
+            The sender email must be a verified sender in your Brevo account.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className="block text-xs text-gray-500 mb-1">Brevo API Key</label>
+              <input
+                type="password"
+                className="input w-full"
+                placeholder={emailConfig.hasBrevoApiKey ? emailConfig.brevoApiKeyMasked : 'xkeysib-xxxxxxxxxxxx'}
+                value={emailConfig.brevoApiKey}
+                onChange={(e) => setEmailField('brevoApiKey', e.target.value)}
+              />
+              {emailConfig.hasBrevoApiKey && (
+                <p className="text-xs text-gray-400 mt-1">Currently saved: {emailConfig.brevoApiKeyMasked}. Leave blank to keep it.</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Sender Name</label>
+              <input
+                className="input w-full"
+                placeholder="Piaarya"
+                value={emailConfig.senderName}
+                onChange={(e) => setEmailField('senderName', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Sender Email (verified in Brevo)</label>
+              <input
+                type="email"
+                className="input w-full"
+                placeholder="orders@yourdomain.com"
+                value={emailConfig.senderEmail}
+                onChange={(e) => setEmailField('senderEmail', e.target.value)}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs text-gray-500 mb-1">Admin Notification Email</label>
+              <input
+                type="email"
+                className="input w-full"
+                placeholder="you@yourdomain.com"
+                value={emailConfig.adminEmail}
+                onChange={(e) => setEmailField('adminEmail', e.target.value)}
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Gets a copy of Order Placed, Processing, Delivered, Return Requested, and Exchange Requested emails.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="bg-white rounded-lg shadow border border-gray-100 p-6 max-w-3xl mb-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-4">Channels</h2>
-        <div className="flex flex-wrap gap-8">
-          {Object.keys(CHANNEL_LABELS).map((key) => (
-            <Toggle
-              key={key}
-              checked={channels[key]}
-              onChange={(v) => setChannel(key, v)}
-              label={CHANNEL_LABELS[key]}
-            />
-          ))}
+      {activeTab === 'sms' && (
+        <div className="bg-white rounded-lg shadow border border-gray-100 p-6 max-w-3xl mb-6">
+          <h2 className="text-base font-semibold text-gray-900 mb-1">SMS Provider — Fast2SMS</h2>
+          <p className="text-xs text-gray-500 mb-4">
+            Get your API key from Fast2SMS → Dev API. Used for both login-with-OTP delivery and order/return SMS
+            updates. Numbers are sent as plain 10-digit Indian mobile numbers.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className="block text-xs text-gray-500 mb-1">Fast2SMS API Key</label>
+              <input
+                type="password"
+                className="input w-full"
+                placeholder={smsConfig.hasFast2smsApiKey ? smsConfig.fast2smsApiKeyMasked : 'Enter API Key'}
+                value={smsConfig.fast2smsApiKey}
+                onChange={(e) => setSmsField('fast2smsApiKey', e.target.value)}
+              />
+              {smsConfig.hasFast2smsApiKey && (
+                <p className="text-xs text-gray-400 mt-1">Currently saved: {smsConfig.fast2smsApiKeyMasked}. Leave blank to keep it.</p>
+              )}
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs text-gray-500 mb-1">Admin Notification Phone</label>
+              <input
+                type="tel"
+                className="input w-full"
+                placeholder="9876543210"
+                value={smsConfig.adminPhone}
+                onChange={(e) => setSmsField('adminPhone', e.target.value)}
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Gets a copy of Order Placed, Processing, Delivered, Return Requested, and Exchange Requested SMS.
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="bg-white rounded-lg shadow border border-gray-100 p-6 max-w-3xl mb-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-4">Event Notifications</h2>
-        <div className="space-y-6">
-          {eventDefs.map((def) => {
-            const event = events[def.key] || { enabled: true, message: '' };
-            return (
-              <div key={def.key} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-gray-900">{def.label}</p>
-                  <Toggle checked={event.enabled} onChange={(v) => setEventEnabled(def.key, v)} />
-                </div>
-                <textarea
-                  value={event.message}
-                  onChange={(e) => setEventMessage(def.key, e.target.value)}
-                  rows={2}
-                  disabled={!event.enabled}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm disabled:bg-gray-50 disabled:text-gray-400"
+      {activeTab === 'events' && (
+        <>
+          <div className="bg-white rounded-lg shadow border border-gray-100 p-6 max-w-3xl mb-6">
+            <h2 className="text-base font-semibold text-gray-900 mb-4">Channels</h2>
+            <div className="flex flex-wrap gap-8">
+              {Object.keys(CHANNEL_LABELS).map((key) => (
+                <Toggle
+                  key={key}
+                  checked={channels[key]}
+                  onChange={(v) => setChannel(key, v)}
+                  label={CHANNEL_LABELS[key]}
                 />
-                <p className="text-xs text-gray-400 mt-1">
-                  Available variables: {'{{customerName}}'}, {'{{orderNumber}}'}, {'{{amount}}'}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow border border-gray-100 p-6 max-w-3xl mb-6">
+            <h2 className="text-base font-semibold text-gray-900 mb-4">Event Notifications</h2>
+            <div className="space-y-6">
+              {eventDefs.map((def) => {
+                const event = events[def.key] || { enabled: true, message: '' };
+                return (
+                  <div key={def.key} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-medium text-gray-900">{def.label}</p>
+                      <Toggle checked={event.enabled} onChange={(v) => setEventEnabled(def.key, v)} />
+                    </div>
+                    <textarea
+                      value={event.message}
+                      onChange={(e) => setEventMessage(def.key, e.target.value)}
+                      rows={2}
+                      disabled={!event.enabled}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm disabled:bg-gray-50 disabled:text-gray-400"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      Available variables: {'{{customerName}}'}, {'{{orderNumber}}'}, {'{{amount}}'}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
 
       {message && <p className="text-sm text-gray-600 mb-4">{message}</p>}
 
@@ -313,7 +344,7 @@ export default function NotificationSettings() {
 
       <div>
         <h2 className="text-base font-semibold text-gray-900 mb-3">Recent Activity</h2>
-        <div className="bg-white rounded-lg shadow border border-gray-100 overflow-x-auto max-w-4xl">
+        <div className="bg-white rounded-lg shadow border border-gray-100 overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 text-left text-gray-500">
               <tr>
