@@ -24,6 +24,29 @@ async function toPublicSettings(settings) {
     adminPhone: settings?.notifications?.sms?.adminPhone || '',
   };
 
+  const socialLogin = {
+    google: {
+      enabled: settings?.socialLogin?.google?.enabled || false,
+      clientId: settings?.socialLogin?.google?.clientId || '',
+      clientSecretMasked: maskSecret(settings?.socialLogin?.google?.clientSecret),
+      hasClientSecret: Boolean(settings?.socialLogin?.google?.clientSecret),
+    },
+    facebook: {
+      enabled: settings?.socialLogin?.facebook?.enabled || false,
+      appId: settings?.socialLogin?.facebook?.appId || '',
+      appSecretMasked: maskSecret(settings?.socialLogin?.facebook?.appSecret),
+      hasAppSecret: Boolean(settings?.socialLogin?.facebook?.appSecret),
+    },
+    apple: {
+      enabled: settings?.socialLogin?.apple?.enabled || false,
+      servicesId: settings?.socialLogin?.apple?.servicesId || '',
+      teamId: settings?.socialLogin?.apple?.teamId || '',
+      keyId: settings?.socialLogin?.apple?.keyId || '',
+      privateKeyMasked: maskSecret(settings?.socialLogin?.apple?.privateKey),
+      hasPrivateKey: Boolean(settings?.socialLogin?.apple?.privateKey),
+    },
+  };
+
   return {
     paymentGateway: settings?.paymentGateway || 'razorpay',
     razorpay: {
@@ -40,6 +63,7 @@ async function toPublicSettings(settings) {
     },
     notifications,
     notificationEventDefinitions: NOTIFICATION_EVENTS.map((e) => ({ key: e.key, label: e.label })),
+    socialLogin,
   };
 }
 
@@ -54,7 +78,7 @@ async function getSettings(req, res, next) {
 
 async function updateSettings(req, res, next) {
   try {
-    const { paymentGateway, razorpay, stripe, notifications } = req.body;
+    const { paymentGateway, razorpay, stripe, notifications, socialLogin } = req.body;
 
     if (paymentGateway && !GATEWAYS.includes(paymentGateway)) {
       return res.status(400).json({ message: `paymentGateway must be one of: ${GATEWAYS.join(', ')}` });
@@ -131,6 +155,47 @@ async function updateSettings(req, res, next) {
           fast2smsApiKey: notifications.sms?.fast2smsApiKey
             ? notifications.sms.fast2smsApiKey
             : existing?.notifications?.sms?.fast2smsApiKey,
+        },
+      };
+    }
+
+    if (socialLogin) {
+      update.socialLogin = {
+        google: {
+          enabled: socialLogin.google?.enabled ?? existing?.socialLogin?.google?.enabled ?? false,
+          clientId:
+            socialLogin.google?.clientId !== undefined
+              ? socialLogin.google.clientId
+              : existing?.socialLogin?.google?.clientId,
+          // Blank secret in the request means "keep the existing one" — the UI never
+          // sends the real secret back, only a masked placeholder.
+          clientSecret: socialLogin.google?.clientSecret
+            ? socialLogin.google.clientSecret
+            : existing?.socialLogin?.google?.clientSecret,
+        },
+        facebook: {
+          enabled: socialLogin.facebook?.enabled ?? existing?.socialLogin?.facebook?.enabled ?? false,
+          appId:
+            socialLogin.facebook?.appId !== undefined
+              ? socialLogin.facebook.appId
+              : existing?.socialLogin?.facebook?.appId,
+          appSecret: socialLogin.facebook?.appSecret
+            ? socialLogin.facebook.appSecret
+            : existing?.socialLogin?.facebook?.appSecret,
+        },
+        apple: {
+          enabled: socialLogin.apple?.enabled ?? existing?.socialLogin?.apple?.enabled ?? false,
+          servicesId:
+            socialLogin.apple?.servicesId !== undefined
+              ? socialLogin.apple.servicesId
+              : existing?.socialLogin?.apple?.servicesId,
+          teamId:
+            socialLogin.apple?.teamId !== undefined ? socialLogin.apple.teamId : existing?.socialLogin?.apple?.teamId,
+          keyId:
+            socialLogin.apple?.keyId !== undefined ? socialLogin.apple.keyId : existing?.socialLogin?.apple?.keyId,
+          privateKey: socialLogin.apple?.privateKey
+            ? socialLogin.apple.privateKey
+            : existing?.socialLogin?.apple?.privateKey,
         },
       };
     }

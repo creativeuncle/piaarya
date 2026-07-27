@@ -31,6 +31,25 @@ const settingsSchema = new mongoose.Schema(
         adminPhone: String,
       },
     },
+    socialLogin: {
+      google: {
+        enabled: { type: Boolean, default: false },
+        clientId: String,
+        clientSecret: String,
+      },
+      facebook: {
+        enabled: { type: Boolean, default: false },
+        appId: String,
+        appSecret: String,
+      },
+      apple: {
+        enabled: { type: Boolean, default: false },
+        servicesId: String,
+        teamId: String,
+        keyId: String,
+        privateKey: String,
+      },
+    },
   },
   { timestamps: true }
 );
