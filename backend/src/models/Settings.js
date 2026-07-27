@@ -26,6 +26,10 @@ const settingsSchema = new mongoose.Schema(
         senderEmail: String,
         adminEmail: String,
       },
+      sms: {
+        fast2smsApiKey: String,
+        adminPhone: String,
+      },
     },
   },
   { timestamps: true }

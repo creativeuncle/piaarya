@@ -18,6 +18,11 @@ async function toPublicSettings(settings) {
     senderEmail: settings?.notifications?.email?.senderEmail || '',
     adminEmail: settings?.notifications?.email?.adminEmail || '',
   };
+  notifications.sms = {
+    fast2smsApiKeyMasked: maskSecret(settings?.notifications?.sms?.fast2smsApiKey),
+    hasFast2smsApiKey: Boolean(settings?.notifications?.sms?.fast2smsApiKey),
+    adminPhone: settings?.notifications?.sms?.adminPhone || '',
+  };
 
   return {
     paymentGateway: settings?.paymentGateway || 'razorpay',
@@ -115,6 +120,17 @@ async function updateSettings(req, res, next) {
           brevoApiKey: notifications.email?.brevoApiKey
             ? notifications.email.brevoApiKey
             : existing?.notifications?.email?.brevoApiKey,
+        },
+        sms: {
+          adminPhone:
+            notifications.sms?.adminPhone !== undefined
+              ? notifications.sms.adminPhone
+              : existing?.notifications?.sms?.adminPhone,
+          // Blank API key in the request means "keep the existing one" — the UI
+          // never sends the real key back, only a masked placeholder.
+          fast2smsApiKey: notifications.sms?.fast2smsApiKey
+            ? notifications.sms.fast2smsApiKey
+            : existing?.notifications?.sms?.fast2smsApiKey,
         },
       };
     }

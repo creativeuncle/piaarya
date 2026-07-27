@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const Customer = require('../models/Customer');
 const { signToken } = require('../middleware/auth');
+const { sendOtpSms } = require('../services/notificationService');
 
 function toPublicCustomer(customer) {
   return {
@@ -82,8 +83,28 @@ async function requestOtp(req, res, next) {
     customer.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
     await customer.save();
 
+    if (!customer.phone) {
+      return res.json({
+        message: 'No phone number on file for this account, so the OTP is returned here for testing.',
+        otp: otpCode,
+      });
+    }
+
+    try {
+      const sent = await sendOtpSms(customer.phone, otpCode);
+      if (sent) {
+        return res.json({ message: `OTP sent to your phone number ending in ${customer.phone.slice(-4)}.` });
+      }
+    } catch (err) {
+      console.error('OTP SMS send failed:', err.message);
+      return res.json({
+        message: 'Could not send the OTP by SMS right now, so it is returned here for testing.',
+        otp: otpCode,
+      });
+    }
+
     res.json({
-      message: 'OTP generated. No SMS/email provider is connected yet, so it is returned here for testing.',
+      message: 'SMS is not configured yet, so the OTP is returned here for testing.',
       otp: otpCode,
     });
   } catch (err) {

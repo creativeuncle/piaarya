@@ -40,11 +40,19 @@ const EMPTY_EMAIL_CONFIG = {
   adminEmail: '',
 };
 
+const EMPTY_SMS_CONFIG = {
+  fast2smsApiKey: '',
+  fast2smsApiKeyMasked: '',
+  hasFast2smsApiKey: false,
+  adminPhone: '',
+};
+
 export default function NotificationSettings() {
   const [channels, setChannels] = useState({ email: true, sms: true, whatsapp: true });
   const [events, setEvents] = useState({});
   const [eventDefs, setEventDefs] = useState([]);
   const [emailConfig, setEmailConfig] = useState(EMPTY_EMAIL_CONFIG);
+  const [smsConfig, setSmsConfig] = useState(EMPTY_SMS_CONFIG);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -63,6 +71,12 @@ export default function NotificationSettings() {
           senderName: data.notifications.email.senderName,
           senderEmail: data.notifications.email.senderEmail,
           adminEmail: data.notifications.email.adminEmail,
+        });
+        setSmsConfig({
+          fast2smsApiKey: '',
+          fast2smsApiKeyMasked: data.notifications.sms.fast2smsApiKeyMasked,
+          hasFast2smsApiKey: data.notifications.sms.hasFast2smsApiKey,
+          adminPhone: data.notifications.sms.adminPhone,
         });
       })
       .catch(() => {})
@@ -90,6 +104,10 @@ export default function NotificationSettings() {
     setEmailConfig((prev) => ({ ...prev, [field]: value }));
   }
 
+  function setSmsField(field, value) {
+    setSmsConfig((prev) => ({ ...prev, [field]: value }));
+  }
+
   async function handleSave() {
     setSaving(true);
     setMessage('');
@@ -104,6 +122,10 @@ export default function NotificationSettings() {
             senderEmail: emailConfig.senderEmail,
             adminEmail: emailConfig.adminEmail,
           },
+          sms: {
+            fast2smsApiKey: smsConfig.fast2smsApiKey,
+            adminPhone: smsConfig.adminPhone,
+          },
         },
       });
       setChannels(data.notifications.channels);
@@ -115,6 +137,12 @@ export default function NotificationSettings() {
         senderName: data.notifications.email.senderName,
         senderEmail: data.notifications.email.senderEmail,
         adminEmail: data.notifications.email.adminEmail,
+      });
+      setSmsConfig({
+        fast2smsApiKey: '',
+        fast2smsApiKeyMasked: data.notifications.sms.fast2smsApiKeyMasked,
+        hasFast2smsApiKey: data.notifications.sms.hasFast2smsApiKey,
+        adminPhone: data.notifications.sms.adminPhone,
       });
       setMessage('Notification settings updated.');
     } catch (err) {
@@ -137,8 +165,8 @@ export default function NotificationSettings() {
       <h1 className="text-2xl font-semibold text-gray-900 mb-2">Notifications</h1>
       <p className="text-sm text-gray-500 mb-6 max-w-2xl">
         Control which channels customer notifications go out on, and customize the message for each order/return
-        event. Connect Brevo below to actually send emails — SMS and WhatsApp have no live provider connected yet,
-        so those still record as simulated activity.
+        event. Connect Brevo for real emails and Fast2SMS for real SMS below — WhatsApp has no live provider
+        connected yet, so it still records as simulated activity.
       </p>
 
       <div className="bg-white rounded-lg shadow border border-gray-100 p-6 max-w-3xl mb-6">
@@ -191,6 +219,42 @@ export default function NotificationSettings() {
             />
             <p className="text-xs text-gray-400 mt-1">
               Gets a copy of Order Placed, Processing, Delivered, Return Requested, and Exchange Requested emails.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow border border-gray-100 p-6 max-w-3xl mb-6">
+        <h2 className="text-base font-semibold text-gray-900 mb-1">SMS Provider — Fast2SMS</h2>
+        <p className="text-xs text-gray-500 mb-4">
+          Get your API key from Fast2SMS → Dev API. Used for both login-with-OTP delivery and order/return SMS
+          updates. Numbers are sent as plain 10-digit Indian mobile numbers.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2">
+            <label className="block text-xs text-gray-500 mb-1">Fast2SMS API Key</label>
+            <input
+              type="password"
+              className="input w-full"
+              placeholder={smsConfig.hasFast2smsApiKey ? smsConfig.fast2smsApiKeyMasked : 'Enter API Key'}
+              value={smsConfig.fast2smsApiKey}
+              onChange={(e) => setSmsField('fast2smsApiKey', e.target.value)}
+            />
+            {smsConfig.hasFast2smsApiKey && (
+              <p className="text-xs text-gray-400 mt-1">Currently saved: {smsConfig.fast2smsApiKeyMasked}. Leave blank to keep it.</p>
+            )}
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-xs text-gray-500 mb-1">Admin Notification Phone</label>
+            <input
+              type="tel"
+              className="input w-full"
+              placeholder="9876543210"
+              value={smsConfig.adminPhone}
+              onChange={(e) => setSmsField('adminPhone', e.target.value)}
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Gets a copy of Order Placed, Processing, Delivered, Return Requested, and Exchange Requested SMS.
             </p>
           </div>
         </div>

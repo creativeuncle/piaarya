@@ -53,6 +53,12 @@ function fillTemplate(template, vars) {
   return template.replace(/{{\s*(\w+)\s*}}/g, (_, key) => (vars[key] !== undefined ? String(vars[key]) : ''));
 }
 
+// Fast2SMS expects a bare 10-digit Indian mobile number, no country code / symbols.
+function formatIndianMobile(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  return digits.slice(-10);
+}
+
 async function getNotificationSettings() {
   const settings = await Settings.findOne();
   const stored = settings?.notifications || {};
@@ -101,6 +107,54 @@ async function sendBrevoEmail({ apiKey, senderName, senderEmail, to, toName, sub
   return response.json();
 }
 
+// Sends a plain transactional SMS through Fast2SMS's Quick SMS route. Requires
+// a Fast2SMS API key (Settings > Notifications). Note: for production-grade
+// delivery of custom text in India, Fast2SMS/TRAI generally requires a
+// DLT-registered sender ID + template — if sends fail with a DLT-related
+// error, that registration needs to happen on the Fast2SMS side.
+async function sendFast2SmsMessage({ apiKey, phone, message }) {
+  const number = formatIndianMobile(phone);
+  const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+    method: 'POST',
+    headers: {
+      authorization: apiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ route: 'q', message, language: 'english', flash: 0, numbers: number }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.return !== true) {
+    throw new Error(`Fast2SMS error: ${data.message || response.statusText}`);
+  }
+  return data;
+}
+
+// Sends a one-time-password via Fast2SMS's dedicated OTP route.
+async function sendFast2SmsOtp({ apiKey, phone, otp }) {
+  const number = formatIndianMobile(phone);
+  const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(apiKey)}&route=otp&variables_values=${otp}&flash=0&numbers=${number}`;
+  const response = await fetch(url, { method: 'GET' });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.return !== true) {
+    throw new Error(`Fast2SMS error: ${data.message || response.statusText}`);
+  }
+  return data;
+}
+
+// Standalone helper used by the login-with-OTP flow. Returns true if a real
+// SMS was sent, false if Fast2SMS isn't configured yet (caller should fall
+// back to returning the OTP in the response for testing, as before).
+async function sendOtpSms(phone, otp) {
+  const settings = await Settings.findOne();
+  const apiKey = settings?.notifications?.sms?.fast2smsApiKey;
+  if (!apiKey || !phone) return false;
+
+  await sendFast2SmsOtp({ apiKey, phone, otp });
+  return true;
+}
+
 async function dispatch(recipient, ctx) {
   let status = 'simulated';
 
@@ -119,6 +173,16 @@ async function dispatch(recipient, ctx) {
     } catch (err) {
       status = 'failed';
       console.error(`Brevo email send failed for ${ctx.eventKey}:`, err.message);
+    }
+  }
+
+  if (recipient.channel === 'sms' && ctx.canSendRealSms) {
+    try {
+      await sendFast2SmsMessage({ apiKey: ctx.smsConfig.fast2smsApiKey, phone: recipient.to, message: ctx.message });
+      status = 'sent';
+    } catch (err) {
+      status = 'failed';
+      console.error(`Fast2SMS send failed for ${ctx.eventKey}:`, err.message);
     }
   }
 
@@ -160,6 +224,8 @@ async function triggerNotification(eventKey, { customer, order, vars }) {
 
     const emailConfig = stored.email || {};
     const canSendRealEmail = Boolean(emailConfig.brevoApiKey && emailConfig.senderEmail);
+    const smsConfig = stored.sms || {};
+    const canSendRealSms = Boolean(smsConfig.fast2smsApiKey);
 
     const recipients = [];
     if (customer) {
@@ -168,14 +234,19 @@ async function triggerNotification(eventKey, { customer, order, vars }) {
       if (channels.whatsapp && customer.phone) recipients.push({ channel: 'whatsapp', to: customer.phone });
     }
 
-    const ctx = { eventKey, message, subject, customer, order, emailConfig, canSendRealEmail };
+    const ctx = { eventKey, message, subject, customer, order, emailConfig, canSendRealEmail, smsConfig, canSendRealSms };
     await Promise.all(recipients.map((r) => dispatch(r, ctx)));
 
-    if (ADMIN_COPY_EVENTS.includes(eventKey) && channels.email && emailConfig.adminEmail) {
-      await dispatch(
-        { channel: 'email', to: emailConfig.adminEmail, toName: 'Admin' },
-        { ...ctx, subject: `[Admin] ${subject}` }
-      );
+    if (ADMIN_COPY_EVENTS.includes(eventKey)) {
+      if (channels.email && emailConfig.adminEmail) {
+        await dispatch(
+          { channel: 'email', to: emailConfig.adminEmail, toName: 'Admin' },
+          { ...ctx, subject: `[Admin] ${subject}` }
+        );
+      }
+      if (channels.sms && smsConfig.adminPhone) {
+        await dispatch({ channel: 'sms', to: smsConfig.adminPhone }, ctx);
+      }
     }
   } catch (err) {
     // Notifications must never break the order/return flow they're attached to.
@@ -183,4 +254,4 @@ async function triggerNotification(eventKey, { customer, order, vars }) {
   }
 }
 
-module.exports = { EVENTS, getNotificationSettings, triggerNotification };
+module.exports = { EVENTS, getNotificationSettings, triggerNotification, sendOtpSms };

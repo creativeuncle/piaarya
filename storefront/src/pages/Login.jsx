@@ -17,6 +17,7 @@ export default function Login() {
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [devOtp, setDevOtp] = useState(null);
+  const [otpStatusMessage, setOtpStatusMessage] = useState('');
   const [forgotMessage, setForgotMessage] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -43,6 +44,7 @@ export default function Login() {
       const data = await requestOtp(email);
       setOtpSent(true);
       setDevOtp(data.otp);
+      setOtpStatusMessage(data.message);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
     } finally {
@@ -127,9 +129,9 @@ export default function Login() {
           {otpSent && (
             <Field label="OTP">
               <input type="text" className="input" value={otp} onChange={(e) => setOtp(e.target.value)} required />
-              {devOtp && (
+              {otpStatusMessage && (
                 <p className="text-xs text-gray-400 mt-1">
-                  No SMS/email provider connected yet — for testing, your OTP is <strong>{devOtp}</strong>
+                  {otpStatusMessage} {devOtp && <strong>{devOtp}</strong>}
                 </p>
               )}
             </Field>
