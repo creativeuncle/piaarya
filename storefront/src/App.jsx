@@ -18,6 +18,7 @@ import DashboardProfile from './pages/dashboard/Profile';
 import DashboardOrders from './pages/dashboard/Orders';
 import DashboardOrderDetail from './pages/dashboard/OrderDetail';
 import DashboardWishlist from './pages/dashboard/Wishlist';
+import DashboardMyReviews from './pages/dashboard/MyReviews';
 import DashboardAddress from './pages/dashboard/Address';
 import DashboardRequests from './pages/dashboard/Requests';
 
@@ -44,6 +45,7 @@ function App() {
                 <Route path="orders" element={<DashboardOrders />} />
                 <Route path="orders/:id" element={<DashboardOrderDetail />} />
                 <Route path="wishlist" element={<DashboardWishlist />} />
+                <Route path="reviews" element={<DashboardMyReviews />} />
                 <Route path="address" element={<DashboardAddress />} />
                 <Route path="requests" element={<DashboardRequests />} />
               </Route>

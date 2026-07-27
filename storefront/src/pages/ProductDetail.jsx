@@ -13,6 +13,7 @@ import PincodeChecker from '../components/product/PincodeChecker';
 import RelatedProducts from '../components/product/RelatedProducts';
 import RecentlyViewedProducts from '../components/product/RecentlyViewedProducts';
 import ProductReviews from '../components/product/ProductReviews';
+import Accordion from '../components/Accordion';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -126,28 +127,28 @@ export default function ProductDetail() {
           <PincodeChecker />
         </div>
 
-        {product.description && (
-          <div className="mt-8 border-t border-gray-200 pt-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">Description</h2>
-            <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">{product.description}</p>
-          </div>
-        )}
+        <div className="mt-2">
+          {product.description && (
+            <Accordion title="Description" defaultOpen>
+              <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">{product.description}</p>
+            </Accordion>
+          )}
 
-        {product.specifications && Object.keys(product.specifications).length > 0 && (
-          <div className="mt-8 border-t border-gray-200 pt-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">Specifications</h2>
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-gray-100">
-                {Object.entries(product.specifications).map(([key, value]) => (
-                  <tr key={key}>
-                    <td className="py-2 text-gray-500 w-1/3">{key}</td>
-                    <td className="py-2 text-gray-900">{value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+          {product.specifications && Object.keys(product.specifications).length > 0 && (
+            <Accordion title="Specifications">
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-gray-100">
+                  {Object.entries(product.specifications).map(([key, value]) => (
+                    <tr key={key}>
+                      <td className="py-2 text-gray-500 w-1/3">{key}</td>
+                      <td className="py-2 text-gray-900">{value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Accordion>
+          )}
+        </div>
       </div>
 
       {showSizeChart && <SizeChartModal onClose={() => setShowSizeChart(false)} />}

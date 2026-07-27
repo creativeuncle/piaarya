@@ -1,4 +1,42 @@
 const Review = require('../models/Review');
+const Order = require('../models/Order');
+
+async function createReview(req, res, next) {
+  try {
+    const { product, rating, comment, images, tags } = req.body;
+
+    if (!product || !rating) {
+      return res.status(400).json({ message: 'product and rating are required' });
+    }
+    const ratingNum = Number(rating);
+    if (!ratingNum || ratingNum < 1 || ratingNum > 5) {
+      return res.status(400).json({ message: 'rating must be between 1 and 5' });
+    }
+
+    const validTags = Review.REVIEW_TAGS;
+    const cleanTags = Array.isArray(tags) ? tags.filter((t) => validTags.includes(t)) : [];
+    const cleanImages = Array.isArray(images) ? images.slice(0, 6) : [];
+
+    const isVerifiedBuyer = Boolean(
+      await Order.findOne({ customer: req.customerId, 'items.product': product })
+    );
+
+    const review = await Review.create({
+      product,
+      customer: req.customerId,
+      rating: ratingNum,
+      comment,
+      images: cleanImages,
+      tags: cleanTags,
+      isVerifiedBuyer,
+      status: 'pending',
+    });
+
+    res.status(201).json(review);
+  } catch (err) {
+    next(err);
+  }
+}
 
 async function listReviews(req, res, next) {
   try {
@@ -76,4 +114,4 @@ async function deleteReview(req, res, next) {
   }
 }
 
-module.exports = { listReviews, updateStatus, updateReply, updateFeatured, deleteReview };
+module.exports = { createReview, listReviews, updateStatus, updateReply, updateFeatured, deleteReview };

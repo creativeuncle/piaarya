@@ -48,3 +48,8 @@ export async function fetchMyRequests(token) {
   const { data } = await client.get('/me/requests', authHeaders(token));
   return data;
 }
+
+export async function fetchMyReviews(token) {
+  const { data } = await client.get('/me/reviews', authHeaders(token));
+  return data;
+}

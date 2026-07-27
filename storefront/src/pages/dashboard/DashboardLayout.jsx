@@ -1,12 +1,13 @@
 import { NavLink, Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { UserIcon, ShoppingBag01Icon, Location01Icon, ReturnRequestIcon, HeartIcon, Logout01Icon } from '@hugeicons/core-free-icons';
+import { UserIcon, ShoppingBag01Icon, Location01Icon, ReturnRequestIcon, HeartIcon, StarIcon, Logout01Icon } from '@hugeicons/core-free-icons';
 import { useAuth } from '../../context/AuthContext';
 
 const NAV_ITEMS = [
   { to: '/dashboard/profile', label: 'Profile', icon: UserIcon },
   { to: '/dashboard/orders', label: 'Your Orders', icon: ShoppingBag01Icon },
   { to: '/dashboard/wishlist', label: 'Wishlist', icon: HeartIcon },
+  { to: '/dashboard/reviews', label: 'My Reviews', icon: StarIcon },
   { to: '/dashboard/address', label: 'Your Address', icon: Location01Icon },
   { to: '/dashboard/requests', label: 'Requests', icon: ReturnRequestIcon },
 ];

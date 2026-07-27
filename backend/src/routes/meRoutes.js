@@ -10,6 +10,7 @@ const {
   getOrderById,
   cancelOrder,
   getRequests,
+  getMyReviews,
 } = require('../controllers/meController');
 const { requireAuth } = require('../middleware/auth');
 
@@ -27,5 +28,6 @@ router.get('/orders', getOrders);
 router.get('/orders/:id', getOrderById);
 router.put('/orders/:id/cancel', cancelOrder);
 router.get('/requests', getRequests);
+router.get('/reviews', getMyReviews);
 
 module.exports = router;

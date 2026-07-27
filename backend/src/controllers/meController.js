@@ -1,6 +1,7 @@
 const Customer = require('../models/Customer');
 const Order = require('../models/Order');
 const ReturnRequest = require('../models/ReturnRequest');
+const Review = require('../models/Review');
 const { triggerNotification } = require('../services/notificationService');
 
 const CANCEL_WINDOW_MS = 10 * 60 * 1000;
@@ -171,6 +172,17 @@ async function getRequests(req, res, next) {
   }
 }
 
+async function getMyReviews(req, res, next) {
+  try {
+    const reviews = await Review.find({ customer: req.customerId })
+      .populate('product', 'name media')
+      .sort({ createdAt: -1 });
+    res.json(reviews);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -182,4 +194,5 @@ module.exports = {
   getOrderById,
   cancelOrder,
   getRequests,
+  getMyReviews,
 };
