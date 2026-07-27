@@ -20,6 +20,12 @@ const settingsSchema = new mongoose.Schema(
         whatsapp: { type: Boolean, default: true },
       },
       events: { type: mongoose.Schema.Types.Mixed, default: {} },
+      email: {
+        brevoApiKey: String,
+        senderName: String,
+        senderEmail: String,
+        adminEmail: String,
+      },
     },
   },
   { timestamps: true }

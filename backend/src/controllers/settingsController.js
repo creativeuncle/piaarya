@@ -11,6 +11,14 @@ function maskSecret(secret) {
 
 async function toPublicSettings(settings) {
   const notifications = await getNotificationSettings();
+  notifications.email = {
+    brevoApiKeyMasked: maskSecret(settings?.notifications?.email?.brevoApiKey),
+    hasBrevoApiKey: Boolean(settings?.notifications?.email?.brevoApiKey),
+    senderName: settings?.notifications?.email?.senderName || '',
+    senderEmail: settings?.notifications?.email?.senderEmail || '',
+    adminEmail: settings?.notifications?.email?.adminEmail || '',
+  };
+
   return {
     paymentGateway: settings?.paymentGateway || 'razorpay',
     razorpay: {
@@ -89,6 +97,25 @@ async function updateSettings(req, res, next) {
           whatsapp: notifications.channels?.whatsapp ?? existing?.notifications?.channels?.whatsapp ?? true,
         },
         events,
+        email: {
+          senderName:
+            notifications.email?.senderName !== undefined
+              ? notifications.email.senderName
+              : existing?.notifications?.email?.senderName,
+          senderEmail:
+            notifications.email?.senderEmail !== undefined
+              ? notifications.email.senderEmail
+              : existing?.notifications?.email?.senderEmail,
+          adminEmail:
+            notifications.email?.adminEmail !== undefined
+              ? notifications.email.adminEmail
+              : existing?.notifications?.email?.adminEmail,
+          // Blank API key in the request means "keep the existing one" — the UI
+          // never sends the real key back, only a masked placeholder.
+          brevoApiKey: notifications.email?.brevoApiKey
+            ? notifications.email.brevoApiKey
+            : existing?.notifications?.email?.brevoApiKey,
+        },
       };
     }
 
