@@ -254,4 +254,4 @@ async function triggerNotification(eventKey, { customer, order, vars }) {
   }
 }
 
-module.exports = { EVENTS, getNotificationSettings, triggerNotification, sendOtpSms };
+module.exports = { EVENTS, getNotificationSettings, triggerNotification, sendOtpSms, sendBrevoEmail };

@@ -2,6 +2,8 @@ const Cart = require('../models/Cart');
 const EmailCampaign = require('../models/EmailCampaign');
 const Customer = require('../models/Customer');
 const Order = require('../models/Order');
+const Settings = require('../models/Settings');
+const { sendBrevoEmail } = require('../services/notificationService');
 
 async function listAbandonedCarts(req, res, next) {
   try {
@@ -42,21 +44,22 @@ async function updateCartStatus(req, res, next) {
   }
 }
 
-async function computeSegmentRecipientCount(segment) {
+async function getSegmentCustomers(segment) {
   if (segment === 'abandoned_cart') {
     const customerIds = await Cart.distinct('customer', { status: 'abandoned' });
-    return customerIds.length;
+    return Customer.find({ _id: { $in: customerIds }, isBlocked: false }).select('name email');
   }
   if (segment === 'no_orders_30d') {
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const recentCustomerIds = await Order.distinct('customer', { createdAt: { $gte: since } });
-    return Customer.countDocuments({ isBlocked: false, _id: { $nin: recentCustomerIds } });
+    return Customer.find({ isBlocked: false, _id: { $nin: recentCustomerIds } }).select('name email');
   }
   if (segment === 'first_time_buyers') {
     const counts = await Order.aggregate([{ $group: { _id: '$customer', count: { $sum: 1 } } }]);
-    return counts.filter((c) => c.count === 1).length;
+    const firstTimeIds = counts.filter((c) => c.count === 1).map((c) => c._id);
+    return Customer.find({ _id: { $in: firstTimeIds }, isBlocked: false }).select('name email');
   }
-  return Customer.countDocuments({ isBlocked: false });
+  return Customer.find({ isBlocked: false }).select('name email');
 }
 
 async function listCampaigns(req, res, next) {
@@ -94,9 +97,40 @@ async function sendCampaign(req, res, next) {
     if (!campaign) return res.status(404).json({ message: 'Campaign not found' });
     if (campaign.status === 'sent') return res.status(400).json({ message: 'Campaign already sent' });
 
-    const recipientCount = await computeSegmentRecipientCount(campaign.segment);
+    const customers = await getSegmentCustomers(campaign.segment);
+    const settings = await Settings.findOne();
+    const emailConfig = settings?.notifications?.email || {};
+    const canSendRealEmail = Boolean(emailConfig.brevoApiKey && emailConfig.senderEmail);
+
+    let sentCount = 0;
+    let failedCount = 0;
+
+    if (canSendRealEmail) {
+      for (const customer of customers) {
+        if (!customer.email) continue;
+        try {
+          await sendBrevoEmail({
+            apiKey: emailConfig.brevoApiKey,
+            senderName: emailConfig.senderName,
+            senderEmail: emailConfig.senderEmail,
+            to: customer.email,
+            toName: customer.name,
+            subject: campaign.subject,
+            text: campaign.body,
+          });
+          sentCount += 1;
+        } catch (err) {
+          failedCount += 1;
+          console.error(`Campaign email send failed for ${customer.email}:`, err.message);
+        }
+      }
+    }
+
     campaign.status = 'sent';
-    campaign.recipientCount = recipientCount;
+    campaign.recipientCount = customers.length;
+    campaign.sentCount = sentCount;
+    campaign.failedCount = failedCount;
+    campaign.deliveryMode = canSendRealEmail ? 'live' : 'simulated';
     campaign.sentAt = new Date();
     await campaign.save();
 

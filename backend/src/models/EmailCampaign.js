@@ -10,6 +10,9 @@ const emailCampaignSchema = new mongoose.Schema(
     segment: { type: String, enum: SEGMENTS, default: 'all_customers' },
     status: { type: String, enum: ['draft', 'sent'], default: 'draft' },
     recipientCount: { type: Number, default: 0 },
+    sentCount: { type: Number, default: 0 },
+    failedCount: { type: Number, default: 0 },
+    deliveryMode: { type: String, enum: ['live', 'simulated'], default: 'simulated' },
     sentAt: { type: Date },
   },
   { timestamps: true }

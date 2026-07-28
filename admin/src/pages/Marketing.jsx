@@ -194,16 +194,17 @@ function EmailMarketing() {
               <th className="px-4 py-3">Segment</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Recipients</th>
+              <th className="px-4 py-3">Delivered</th>
               <th className="px-4 py-3">Sent</th>
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={6}>Loading...</td></tr>
+              <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>Loading...</td></tr>
             )}
             {!loading && campaigns.length === 0 && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={6}>No campaigns yet.</td></tr>
+              <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>No campaigns yet.</td></tr>
             )}
             {campaigns.map((c) => (
               <tr key={c._id}>
@@ -215,6 +216,21 @@ function EmailMarketing() {
                   </span>
                 </td>
                 <td className="px-4 py-3">{c.recipientCount || '—'}</td>
+                <td className="px-4 py-3">
+                  {c.status === 'sent' ? (
+                    c.deliveryMode === 'live' ? (
+                      <span className="text-xs text-gray-700">
+                        {c.sentCount} sent{c.failedCount ? `, ${c.failedCount} failed` : ''}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-yellow-600" title="Brevo email API key / sender not configured in Settings > Notifications, so no real emails went out.">
+                        Not configured
+                      </span>
+                    )
+                  ) : (
+                    '—'
+                  )}
+                </td>
                 <td className="px-4 py-3 text-gray-500">{c.sentAt ? new Date(c.sentAt).toLocaleDateString() : '—'}</td>
                 <td className="px-4 py-3 space-x-2 whitespace-nowrap">
                   {c.status === 'draft' && (
@@ -230,7 +246,9 @@ function EmailMarketing() {
         </table>
       </div>
       <p className="text-xs text-gray-400 mt-3">
-        "Send" computes the audience size and marks the campaign sent here; connecting it to a real provider (Mailchimp/SendGrid/SMTP) is a later integration step.
+        "Send" emails every customer in the segment via Brevo (Settings &gt; Notifications &gt; Email Provider). If
+        the Brevo API key / sender email isn't configured there, the campaign is still marked sent but no real
+        emails go out — the "Delivered" column shows "Not configured" in that case.
       </p>
 
       {showForm && (
