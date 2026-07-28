@@ -5,6 +5,7 @@ import { Mail01Icon, Search01Icon, UserIcon, ShoppingBag01Icon, DashboardSquare0
 import { fetchNavigation } from '../api/navigation';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import SearchOverlay from './SearchOverlay';
 
 const DEFAULT_MENUS = [
   { label: 'Shop by Category', route: '/products', children: [] },
@@ -16,6 +17,7 @@ export default function Header() {
   const [menus, setMenus] = useState(DEFAULT_MENUS);
   const [openMenu, setOpenMenu] = useState(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { count, openDrawer } = useCart();
   const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
@@ -35,7 +37,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="bg-gray-900 text-white">
+    <header className="bg-gray-900 text-white relative">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link to="/" className="text-xl font-black tracking-tight">
           PIAARYA
@@ -71,7 +73,9 @@ export default function Header() {
 
         <div className="flex items-center gap-5">
           <HugeiconsIcon icon={Mail01Icon} size={20} strokeWidth={1.5} className="cursor-pointer" />
-          <HugeiconsIcon icon={Search01Icon} size={20} strokeWidth={1.5} className="cursor-pointer" />
+          <button onClick={() => setSearchOpen(true)} aria-label="Open search">
+            <HugeiconsIcon icon={Search01Icon} size={20} strokeWidth={1.5} className="cursor-pointer" />
+          </button>
           {isAuthenticated ? (
             <div
               className="relative"
@@ -111,6 +115,8 @@ export default function Header() {
           </button>
         </div>
       </div>
+
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   );
 }

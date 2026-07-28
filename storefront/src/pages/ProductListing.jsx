@@ -28,6 +28,7 @@ export default function ProductListing() {
   const [categories, setCategories] = useState([]);
   const [facets, setFacets] = useState(null);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [searchQuery, setSearchQuery] = useState('');
   const [sort, setSort] = useState('relevance');
   const [page, setPage] = useState(1);
   const [products, setProducts] = useState([]);
@@ -47,6 +48,7 @@ export default function ProductListing() {
         priceMin: allFacets.priceMin,
         priceMax: allFacets.priceMax,
       });
+      setSearchQuery(searchParams.get('search') || '');
       setInitialized(true);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -54,8 +56,16 @@ export default function ProductListing() {
 
   useEffect(() => {
     if (!initialized) return;
+    setSearchQuery(searchParams.get('search') || '');
+    setPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!initialized) return;
     setLoading(true);
     fetchProducts({
+      search: searchQuery,
       category: filters.categories.join(','),
       size: filters.sizes.join(','),
       color: filters.colors.join(','),
@@ -77,7 +87,7 @@ export default function ProductListing() {
         setTotal(0);
       })
       .finally(() => setLoading(false));
-  }, [filters, sort, page, initialized]);
+  }, [filters, searchQuery, sort, page, initialized]);
 
   function handleFiltersChange(next) {
     setFilters(next);
@@ -88,6 +98,11 @@ export default function ProductListing() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
+      {searchQuery && (
+        <h1 className="text-lg font-semibold text-gray-900 mb-4">
+          Search results for "{searchQuery}"
+        </h1>
+      )}
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={() => setFilterOpen(true)}
