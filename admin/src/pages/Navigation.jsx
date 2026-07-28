@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { PAGES } from '../constants/pages';
 import { fetchNavigation, saveNavigation } from '../api/navigation';
+import { fetchCategories } from '../api/categories';
 
 function getPayload(e) {
   try {
@@ -12,6 +12,7 @@ function getPayload(e) {
 
 export default function Navigation() {
   const [menus, setMenus] = useState([]);
+  const [categoryPages, setCategoryPages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -20,8 +21,8 @@ export default function Navigation() {
   const [newColumnName, setNewColumnName] = useState({});
 
   useEffect(() => {
-    fetchNavigation()
-      .then((tree) =>
+    Promise.all([fetchNavigation(), fetchCategories()])
+      .then(([tree, categories]) => {
         setMenus(
           tree.map((m) => ({
             label: m.label,
@@ -32,8 +33,11 @@ export default function Navigation() {
               children: (c.children || []).map((g) => ({ label: g.label, route: g.route })),
             })),
           }))
-        )
-      )
+        );
+        setCategoryPages(
+          categories.map((c) => ({ label: c.name, route: `/products?category=${c._id}` }))
+        );
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -46,7 +50,7 @@ export default function Navigation() {
       (c.children || []).forEach((g) => usedRoutes.add(g.route));
     });
   });
-  const availablePages = PAGES.filter((p) => !usedRoutes.has(p.route));
+  const availablePages = categoryPages.filter((p) => !usedRoutes.has(p.route));
 
   function addGroup() {
     if (!newGroupName.trim()) return;
@@ -250,16 +254,16 @@ export default function Navigation() {
       {message && <p className="text-green-600 text-sm mb-4">{message}</p>}
 
       <p className="text-sm text-gray-500 mb-4">
-        Drag a page from "Available Pages" into the menu area to make it a Menu, or drop it onto a menu's Sub-menu
-        zone to nest it underneath as a Column, or into a Column to add it as an Item (for mega-menus like "Shop by
-        Device" with IPHONE / MACBOOK / IPAD columns). Drag items to reorder them.
+        Drag a category from "Available Categories" into the menu area to make it a Menu, or drop it onto a menu's
+        Sub-menu zone to nest it underneath as a Column, or into a Column to add it as an Item (for mega-menus like
+        "Shop by Device" with IPHONE / MACBOOK / IPAD columns). Drag items to reorder them.
       </p>
 
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-1">
-          <h2 className="text-sm font-medium text-gray-700 mb-2">Available Pages</h2>
+          <h2 className="text-sm font-medium text-gray-700 mb-2">Available Categories</h2>
           <div className="bg-white rounded-lg shadow border border-gray-100 p-3 space-y-2 min-h-[120px]">
-            {availablePages.length === 0 && <p className="text-xs text-gray-400">All pages are placed in the menu.</p>}
+            {availablePages.length === 0 && <p className="text-xs text-gray-400">All categories are placed in the menu.</p>}
             {availablePages.map((page) => (
               <div
                 key={page.route}

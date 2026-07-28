@@ -21,6 +21,7 @@ import DashboardWishlist from './pages/dashboard/Wishlist';
 import DashboardMyReviews from './pages/dashboard/MyReviews';
 import DashboardAddress from './pages/dashboard/Address';
 import DashboardRequests from './pages/dashboard/Requests';
+import StaticPage from './pages/StaticPage';
 
 function App() {
   return (
@@ -49,6 +50,7 @@ function App() {
                 <Route path="address" element={<DashboardAddress />} />
                 <Route path="requests" element={<DashboardRequests />} />
               </Route>
+              <Route path="/pages/:slug" element={<StaticPage />} />
             </Routes>
           </main>
           <Footer />
