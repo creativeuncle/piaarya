@@ -60,7 +60,7 @@ export default function Header() {
             return (
               <div
                 key={menu.label}
-                className="relative"
+                className="relative h-16 flex items-center"
                 onMouseEnter={() => setOpenMenu(menu.label)}
                 onMouseLeave={() => setOpenMenu(null)}
               >
