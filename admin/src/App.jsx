@@ -23,6 +23,8 @@ import Navigation from './pages/Navigation';
 import PaymentSettings from './pages/PaymentSettings';
 import NotificationSettings from './pages/NotificationSettings';
 import SocialLoginSettings from './pages/SocialLoginSettings';
+import Pages from './pages/Pages';
+import PageForm from './pages/PageForm';
 
 function AdminLayout({ children }) {
   return (
@@ -67,6 +69,9 @@ function App() {
               <Route path="/settings/payments" element={<PaymentSettings />} />
               <Route path="/settings/notifications" element={<NotificationSettings />} />
               <Route path="/settings/social-login" element={<SocialLoginSettings />} />
+              <Route path="/settings/pages" element={<Pages />} />
+              <Route path="/settings/pages/new" element={<PageForm />} />
+              <Route path="/settings/pages/:id/edit" element={<PageForm />} />
             </Routes>
           </AdminLayout>
         }
