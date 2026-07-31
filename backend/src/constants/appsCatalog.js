@@ -1,0 +1,98 @@
+// Catalog of apps available to install for this store. New apps get added
+// here as they're built — installing/enabling/disabling an app only tracks
+// its activation state (see InstalledApp model); it does not yet gate any
+// storefront behavior on its own.
+const APPS_CATALOG = [
+  {
+    key: 'live_chat',
+    name: 'Live Chat',
+    description: 'Add a live chat widget so customers can message you directly from the storefront.',
+    icon: 'Chatting01Icon',
+    category: 'Customer Support',
+    isFree: true,
+    price: 0,
+  },
+  {
+    key: 'whatsapp_button',
+    name: 'WhatsApp Chat Button',
+    description: 'Floating WhatsApp button on the storefront for instant customer chats.',
+    icon: 'WhatsappIcon',
+    category: 'Customer Support',
+    isFree: true,
+    price: 0,
+  },
+  {
+    key: 'announcement_bar',
+    name: 'Announcement Bar',
+    description: 'Sticky top bar to promote sales, offers, or shipping info.',
+    icon: 'Megaphone01Icon',
+    category: 'Marketing',
+    isFree: true,
+    price: 0,
+  },
+  {
+    key: 'instagram_feed',
+    name: 'Instagram Feed',
+    description: 'Show your latest Instagram posts on the storefront homepage.',
+    icon: 'InstagramIcon',
+    category: 'Marketing',
+    isFree: true,
+    price: 0,
+  },
+  {
+    key: 'countdown_timer',
+    name: 'Countdown Timer',
+    description: 'Urgency countdown banner for sales and limited-time offers.',
+    icon: 'TimeQuarterIcon',
+    category: 'Marketing',
+    isFree: true,
+    price: 0,
+  },
+  {
+    key: 'back_in_stock',
+    name: 'Back in Stock Alerts',
+    description: 'Let customers request a notification when an out-of-stock product is available again.',
+    icon: 'BellIcon',
+    category: 'Store',
+    isFree: true,
+    price: 0,
+  },
+  {
+    key: 'sticky_cart',
+    name: 'Sticky Add to Cart',
+    description: 'Keeps an Add to Cart bar visible while customers scroll a product page.',
+    icon: 'ShoppingBasket01Icon',
+    category: 'Store',
+    isFree: true,
+    price: 0,
+  },
+  {
+    key: 'currency_converter',
+    name: 'Currency Converter',
+    description: 'Let customers view prices in their preferred currency.',
+    icon: 'DollarCircleIcon',
+    category: 'Store',
+    isFree: true,
+    price: 0,
+  },
+  {
+    key: 'cookie_consent',
+    name: 'Cookie Consent',
+    description: 'GDPR-style cookie consent banner for the storefront.',
+    icon: 'CookieIcon',
+    category: 'Legal',
+    isFree: true,
+    price: 0,
+  },
+  {
+    key: 'age_verification',
+    name: 'Age Verification',
+    description: 'Age-gate popup before customers can browse the storefront.',
+    icon: 'IdIcon',
+    category: 'Legal',
+    isFree: true,
+    price: 0,
+  },
+];
+
+module.exports = APPS_CATALOG;

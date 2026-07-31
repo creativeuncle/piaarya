@@ -25,6 +25,7 @@ import NotificationSettings from './pages/NotificationSettings';
 import SocialLoginSettings from './pages/SocialLoginSettings';
 import Pages from './pages/Pages';
 import PageForm from './pages/PageForm';
+import Apps from './pages/Apps';
 
 function AdminLayout({ children }) {
   return (
@@ -65,6 +66,7 @@ function App() {
               <Route path="/marketing" element={<Marketing />} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/team" element={<Team />} />
+              <Route path="/apps" element={<Apps />} />
               <Route path="/settings/navigation" element={<Navigation />} />
               <Route path="/settings/payments" element={<PaymentSettings />} />
               <Route path="/settings/notifications" element={<NotificationSettings />} />
