@@ -4,6 +4,16 @@
 // storefront behavior on its own.
 const APPS_CATALOG = [
   {
+    key: 'social_login',
+    name: 'Social Login',
+    description: 'Let customers sign up/log in with Google, Facebook, or Apple instead of email/OTP.',
+    icon: 'LoginMethodIcon',
+    category: 'Authentication',
+    isFree: true,
+    price: 0,
+    configRoute: '/apps/social-login',
+  },
+  {
     key: 'live_chat',
     name: 'Live Chat',
     description: 'Add a live chat widget so customers can message you directly from the storefront.',

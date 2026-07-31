@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Chatting01Icon,
@@ -11,7 +12,9 @@ import {
   DollarCircleIcon,
   CookieIcon,
   IdIcon,
+  LoginMethodIcon,
   PuzzleIcon,
+  Settings02Icon,
 } from '@hugeicons/core-free-icons';
 import { fetchApps, installApp, toggleApp, uninstallApp } from '../api/apps';
 
@@ -26,6 +29,7 @@ const ICON_MAP = {
   DollarCircleIcon,
   CookieIcon,
   IdIcon,
+  LoginMethodIcon,
 };
 
 function Toggle({ checked, onChange }) {
@@ -131,15 +135,26 @@ export default function Apps() {
               <p className="text-sm text-gray-600 flex-1 mb-4">{app.description}</p>
 
               {app.isInstalled ? (
-                <div className="flex items-center justify-between">
-                  <Toggle checked={app.isEnabled} onChange={(v) => handleToggle(app.key, v)} />
-                  <button
-                    onClick={() => handleUninstall(app.key)}
-                    disabled={busyKey === app.key}
-                    className="text-red-600 text-xs font-medium disabled:opacity-50"
-                  >
-                    Delete
-                  </button>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Toggle checked={app.isEnabled} onChange={(v) => handleToggle(app.key, v)} />
+                    <button
+                      onClick={() => handleUninstall(app.key)}
+                      disabled={busyKey === app.key}
+                      className="text-red-600 text-xs font-medium disabled:opacity-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                  {app.configRoute && (
+                    <Link
+                      to={app.configRoute}
+                      className="flex items-center justify-center gap-1.5 border border-gray-300 text-gray-700 text-sm font-medium px-4 py-2 rounded-md hover:bg-gray-50"
+                    >
+                      <HugeiconsIcon icon={Settings02Icon} size={16} strokeWidth={1.5} />
+                      Configure
+                    </Link>
+                  )}
                 </div>
               ) : (
                 <button

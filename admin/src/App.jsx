@@ -70,7 +70,7 @@ function App() {
               <Route path="/settings/navigation" element={<Navigation />} />
               <Route path="/settings/payments" element={<PaymentSettings />} />
               <Route path="/settings/notifications" element={<NotificationSettings />} />
-              <Route path="/settings/social-login" element={<SocialLoginSettings />} />
+              <Route path="/apps/social-login" element={<SocialLoginSettings />} />
               <Route path="/settings/pages" element={<Pages />} />
               <Route path="/settings/pages/new" element={<PageForm />} />
               <Route path="/settings/pages/:id/edit" element={<PageForm />} />

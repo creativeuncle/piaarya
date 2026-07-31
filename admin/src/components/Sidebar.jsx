@@ -43,7 +43,6 @@ const SETTINGS_CHILDREN = [
   { to: '/settings/pages', label: 'Pages' },
   { to: '/settings/payments', label: 'Payments' },
   { to: '/settings/notifications', label: 'Notifications' },
-  { to: '/settings/social-login', label: 'Social Login' },
 ];
 
 export default function Sidebar() {

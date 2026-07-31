@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
 import { fetchSettings, updateSettings } from '../api/settings';
+import { fetchApps } from '../api/apps';
 
 function Toggle({ checked, onChange, label }) {
   return (
@@ -45,6 +49,7 @@ export default function SocialLoginSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [appInstalled, setAppInstalled] = useState(null);
 
   function applyData(data) {
     const s = data.socialLogin;
@@ -74,8 +79,12 @@ export default function SocialLoginSettings() {
   }
 
   useEffect(() => {
-    fetchSettings()
-      .then(applyData)
+    Promise.all([fetchSettings(), fetchApps()])
+      .then(([settingsData, apps]) => {
+        applyData(settingsData);
+        const app = apps.find((a) => a.key === 'social_login');
+        setAppInstalled(Boolean(app?.isInstalled));
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -124,8 +133,28 @@ export default function SocialLoginSettings() {
     );
   }
 
+  if (!appInstalled) {
+    return (
+      <div className="p-6">
+        <Link to="/apps" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-4">
+          <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={1.5} />
+          Back to Apps
+        </Link>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-2">Social Login</h1>
+        <p className="text-sm text-gray-500 max-w-md">
+          This app isn't installed. Install "Social Login" from the Apps page to configure Google, Facebook, and
+          Apple sign-in.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
+      <Link to="/apps" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-4">
+        <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={1.5} />
+        Back to Apps
+      </Link>
       <h1 className="text-2xl font-semibold text-gray-900 mb-2">Social Login</h1>
       <p className="text-sm text-gray-500 mb-6 max-w-2xl">
         Add credentials for each provider and toggle it on once ready. Storing these keys here is the prep step —
