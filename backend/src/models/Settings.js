@@ -30,6 +30,11 @@ const settingsSchema = new mongoose.Schema(
         fast2smsApiKey: String,
         adminPhone: String,
       },
+      whatsapp: {
+        accessToken: String,
+        phoneNumberId: String,
+        adminPhone: String,
+      },
     },
     currency: {
       baseCurrency: { type: String, default: 'INR' },

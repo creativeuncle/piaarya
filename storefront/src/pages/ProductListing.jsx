@@ -9,6 +9,7 @@ import Pagination from '../components/Pagination';
 import FilterDrawer from '../components/category/FilterDrawer';
 import AppliedFilterPills from '../components/category/AppliedFilterPills';
 import SortDropdown from '../components/category/SortDropdown';
+import { useSeo } from '../hooks/useSeo';
 
 const PAGE_SIZE = 28;
 
@@ -95,6 +96,16 @@ export default function ProductListing() {
   }
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
+  const activeCategory = categories.find((c) => filters.categories.includes(c._id));
+
+  useSeo({
+    title: searchQuery
+      ? `Search results for "${searchQuery}" | Piaarya`
+      : activeCategory
+        ? `${activeCategory.seoTitle || activeCategory.name} | Piaarya`
+        : 'Shop All Products | Piaarya',
+    description: activeCategory?.metaDescription,
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">

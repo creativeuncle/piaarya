@@ -1,9 +1,10 @@
 const Cart = require('../models/Cart');
 const EmailCampaign = require('../models/EmailCampaign');
+const WhatsAppCampaign = require('../models/WhatsAppCampaign');
 const Customer = require('../models/Customer');
 const Order = require('../models/Order');
 const Settings = require('../models/Settings');
-const { sendBrevoEmail } = require('../services/notificationService');
+const { sendBrevoEmail, sendWhatsAppMessage } = require('../services/notificationService');
 
 async function listAbandonedCarts(req, res, next) {
   try {
@@ -47,19 +48,19 @@ async function updateCartStatus(req, res, next) {
 async function getSegmentCustomers(segment) {
   if (segment === 'abandoned_cart') {
     const customerIds = await Cart.distinct('customer', { status: 'abandoned' });
-    return Customer.find({ _id: { $in: customerIds }, isBlocked: false }).select('name email');
+    return Customer.find({ _id: { $in: customerIds }, isBlocked: false }).select('name email phone');
   }
   if (segment === 'no_orders_30d') {
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const recentCustomerIds = await Order.distinct('customer', { createdAt: { $gte: since } });
-    return Customer.find({ isBlocked: false, _id: { $nin: recentCustomerIds } }).select('name email');
+    return Customer.find({ isBlocked: false, _id: { $nin: recentCustomerIds } }).select('name email phone');
   }
   if (segment === 'first_time_buyers') {
     const counts = await Order.aggregate([{ $group: { _id: '$customer', count: { $sum: 1 } } }]);
     const firstTimeIds = counts.filter((c) => c.count === 1).map((c) => c._id);
-    return Customer.find({ _id: { $in: firstTimeIds }, isBlocked: false }).select('name email');
+    return Customer.find({ _id: { $in: firstTimeIds }, isBlocked: false }).select('name email phone');
   }
-  return Customer.find({ isBlocked: false }).select('name email');
+  return Customer.find({ isBlocked: false }).select('name email phone');
 }
 
 async function listCampaigns(req, res, next) {
@@ -140,6 +141,81 @@ async function sendCampaign(req, res, next) {
   }
 }
 
+async function listWhatsAppCampaigns(req, res, next) {
+  try {
+    const campaigns = await WhatsAppCampaign.find().sort({ createdAt: -1 });
+    res.json(campaigns);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function createWhatsAppCampaign(req, res, next) {
+  try {
+    const { name, message, segment } = req.body;
+    const campaign = await WhatsAppCampaign.create({ name, message, segment });
+    res.status(201).json(campaign);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function deleteWhatsAppCampaign(req, res, next) {
+  try {
+    const campaign = await WhatsAppCampaign.findByIdAndDelete(req.params.id);
+    if (!campaign) return res.status(404).json({ message: 'Campaign not found' });
+    res.json({ message: 'Campaign deleted' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function sendWhatsAppCampaign(req, res, next) {
+  try {
+    const campaign = await WhatsAppCampaign.findById(req.params.id);
+    if (!campaign) return res.status(404).json({ message: 'Campaign not found' });
+    if (campaign.status === 'sent') return res.status(400).json({ message: 'Campaign already sent' });
+
+    const customers = await getSegmentCustomers(campaign.segment);
+    const settings = await Settings.findOne();
+    const whatsappConfig = settings?.notifications?.whatsapp || {};
+    const canSendRealWhatsapp = Boolean(whatsappConfig.accessToken && whatsappConfig.phoneNumberId);
+
+    let sentCount = 0;
+    let failedCount = 0;
+
+    if (canSendRealWhatsapp) {
+      for (const customer of customers) {
+        if (!customer.phone) continue;
+        try {
+          await sendWhatsAppMessage({
+            accessToken: whatsappConfig.accessToken,
+            phoneNumberId: whatsappConfig.phoneNumberId,
+            phone: customer.phone,
+            message: campaign.message,
+          });
+          sentCount += 1;
+        } catch (err) {
+          failedCount += 1;
+          console.error(`Campaign WhatsApp send failed for ${customer.phone}:`, err.message);
+        }
+      }
+    }
+
+    campaign.status = 'sent';
+    campaign.recipientCount = customers.length;
+    campaign.sentCount = sentCount;
+    campaign.failedCount = failedCount;
+    campaign.deliveryMode = canSendRealWhatsapp ? 'live' : 'simulated';
+    campaign.sentAt = new Date();
+    await campaign.save();
+
+    res.json(campaign);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   listAbandonedCarts,
   sendRecoveryEmail,
@@ -148,4 +224,8 @@ module.exports = {
   createCampaign,
   deleteCampaign,
   sendCampaign,
+  listWhatsAppCampaigns,
+  createWhatsAppCampaign,
+  deleteWhatsAppCampaign,
+  sendWhatsAppCampaign,
 };

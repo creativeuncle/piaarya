@@ -22,6 +22,7 @@ function Toggle({ checked, onChange, label }) {
 const TABS = [
   { key: 'email', label: 'Email Provider — Brevo' },
   { key: 'sms', label: 'SMS Provider — Fast2SMS' },
+  { key: 'whatsapp', label: 'WhatsApp Provider — Meta' },
   { key: 'events', label: 'Event Notifications' },
 ];
 
@@ -53,6 +54,14 @@ const EMPTY_SMS_CONFIG = {
   adminPhone: '',
 };
 
+const EMPTY_WHATSAPP_CONFIG = {
+  accessToken: '',
+  accessTokenMasked: '',
+  hasAccessToken: false,
+  phoneNumberId: '',
+  adminPhone: '',
+};
+
 export default function NotificationSettings() {
   const [activeTab, setActiveTab] = useState('email');
   const [channels, setChannels] = useState({ email: true, sms: true, whatsapp: true });
@@ -60,6 +69,7 @@ export default function NotificationSettings() {
   const [eventDefs, setEventDefs] = useState([]);
   const [emailConfig, setEmailConfig] = useState(EMPTY_EMAIL_CONFIG);
   const [smsConfig, setSmsConfig] = useState(EMPTY_SMS_CONFIG);
+  const [whatsappConfig, setWhatsappConfig] = useState(EMPTY_WHATSAPP_CONFIG);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -84,6 +94,13 @@ export default function NotificationSettings() {
           fast2smsApiKeyMasked: data.notifications.sms.fast2smsApiKeyMasked,
           hasFast2smsApiKey: data.notifications.sms.hasFast2smsApiKey,
           adminPhone: data.notifications.sms.adminPhone,
+        });
+        setWhatsappConfig({
+          accessToken: '',
+          accessTokenMasked: data.notifications.whatsapp.accessTokenMasked,
+          hasAccessToken: data.notifications.whatsapp.hasAccessToken,
+          phoneNumberId: data.notifications.whatsapp.phoneNumberId,
+          adminPhone: data.notifications.whatsapp.adminPhone,
         });
       })
       .catch(() => {})
@@ -115,6 +132,10 @@ export default function NotificationSettings() {
     setSmsConfig((prev) => ({ ...prev, [field]: value }));
   }
 
+  function setWhatsappField(field, value) {
+    setWhatsappConfig((prev) => ({ ...prev, [field]: value }));
+  }
+
   async function handleSave() {
     setSaving(true);
     setMessage('');
@@ -133,6 +154,11 @@ export default function NotificationSettings() {
             fast2smsApiKey: smsConfig.fast2smsApiKey,
             adminPhone: smsConfig.adminPhone,
           },
+          whatsapp: {
+            accessToken: whatsappConfig.accessToken,
+            phoneNumberId: whatsappConfig.phoneNumberId,
+            adminPhone: whatsappConfig.adminPhone,
+          },
         },
       });
       setChannels(data.notifications.channels);
@@ -150,6 +176,13 @@ export default function NotificationSettings() {
         fast2smsApiKeyMasked: data.notifications.sms.fast2smsApiKeyMasked,
         hasFast2smsApiKey: data.notifications.sms.hasFast2smsApiKey,
         adminPhone: data.notifications.sms.adminPhone,
+      });
+      setWhatsappConfig({
+        accessToken: '',
+        accessTokenMasked: data.notifications.whatsapp.accessTokenMasked,
+        hasAccessToken: data.notifications.whatsapp.hasAccessToken,
+        phoneNumberId: data.notifications.whatsapp.phoneNumberId,
+        adminPhone: data.notifications.whatsapp.adminPhone,
       });
       setMessage('Notification settings updated.');
     } catch (err) {
@@ -172,8 +205,9 @@ export default function NotificationSettings() {
       <h1 className="text-2xl font-semibold text-gray-900 mb-2">Notifications</h1>
       <p className="text-sm text-gray-500 mb-6 max-w-2xl">
         Control which channels customer notifications go out on, and customize the message for each order/return
-        event. Connect Brevo for real emails and Fast2SMS for real SMS — WhatsApp has no live provider connected
-        yet, so it still records as simulated activity.
+        event. Connect Brevo for real emails, Fast2SMS for real SMS, and Meta's WhatsApp Cloud API for real WhatsApp
+        messages — anything left unconfigured (or WhatsApp sent outside Meta's 24-hour window) still records as
+        simulated activity.
       </p>
 
       <div className="flex flex-wrap gap-2 mb-4">
@@ -281,6 +315,55 @@ export default function NotificationSettings() {
               />
               <p className="text-xs text-gray-400 mt-1">
                 Gets a copy of Order Placed, Processing, Delivered, Return Requested, and Exchange Requested SMS.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'whatsapp' && (
+        <div className="bg-white rounded-lg shadow border border-gray-100 p-6 max-w-3xl mb-6">
+          <h2 className="text-base font-semibold text-gray-900 mb-1">WhatsApp Provider — Meta Cloud API</h2>
+          <p className="text-xs text-gray-500 mb-4">
+            From developers.facebook.com → your WhatsApp Business app → API Setup: copy the temporary/system-user
+            access token and Phone Number ID. Note: Meta only delivers freeform text within an active 24-hour
+            customer conversation window — business-initiated messages outside that window need a pre-approved
+            message template, which isn't wired up here yet.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className="block text-xs text-gray-500 mb-1">Access Token</label>
+              <input
+                type="password"
+                className="input w-full"
+                placeholder={whatsappConfig.hasAccessToken ? whatsappConfig.accessTokenMasked : 'EAAxxxxxxxxxxxx'}
+                value={whatsappConfig.accessToken}
+                onChange={(e) => setWhatsappField('accessToken', e.target.value)}
+              />
+              {whatsappConfig.hasAccessToken && (
+                <p className="text-xs text-gray-400 mt-1">Currently saved: {whatsappConfig.accessTokenMasked}. Leave blank to keep it.</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Phone Number ID</label>
+              <input
+                className="input w-full"
+                placeholder="1234567890"
+                value={whatsappConfig.phoneNumberId}
+                onChange={(e) => setWhatsappField('phoneNumberId', e.target.value)}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs text-gray-500 mb-1">Admin Notification Phone</label>
+              <input
+                type="tel"
+                className="input w-full"
+                placeholder="9876543210"
+                value={whatsappConfig.adminPhone}
+                onChange={(e) => setWhatsappField('adminPhone', e.target.value)}
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Gets a copy of Order Placed, Processing, Delivered, Return Requested, and Exchange Requested WhatsApp messages.
               </p>
             </div>
           </div>

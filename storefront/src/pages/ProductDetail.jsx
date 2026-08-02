@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useWishlist } from '../hooks/useWishlist';
 import { recordView } from '../hooks/useRecentlyViewed';
+import { useSeo } from '../hooks/useSeo';
 import ProductGallery from '../components/product/ProductGallery';
 import VariantSelector from '../components/product/VariantSelector';
 import SizeChartModal from '../components/product/SizeChartModal';
@@ -40,6 +41,27 @@ export default function ProductDetail() {
       .catch((err) => setError(err.response?.data?.message || err.message))
       .finally(() => setLoading(false));
   }, [id]);
+
+  useSeo({
+    title: product ? `${product.seoTitle || product.name} | Piaarya` : undefined,
+    description: product?.metaDescription,
+    canonicalPath: product ? `/products/${product._id}` : undefined,
+    jsonLd: product
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: product.name,
+          description: product.metaDescription || product.description,
+          image: product.media?.map((m) => m.url) || [],
+          offers: {
+            '@type': 'Offer',
+            price: product.price,
+            priceCurrency: 'INR',
+            availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+          },
+        }
+      : undefined,
+  });
 
   if (loading) return <p className="text-center text-gray-400 text-sm py-20">Loading...</p>;
   if (error) return <p className="text-center text-red-600 text-sm py-20">{error}</p>;

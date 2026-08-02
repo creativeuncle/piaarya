@@ -39,3 +39,28 @@ export async function sendCampaign(id) {
   const { data } = await axios.post(`/api/marketing/campaigns/${id}/send`);
   return data;
 }
+
+export async function fetchWhatsAppCampaigns() {
+  const { data } = await axios.get('/api/marketing/whatsapp-campaigns');
+  return data;
+}
+
+export async function fetchWhatsAppCampaignSegments() {
+  const { data } = await axios.get('/api/marketing/whatsapp-campaigns/segments');
+  return data;
+}
+
+export async function createWhatsAppCampaign(payload) {
+  const { data } = await axios.post('/api/marketing/whatsapp-campaigns', payload);
+  return data;
+}
+
+export async function deleteWhatsAppCampaign(id) {
+  const { data } = await axios.delete(`/api/marketing/whatsapp-campaigns/${id}`);
+  return data;
+}
+
+export async function sendWhatsAppCampaign(id) {
+  const { data } = await axios.post(`/api/marketing/whatsapp-campaigns/${id}/send`);
+  return data;
+}

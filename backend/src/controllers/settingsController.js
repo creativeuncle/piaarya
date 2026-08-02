@@ -24,6 +24,12 @@ async function toPublicSettings(settings) {
     hasFast2smsApiKey: Boolean(settings?.notifications?.sms?.fast2smsApiKey),
     adminPhone: settings?.notifications?.sms?.adminPhone || '',
   };
+  notifications.whatsapp = {
+    accessTokenMasked: maskSecret(settings?.notifications?.whatsapp?.accessToken),
+    hasAccessToken: Boolean(settings?.notifications?.whatsapp?.accessToken),
+    phoneNumberId: settings?.notifications?.whatsapp?.phoneNumberId || '',
+    adminPhone: settings?.notifications?.whatsapp?.adminPhone || '',
+  };
 
   const socialLogin = {
     google: {
@@ -177,6 +183,21 @@ async function updateSettings(req, res, next) {
           fast2smsApiKey: notifications.sms?.fast2smsApiKey
             ? notifications.sms.fast2smsApiKey
             : existing?.notifications?.sms?.fast2smsApiKey,
+        },
+        whatsapp: {
+          phoneNumberId:
+            notifications.whatsapp?.phoneNumberId !== undefined
+              ? notifications.whatsapp.phoneNumberId
+              : existing?.notifications?.whatsapp?.phoneNumberId,
+          adminPhone:
+            notifications.whatsapp?.adminPhone !== undefined
+              ? notifications.whatsapp.adminPhone
+              : existing?.notifications?.whatsapp?.adminPhone,
+          // Blank access token in the request means "keep the existing one" — the
+          // UI never sends the real token back, only a masked placeholder.
+          accessToken: notifications.whatsapp?.accessToken
+            ? notifications.whatsapp.accessToken
+            : existing?.notifications?.whatsapp?.accessToken,
         },
       };
     }

@@ -143,6 +143,35 @@ async function sendFast2SmsOtp({ apiKey, phone, otp }) {
   return data;
 }
 
+// Sends a freeform text message via Meta's WhatsApp Cloud API. Requires a
+// System User access token + phone_number_id from a WhatsApp Business
+// account (Settings > Notifications). Note: Meta only delivers freeform
+// business-initiated text within an active 24-hour customer conversation
+// window; outside that window WhatsApp requires a pre-approved message
+// template instead, which isn't wired here.
+async function sendWhatsAppMessage({ accessToken, phoneNumberId, phone, message }) {
+  const to = formatIndianMobile(phone);
+  const response = await fetch(`https://graph.facebook.com/v18.0/${phoneNumberId}/messages`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      messaging_product: 'whatsapp',
+      to: `91${to}`,
+      type: 'text',
+      text: { body: message },
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(`WhatsApp API error: ${data.error?.message || response.statusText}`);
+  }
+  return data;
+}
+
 // Standalone helper used by the login-with-OTP flow. Returns true if a real
 // SMS was sent, false if Fast2SMS isn't configured yet (caller should fall
 // back to returning the OTP in the response for testing, as before).
@@ -186,6 +215,21 @@ async function dispatch(recipient, ctx) {
     }
   }
 
+  if (recipient.channel === 'whatsapp' && ctx.canSendRealWhatsapp) {
+    try {
+      await sendWhatsAppMessage({
+        accessToken: ctx.whatsappConfig.accessToken,
+        phoneNumberId: ctx.whatsappConfig.phoneNumberId,
+        phone: recipient.to,
+        message: ctx.message,
+      });
+      status = 'sent';
+    } catch (err) {
+      status = 'failed';
+      console.error(`WhatsApp send failed for ${ctx.eventKey}:`, err.message);
+    }
+  }
+
   await NotificationLog.create({
     event: ctx.eventKey,
     channel: recipient.channel,
@@ -199,11 +243,10 @@ async function dispatch(recipient, ctx) {
 
 // Fires a notification for an order/return lifecycle event across whichever
 // channels (email/SMS/WhatsApp) are enabled for it. Email actually sends via
-// Brevo once an API key + sender email are configured in Settings >
-// Notifications; SMS and WhatsApp have no live provider connected yet, so
-// those (and email without a configured key) are recorded as simulated
-// NotificationLog entries instead of dispatched — swapping in a real SMS/
-// WhatsApp provider later only touches the dispatch() function above.
+// Brevo, SMS via Fast2SMS, and WhatsApp via Meta's Cloud API once each is
+// configured in Settings > Notifications — anything unconfigured (or
+// WhatsApp outside Meta's 24h freeform-message window) is recorded as
+// simulated NotificationLog entries instead of dispatched.
 async function triggerNotification(eventKey, { customer, order, vars }) {
   try {
     const settings = await Settings.findOne();
@@ -226,6 +269,8 @@ async function triggerNotification(eventKey, { customer, order, vars }) {
     const canSendRealEmail = Boolean(emailConfig.brevoApiKey && emailConfig.senderEmail);
     const smsConfig = stored.sms || {};
     const canSendRealSms = Boolean(smsConfig.fast2smsApiKey);
+    const whatsappConfig = stored.whatsapp || {};
+    const canSendRealWhatsapp = Boolean(whatsappConfig.accessToken && whatsappConfig.phoneNumberId);
 
     const recipients = [];
     if (customer) {
@@ -234,7 +279,19 @@ async function triggerNotification(eventKey, { customer, order, vars }) {
       if (channels.whatsapp && customer.phone) recipients.push({ channel: 'whatsapp', to: customer.phone });
     }
 
-    const ctx = { eventKey, message, subject, customer, order, emailConfig, canSendRealEmail, smsConfig, canSendRealSms };
+    const ctx = {
+      eventKey,
+      message,
+      subject,
+      customer,
+      order,
+      emailConfig,
+      canSendRealEmail,
+      smsConfig,
+      canSendRealSms,
+      whatsappConfig,
+      canSendRealWhatsapp,
+    };
     await Promise.all(recipients.map((r) => dispatch(r, ctx)));
 
     if (ADMIN_COPY_EVENTS.includes(eventKey)) {
@@ -247,6 +304,9 @@ async function triggerNotification(eventKey, { customer, order, vars }) {
       if (channels.sms && smsConfig.adminPhone) {
         await dispatch({ channel: 'sms', to: smsConfig.adminPhone }, ctx);
       }
+      if (channels.whatsapp && whatsappConfig.adminPhone) {
+        await dispatch({ channel: 'whatsapp', to: whatsappConfig.adminPhone }, ctx);
+      }
     }
   } catch (err) {
     // Notifications must never break the order/return flow they're attached to.
@@ -254,4 +314,4 @@ async function triggerNotification(eventKey, { customer, order, vars }) {
   }
 }
 
-module.exports = { EVENTS, getNotificationSettings, triggerNotification, sendOtpSms, sendBrevoEmail };
+module.exports = { EVENTS, getNotificationSettings, triggerNotification, sendOtpSms, sendBrevoEmail, sendWhatsAppMessage };

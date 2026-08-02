@@ -25,6 +25,7 @@ const shippingRoutes = require('./routes/shippingRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const giftCardRoutes = require('./routes/giftCardRoutes');
 const currencyRoutes = require('./routes/currencyRoutes');
+const { getSitemap, getRobotsTxt } = require('./controllers/seoController');
 const errorHandler = require('./middleware/errorHandler');
 const { UPLOAD_DIR } = require('./middleware/upload');
 
@@ -60,6 +61,8 @@ app.use('/api/shipping', shippingRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/gift-cards', giftCardRoutes);
 app.use('/api/currency', currencyRoutes);
+app.get('/sitemap.xml', getSitemap);
+app.get('/robots.txt', getRobotsTxt);
 
 app.use(errorHandler);
 
