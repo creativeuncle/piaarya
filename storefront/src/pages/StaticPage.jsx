@@ -11,7 +11,6 @@ export default function StaticPage() {
   useEffect(() => {
     setLoading(true);
     setNotFound(false);
-    window.scrollTo(0, 0);
     fetchPageBySlug(slug)
       .then(setPage)
       .catch(() => setNotFound(true))

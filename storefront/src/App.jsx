@@ -22,11 +22,13 @@ import DashboardMyReviews from './pages/dashboard/MyReviews';
 import DashboardAddress from './pages/dashboard/Address';
 import DashboardRequests from './pages/dashboard/Requests';
 import StaticPage from './pages/StaticPage';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   return (
     <AuthProvider>
       <CartProvider>
+        <ScrollToTop />
         <div className="min-h-screen flex flex-col">
           <Header />
           <main className="flex-1">
