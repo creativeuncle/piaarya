@@ -28,7 +28,7 @@ const returnRequestSchema = new mongoose.Schema(
     status: { type: String, enum: ['requested', 'approved', 'rejected'], default: 'requested' },
     pickupStatus: { type: String, enum: ['not_scheduled', 'scheduled', 'picked_up'], default: 'not_scheduled' },
     refundStatus: { type: String, enum: ['not_applicable', 'pending', 'processed', 'failed'], default: 'pending' },
-    refundMethod: { type: String, enum: ['upi', 'bank', 'original_payment_method'] },
+    refundMethod: { type: String, enum: ['upi', 'bank', 'original_payment_method', 'store_credit'] },
     refundDetails: {
       upiId: String,
       accountHolderName: String,

@@ -55,6 +55,11 @@ const orderSchema = new mongoose.Schema(
       totalTax: { type: Number, default: 0 },
       taxType: { type: String, enum: ['intra_state', 'inter_state', null], default: null },
     },
+    giftCard: {
+      code: String,
+      amountUsed: Number,
+    },
+    storeCreditUsed: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

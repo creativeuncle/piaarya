@@ -23,7 +23,10 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!auth?.token) return;
-    authApi.fetchMe(auth.token).catch(() => setAuth(null));
+    authApi
+      .fetchMe(auth.token)
+      .then(({ customer }) => setAuth((prev) => (prev ? { ...prev, customer } : prev)))
+      .catch(() => setAuth(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -30,6 +30,11 @@ export async function adjustRewardPoints(id, payload) {
   return data;
 }
 
+export async function adjustStoreCredit(id, payload) {
+  const { data } = await axios.post(`/api/customers/${id}/store-credit`, payload);
+  return data;
+}
+
 export async function fetchCustomerActivity(id) {
   const { data } = await axios.get(`/api/customers/${id}/activity`);
   return data;

@@ -22,6 +22,7 @@ const customerSchema = new mongoose.Schema(
     passwordHash: { type: String, required: true },
     addresses: [addressSchema],
     rewardPoints: { type: Number, default: 0 },
+    storeCredit: { type: Number, default: 0 },
     isBlocked: { type: Boolean, default: false },
     otpCode: { type: String, select: false },
     otpExpiresAt: { type: Date, select: false },

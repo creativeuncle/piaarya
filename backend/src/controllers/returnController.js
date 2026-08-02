@@ -1,6 +1,7 @@
 const ReturnRequest = require('../models/ReturnRequest');
 const Order = require('../models/Order');
 const PaymentTransaction = require('../models/PaymentTransaction');
+const StoreCreditLog = require('../models/StoreCreditLog');
 const { getActiveGateway, processRefund } = require('../services/paymentGateway');
 const { triggerNotification } = require('../services/notificationService');
 
@@ -64,7 +65,7 @@ async function updateStatus(req, res, next) {
     returnRequest.status = status;
 
     if (status === 'approved' && returnRequest.type === 'return' && returnRequest.refundStatus !== 'processed') {
-      const order = await Order.findById(returnRequest.order).populate('customer', 'name email phone');
+      const order = await Order.findById(returnRequest.order).populate('customer', 'name email phone storeCredit');
       if (!order) return res.status(404).json({ message: 'Order for this return was not found' });
 
       const refundAmount = returnRequest.items.reduce((sum, returnItem) => {
@@ -76,23 +77,6 @@ async function updateStatus(req, res, next) {
         return sum + (orderItem ? orderItem.price * returnItem.quantity : 0);
       }, 0);
 
-      let destination;
-      if (returnRequest.refundMethod === 'upi') {
-        destination = { method: 'upi', upiId: returnRequest.refundDetails?.upiId };
-      } else if (returnRequest.refundMethod === 'bank') {
-        destination = {
-          method: 'bank',
-          accountHolderName: returnRequest.refundDetails?.accountHolderName,
-          accountNumber: returnRequest.refundDetails?.accountNumber,
-          ifsc: returnRequest.refundDetails?.ifsc,
-        };
-      } else {
-        destination = { method: 'original_payment_method' };
-      }
-
-      const gateway = order.paymentReference?.gateway || (await getActiveGateway());
-      const result = await processRefund({ gateway, amount: refundAmount, destination, order });
-
       const priorRefunds = await PaymentTransaction.find({
         order: order._id,
         type: { $in: ['refund', 'partial_refund'] },
@@ -101,12 +85,49 @@ async function updateStatus(req, res, next) {
       const alreadyRefunded = priorRefunds.reduce((sum, t) => sum + t.amount, 0);
       const isFullRefund = alreadyRefunded + refundAmount >= order.totalAmount;
 
+      let result;
+      let transactionMethod;
+      if (returnRequest.refundMethod === 'store_credit') {
+        const previousValue = order.customer.storeCredit || 0;
+        const newValue = previousValue + refundAmount;
+        order.customer.storeCredit = newValue;
+        await order.customer.save();
+        await StoreCreditLog.create({
+          customer: order.customer._id,
+          amountChange: refundAmount,
+          previousValue,
+          newValue,
+          reason: `Return refund for order ${order.orderNumber}`,
+          order: order._id,
+        });
+        result = { gateway: 'store_credit', reference: `SC-${returnRequest._id}`, processedAt: new Date(), simulated: false };
+        transactionMethod = 'store_credit';
+      } else {
+        let destination;
+        if (returnRequest.refundMethod === 'upi') {
+          destination = { method: 'upi', upiId: returnRequest.refundDetails?.upiId };
+        } else if (returnRequest.refundMethod === 'bank') {
+          destination = {
+            method: 'bank',
+            accountHolderName: returnRequest.refundDetails?.accountHolderName,
+            accountNumber: returnRequest.refundDetails?.accountNumber,
+            ifsc: returnRequest.refundDetails?.ifsc,
+          };
+        } else {
+          destination = { method: 'original_payment_method' };
+        }
+
+        const gateway = order.paymentReference?.gateway || (await getActiveGateway());
+        result = await processRefund({ gateway, amount: refundAmount, destination, order });
+        transactionMethod = gateway;
+      }
+
       await PaymentTransaction.create({
         order: order._id,
         type: isFullRefund ? 'refund' : 'partial_refund',
         amount: refundAmount,
         status: 'success',
-        method: gateway,
+        method: transactionMethod,
         reason: `Return approved (request ${returnRequest._id})`,
       });
 

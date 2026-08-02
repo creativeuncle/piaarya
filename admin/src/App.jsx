@@ -28,6 +28,8 @@ import PageForm from './pages/PageForm';
 import Apps from './pages/Apps';
 import ShippingSettings from './pages/ShippingSettings';
 import TaxSettings from './pages/TaxSettings';
+import Analytics from './pages/Analytics';
+import GiftCards from './pages/GiftCards';
 
 function AdminLayout({ children }) {
   return (
@@ -48,6 +50,7 @@ function App() {
           <AdminLayout>
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/analytics" element={<Analytics />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/products" element={<Products />} />
               <Route path="/products/new" element={<ProductForm />} />
@@ -61,6 +64,7 @@ function App() {
               <Route path="/coupons" element={<Coupons />} />
               <Route path="/coupons/new" element={<CouponForm />} />
               <Route path="/coupons/:id/edit" element={<CouponForm />} />
+              <Route path="/gift-cards" element={<GiftCards />} />
               <Route path="/reviews" element={<Reviews />} />
               <Route path="/returns" element={<Returns />} />
               <Route path="/returns/new" element={<ReturnForm />} />

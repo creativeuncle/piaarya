@@ -1,6 +1,7 @@
 const Customer = require('../models/Customer');
 const Order = require('../models/Order');
 const RewardPointsLog = require('../models/RewardPointsLog');
+const StoreCreditLog = require('../models/StoreCreditLog');
 
 async function listCustomers(req, res, next) {
   try {
@@ -106,14 +107,42 @@ async function adjustRewardPoints(req, res, next) {
   }
 }
 
+async function adjustStoreCredit(req, res, next) {
+  try {
+    const amountChange = Number(req.body.delta);
+    if (!amountChange) return res.status(400).json({ message: 'delta must be a non-zero number' });
+
+    const customer = await Customer.findById(req.params.id);
+    if (!customer) return res.status(404).json({ message: 'Customer not found' });
+
+    const previousValue = customer.storeCredit || 0;
+    const newValue = Math.max(0, previousValue + amountChange);
+    customer.storeCredit = newValue;
+    await customer.save();
+
+    await StoreCreditLog.create({
+      customer: customer._id,
+      amountChange,
+      previousValue,
+      newValue,
+      reason: req.body.reason,
+    });
+
+    res.json(customer);
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function getActivity(req, res, next) {
   try {
     const customer = await Customer.findById(req.params.id);
     if (!customer) return res.status(404).json({ message: 'Customer not found' });
 
-    const [orders, rewardLogs] = await Promise.all([
+    const [orders, rewardLogs, creditLogs] = await Promise.all([
       Order.find({ customer: req.params.id }).sort({ createdAt: -1 }),
       RewardPointsLog.find({ customer: req.params.id }).sort({ createdAt: -1 }),
+      StoreCreditLog.find({ customer: req.params.id }).sort({ createdAt: -1 }),
     ]);
 
     const events = [
@@ -127,6 +156,11 @@ async function getActivity(req, res, next) {
         type: 'reward_points',
         createdAt: r.createdAt,
         description: `Reward points ${r.pointsChange > 0 ? '+' : ''}${r.pointsChange}${r.reason ? ` (${r.reason})` : ''}`,
+      })),
+      ...creditLogs.map((c) => ({
+        type: 'store_credit',
+        createdAt: c.createdAt,
+        description: `Store credit ${c.amountChange > 0 ? '+' : ''}₹${c.amountChange}${c.reason ? ` (${c.reason})` : ''}`,
       })),
     ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
@@ -143,5 +177,6 @@ module.exports = {
   setBlocked,
   getCustomerOrders,
   adjustRewardPoints,
+  adjustStoreCredit,
   getActivity,
 };

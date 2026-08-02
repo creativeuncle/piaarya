@@ -4,6 +4,8 @@ const Order = require('../models/Order');
 const Customer = require('../models/Customer');
 const Product = require('../models/Product');
 const Coupon = require('../models/Coupon');
+const GiftCard = require('../models/GiftCard');
+const StoreCreditLog = require('../models/StoreCreditLog');
 const PaymentTransaction = require('../models/PaymentTransaction');
 const { createStripeCheckoutSession, retrieveStripeSession, isStripeConfigured } = require('../services/paymentGateway');
 const { triggerNotification } = require('../services/notificationService');
@@ -111,7 +113,7 @@ async function getInvoice(req, res, next) {
 
 async function createOrder(req, res, next) {
   try {
-    const { customer: customerInfo, shippingAddress, items, couponCode, paymentMethod, shippingRateLabel } = req.body;
+    const { customer: customerInfo, shippingAddress, items, couponCode, paymentMethod, shippingRateLabel, giftCardCode, useStoreCredit } = req.body;
 
     if (!customerInfo?.email || !customerInfo?.name) {
       return res.status(400).json({ message: 'Customer name and email are required' });
@@ -197,14 +199,49 @@ async function createOrder(req, res, next) {
       totalAmount += taxBreakup.totalTax;
     }
 
+    let giftCardUsed = null;
+    if (giftCardCode) {
+      const giftCard = await GiftCard.findOne({ code: String(giftCardCode).toUpperCase().trim() });
+      const isValid =
+        giftCard && giftCard.isActive && giftCard.balance > 0 && (!giftCard.expiresAt || new Date() <= giftCard.expiresAt);
+      if (isValid) {
+        const amountToUse = Math.min(giftCard.balance, totalAmount);
+        if (amountToUse > 0) {
+          giftCard.balance -= amountToUse;
+          if (giftCard.balance <= 0) giftCard.isActive = false;
+          await giftCard.save();
+          totalAmount -= amountToUse;
+          giftCardUsed = { code: giftCard.code, amountUsed: amountToUse };
+        }
+      }
+    }
+
+    let storeCreditUsed = 0;
+    if (useStoreCredit && customer.storeCredit > 0 && totalAmount > 0) {
+      storeCreditUsed = Math.min(customer.storeCredit, totalAmount);
+      const previousValue = customer.storeCredit;
+      customer.storeCredit -= storeCreditUsed;
+      await customer.save();
+      await StoreCreditLog.create({
+        customer: customer._id,
+        amountChange: -storeCreditUsed,
+        previousValue,
+        newValue: customer.storeCredit,
+        reason: 'Applied at checkout',
+      });
+      totalAmount -= storeCreditUsed;
+    }
+
+    const coveredByCredits = totalAmount <= 0;
+
     const order = await Order.create({
       orderNumber: `ORD-${Date.now()}`,
       customer: customer._id,
       items: orderItems,
       totalAmount,
-      status: paymentMethod === 'stripe' ? 'pending' : 'new',
+      status: paymentMethod === 'stripe' && !coveredByCredits ? 'pending' : 'new',
       shippingAddress,
-      paymentStatus: 'pending',
+      paymentStatus: coveredByCredits ? 'paid' : 'pending',
       paymentMethod,
       shipping: matchedRate
         ? { zoneName, rateLabel: matchedRate.label, cost: shippingCost }
@@ -219,14 +256,16 @@ async function createOrder(req, res, next) {
             taxType: taxBreakup.taxType,
           }
         : undefined,
+      giftCard: giftCardUsed || undefined,
+      storeCreditUsed: storeCreditUsed || undefined,
     });
 
     await PaymentTransaction.create({
       order: order._id,
       type: 'charge',
       amount: totalAmount,
-      status: 'pending',
-      method: paymentMethod,
+      status: coveredByCredits ? 'success' : 'pending',
+      method: coveredByCredits ? 'gift_card_store_credit' : paymentMethod,
     });
 
     if (appliedCoupon) {
@@ -234,7 +273,7 @@ async function createOrder(req, res, next) {
       await appliedCoupon.save();
     }
 
-    if (paymentMethod === 'stripe') {
+    if (paymentMethod === 'stripe' && !coveredByCredits) {
       const { clientOrigin } = req.body;
       const origin = clientOrigin || process.env.CLIENT_URL || 'http://localhost:5174';
 

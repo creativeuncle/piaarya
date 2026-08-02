@@ -6,6 +6,7 @@ const {
   setBlocked,
   getCustomerOrders,
   adjustRewardPoints,
+  adjustStoreCredit,
   getActivity,
 } = require('../controllers/customerController');
 
@@ -17,6 +18,7 @@ router.put('/:id', updateCustomer);
 router.patch('/:id/block', setBlocked);
 router.get('/:id/orders', getCustomerOrders);
 router.post('/:id/reward-points', adjustRewardPoints);
+router.post('/:id/store-credit', adjustStoreCredit);
 router.get('/:id/activity', getActivity);
 
 module.exports = router;

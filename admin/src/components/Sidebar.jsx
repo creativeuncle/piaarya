@@ -19,16 +19,20 @@ import {
   Settings01Icon,
   ArrowDown01Icon,
   MenuSquareIcon,
+  Analytics01Icon,
+  GiftCardIcon,
 } from '@hugeicons/core-free-icons';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Home', icon: Home01Icon },
+  { to: '/analytics', label: 'Analytics', icon: Analytics01Icon },
   { to: '/orders', label: 'Orders', icon: ShoppingCart01Icon },
   { to: '/products', label: 'Products', icon: Package01Icon },
   { to: '/inventory', label: 'Inventory', icon: WarehouseIcon },
   { to: '/categories', label: 'Categories', icon: Grid2X2Icon },
   { to: '/customers', label: 'Customers', icon: UserGroupIcon },
   { to: '/coupons', label: 'Coupons', icon: Coupon01Icon },
+  { to: '/gift-cards', label: 'Gift Cards', icon: GiftCardIcon },
   { to: '/reviews', label: 'Reviews', icon: StarIcon },
   { to: '/returns', label: 'Returns', icon: ReturnRequestIcon },
   { to: '/payments', label: 'Payments', icon: CreditCardIcon },

@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { createOrder } from '../api/orders';
 import { fetchAddresses, addAddress } from '../api/me';
 import { calculateShipping } from '../api/shipping';
+import { validateGiftCard } from '../api/giftCards';
 
 function emptyForm() {
   return { label: '', line1: '', line2: '', city: '', state: '', pincode: '', country: 'India' };
@@ -28,6 +29,11 @@ export default function Checkout() {
   const [shippingZoneName, setShippingZoneName] = useState(null);
   const [selectedRateLabel, setSelectedRateLabel] = useState(null);
   const [shippingLoading, setShippingLoading] = useState(false);
+  const [giftCardInput, setGiftCardInput] = useState('');
+  const [giftCardApplied, setGiftCardApplied] = useState(null);
+  const [giftCardMessage, setGiftCardMessage] = useState('');
+  const [giftCardChecking, setGiftCardChecking] = useState(false);
+  const [useStoreCredit, setUseStoreCredit] = useState(false);
 
   const currentState = showNewForm
     ? newAddress.state
@@ -63,7 +69,41 @@ export default function Checkout() {
 
   const selectedRate = shippingRates.find((r) => r.label === selectedRateLabel);
   const shippingCost = selectedRate?.price || 0;
-  const grandTotal = total + shippingCost;
+  const preCreditsTotal = total + shippingCost;
+
+  const giftCardDiscount = giftCardApplied ? Math.min(giftCardApplied.balance, preCreditsTotal) : 0;
+  const availableStoreCredit = customer?.storeCredit || 0;
+  const storeCreditDiscount = useStoreCredit
+    ? Math.min(availableStoreCredit, Math.max(preCreditsTotal - giftCardDiscount, 0))
+    : 0;
+  const grandTotal = Math.max(preCreditsTotal - giftCardDiscount - storeCreditDiscount, 0);
+
+  async function handleApplyGiftCard() {
+    if (!giftCardInput.trim()) return;
+    setGiftCardChecking(true);
+    setGiftCardMessage('');
+    try {
+      const data = await validateGiftCard(giftCardInput.trim());
+      if (data.valid) {
+        setGiftCardApplied({ code: data.code, balance: data.balance });
+        setGiftCardMessage(`Applied ${data.code} — ₹${data.balance} available`);
+      } else {
+        setGiftCardApplied(null);
+        setGiftCardMessage(data.message);
+      }
+    } catch (err) {
+      setGiftCardApplied(null);
+      setGiftCardMessage(err.response?.data?.message || err.message);
+    } finally {
+      setGiftCardChecking(false);
+    }
+  }
+
+  function handleRemoveGiftCard() {
+    setGiftCardApplied(null);
+    setGiftCardInput('');
+    setGiftCardMessage('');
+  }
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -140,6 +180,8 @@ export default function Checkout() {
         couponCode: appliedCoupon?.code,
         paymentMethod,
         shippingRateLabel: selectedRateLabel,
+        giftCardCode: giftCardApplied?.code,
+        useStoreCredit,
       });
 
       if (!usingSaved) {
@@ -319,6 +361,48 @@ export default function Checkout() {
         </div>
 
         <div>
+          <h2 className="text-sm font-semibold text-gray-900 mb-4">Gift Card &amp; Store Credit</h2>
+          <div className="space-y-3">
+            {giftCardApplied ? (
+              <div className="flex items-center justify-between border border-gray-300 rounded-md px-4 py-3">
+                <span className="text-sm text-gray-900">
+                  {giftCardApplied.code} <span className="text-gray-500">(₹{giftCardApplied.balance} available)</span>
+                </span>
+                <button type="button" onClick={handleRemoveGiftCard} className="text-sm text-gray-500 underline">
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  className="input flex-1"
+                  placeholder="Gift card code"
+                  value={giftCardInput}
+                  onChange={(e) => setGiftCardInput(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyGiftCard}
+                  disabled={giftCardChecking}
+                  className="border border-gray-300 text-gray-700 text-sm font-medium px-4 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                >
+                  {giftCardChecking ? 'Checking...' : 'Apply'}
+                </button>
+              </div>
+            )}
+            {giftCardMessage && !giftCardApplied && <p className="text-xs text-red-600">{giftCardMessage}</p>}
+            {giftCardMessage && giftCardApplied && <p className="text-xs text-green-600">{giftCardMessage}</p>}
+
+            {availableStoreCredit > 0 && (
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" checked={useStoreCredit} onChange={(e) => setUseStoreCredit(e.target.checked)} />
+                Use store credit (₹{availableStoreCredit} available)
+              </label>
+            )}
+          </div>
+        </div>
+
+        <div>
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Payment Method</h2>
           <div className="space-y-3">
             <label className="flex items-center gap-3 border border-gray-300 rounded-md px-4 py-3 cursor-pointer">
@@ -385,6 +469,18 @@ export default function Checkout() {
               <span>Shipping{selectedRate ? ` (${selectedRate.label})` : ''}</span>
               <span>{shippingCost > 0 ? `₹${shippingCost}` : currentState ? 'Free' : '—'}</span>
             </div>
+            {giftCardDiscount > 0 && (
+              <div className="flex justify-between text-green-600">
+                <span>Gift Card ({giftCardApplied.code})</span>
+                <span>−₹{giftCardDiscount}</span>
+              </div>
+            )}
+            {storeCreditDiscount > 0 && (
+              <div className="flex justify-between text-green-600">
+                <span>Store Credit</span>
+                <span>−₹{storeCreditDiscount}</span>
+              </div>
+            )}
             <div className="flex justify-between text-base font-semibold text-gray-900 border-t border-gray-200 pt-3 mt-3">
               <span>Total</span>
               <span>₹{grandTotal}</span>

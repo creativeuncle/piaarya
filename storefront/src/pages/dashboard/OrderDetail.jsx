@@ -379,7 +379,22 @@ export default function OrderDetail() {
                     />
                     Bank Account
                   </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="radio"
+                      name="refundMethod"
+                      checked={refundMethod === 'store_credit'}
+                      onChange={() => setRefundMethod('store_credit')}
+                    />
+                    Store Credit
+                  </label>
                 </div>
+
+                {refundMethod === 'store_credit' && (
+                  <p className="text-xs text-gray-500">
+                    Your refund will be added as store credit to your account, usable on your next order.
+                  </p>
+                )}
 
                 {refundMethod === 'original_payment_method' && (
                   <p className="text-xs text-gray-500">

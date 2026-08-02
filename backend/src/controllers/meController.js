@@ -12,6 +12,7 @@ function toPublicCustomer(customer) {
     name: customer.name,
     email: customer.email,
     phone: customer.phone,
+    storeCredit: customer.storeCredit || 0,
   };
 }
 
