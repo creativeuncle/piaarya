@@ -18,7 +18,7 @@ import {
   HeartIcon,
   Settings01Icon,
   ArrowDown01Icon,
-  PuzzleIcon,
+  MenuSquareIcon,
 } from '@hugeicons/core-free-icons';
 
 const NAV_ITEMS = [
@@ -35,7 +35,7 @@ const NAV_ITEMS = [
   { to: '/marketing', label: 'Marketing', icon: MarketingIcon },
   { to: '/wishlist', label: 'Wishlist', icon: HeartIcon },
   { to: '/team', label: 'Team', icon: UserMultiple02Icon },
-  { to: '/apps', label: 'Apps', icon: PuzzleIcon },
+  { to: '/apps', label: 'Apps', icon: MenuSquareIcon },
 ];
 
 const SETTINGS_CHILDREN = [
