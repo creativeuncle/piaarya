@@ -21,6 +21,7 @@ const meRoutes = require('./routes/meRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const pageRoutes = require('./routes/pageRoutes');
 const appRoutes = require('./routes/appRoutes');
+const shippingRoutes = require('./routes/shippingRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const { UPLOAD_DIR } = require('./middleware/upload');
 
@@ -52,6 +53,7 @@ app.use('/api/me', meRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/pages', pageRoutes);
 app.use('/api/apps', appRoutes);
+app.use('/api/shipping', shippingRoutes);
 
 app.use(errorHandler);
 

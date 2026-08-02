@@ -37,6 +37,14 @@ const orderSchema = new mongoose.Schema(
       checkoutSessionId: String,
       paymentIntentId: String,
     },
+    shipping: {
+      zoneName: String,
+      rateLabel: String,
+      cost: { type: Number, default: 0 },
+      carrier: String,
+      trackingNumber: String,
+      trackingUrl: String,
+    },
   },
   { timestamps: true }
 );

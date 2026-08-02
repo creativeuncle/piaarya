@@ -42,6 +42,7 @@ const SETTINGS_CHILDREN = [
   { to: '/settings/navigation', label: 'Navigation' },
   { to: '/settings/pages', label: 'Pages' },
   { to: '/settings/payments', label: 'Payments' },
+  { to: '/settings/shipping', label: 'Shipping' },
   { to: '/settings/notifications', label: 'Notifications' },
 ];
 

@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { createOrder } from '../api/orders';
 import { fetchAddresses, addAddress } from '../api/me';
+import { calculateShipping } from '../api/shipping';
 
 function emptyForm() {
   return { label: '', line1: '', line2: '', city: '', state: '', pincode: '', country: 'India' };
@@ -23,6 +24,46 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState(null);
+  const [shippingRates, setShippingRates] = useState([]);
+  const [shippingZoneName, setShippingZoneName] = useState(null);
+  const [selectedRateLabel, setSelectedRateLabel] = useState(null);
+  const [shippingLoading, setShippingLoading] = useState(false);
+
+  const currentState = showNewForm
+    ? newAddress.state
+    : selectedIndex !== null && savedAddresses[selectedIndex]
+      ? savedAddresses[selectedIndex].state
+      : '';
+
+  useEffect(() => {
+    if (!currentState) {
+      setShippingRates([]);
+      setSelectedRateLabel(null);
+      return;
+    }
+    setShippingLoading(true);
+    const timeout = setTimeout(() => {
+      calculateShipping(currentState, total)
+        .then((data) => {
+          setShippingZoneName(data.zoneName);
+          setShippingRates(data.rates);
+          setSelectedRateLabel((prev) =>
+            data.rates.some((r) => r.label === prev) ? prev : data.rates[0]?.label || null
+          );
+        })
+        .catch(() => {
+          setShippingRates([]);
+          setSelectedRateLabel(null);
+        })
+        .finally(() => setShippingLoading(false));
+    }, 300);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentState, total]);
+
+  const selectedRate = shippingRates.find((r) => r.label === selectedRateLabel);
+  const shippingCost = selectedRate?.price || 0;
+  const grandTotal = total + shippingCost;
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -98,6 +139,7 @@ export default function Checkout() {
         })),
         couponCode: appliedCoupon?.code,
         paymentMethod,
+        shippingRateLabel: selectedRateLabel,
       });
 
       if (!usingSaved) {
@@ -245,6 +287,38 @@ export default function Checkout() {
         </div>
 
         <div>
+          <h2 className="text-sm font-semibold text-gray-900 mb-4">Shipping Method</h2>
+          {shippingLoading && <p className="text-sm text-gray-500">Calculating shipping...</p>}
+          {!shippingLoading && !currentState && (
+            <p className="text-sm text-gray-500">Enter your shipping address to see delivery options.</p>
+          )}
+          {!shippingLoading && currentState && shippingRates.length === 0 && (
+            <p className="text-sm text-gray-500">No shipping options available for this address yet.</p>
+          )}
+          {!shippingLoading && shippingRates.length > 0 && (
+            <div className="space-y-3">
+              {shippingRates.map((rate) => (
+                <label
+                  key={rate.label}
+                  className="flex items-center justify-between border border-gray-300 rounded-md px-4 py-3 cursor-pointer"
+                >
+                  <span className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="shippingRate"
+                      checked={selectedRateLabel === rate.label}
+                      onChange={() => setSelectedRateLabel(rate.label)}
+                    />
+                    <span className="text-sm text-gray-900 font-medium">{rate.label}</span>
+                  </span>
+                  <span className="text-sm text-gray-600">{rate.price > 0 ? `₹${rate.price}` : 'Free'}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div>
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Payment Method</h2>
           <div className="space-y-3">
             <label className="flex items-center gap-3 border border-gray-300 rounded-md px-4 py-3 cursor-pointer">
@@ -273,7 +347,7 @@ export default function Checkout() {
           disabled={placing}
           className="w-full bg-gray-900 text-white font-semibold py-3.5 rounded-md hover:bg-gray-800 disabled:opacity-50"
         >
-          {placing ? 'Placing Order...' : `Place Order · ₹${total}`}
+          {placing ? 'Placing Order...' : `Place Order · ₹${grandTotal}`}
         </button>
       </form>
 
@@ -308,12 +382,12 @@ export default function Checkout() {
               </div>
             )}
             <div className="flex justify-between text-gray-500">
-              <span>Shipping</span>
-              <span>Free</span>
+              <span>Shipping{selectedRate ? ` (${selectedRate.label})` : ''}</span>
+              <span>{shippingCost > 0 ? `₹${shippingCost}` : currentState ? 'Free' : '—'}</span>
             </div>
             <div className="flex justify-between text-base font-semibold text-gray-900 border-t border-gray-200 pt-3 mt-3">
               <span>Total</span>
-              <span>₹{total}</span>
+              <span>₹{grandTotal}</span>
             </div>
           </div>
         </div>

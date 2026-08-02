@@ -7,6 +7,7 @@ const Coupon = require('../models/Coupon');
 const PaymentTransaction = require('../models/PaymentTransaction');
 const { createStripeCheckoutSession, retrieveStripeSession, isStripeConfigured } = require('../services/paymentGateway');
 const { triggerNotification } = require('../services/notificationService');
+const { getRatesForState } = require('../services/shippingService');
 
 const STATUS_EVENT_MAP = {
   processing: 'order_processing',
@@ -81,6 +82,20 @@ async function updateOrderStatus(req, res, next) {
   }
 }
 
+async function updateOrderTracking(req, res, next) {
+  try {
+    const { carrier, trackingNumber, trackingUrl } = req.body;
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    order.shipping = { ...(order.shipping?.toObject?.() || order.shipping || {}), carrier, trackingNumber, trackingUrl };
+    await order.save();
+    res.json(order);
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function getInvoice(req, res, next) {
   try {
     const order = await Order.findById(req.params.id)
@@ -95,7 +110,7 @@ async function getInvoice(req, res, next) {
 
 async function createOrder(req, res, next) {
   try {
-    const { customer: customerInfo, shippingAddress, items, couponCode, paymentMethod } = req.body;
+    const { customer: customerInfo, shippingAddress, items, couponCode, paymentMethod, shippingRateLabel } = req.body;
 
     if (!customerInfo?.email || !customerInfo?.name) {
       return res.status(400).json({ message: 'Customer name and email are required' });
@@ -164,6 +179,11 @@ async function createOrder(req, res, next) {
 
     totalAmount = Math.max(totalAmount - discountAmount, 0);
 
+    const { zoneName, rates } = await getRatesForState(shippingAddress?.state, totalAmount);
+    const matchedRate = rates.find((r) => r.label === shippingRateLabel) || rates[0] || null;
+    const shippingCost = matchedRate?.price || 0;
+    totalAmount += shippingCost;
+
     const order = await Order.create({
       orderNumber: `ORD-${Date.now()}`,
       customer: customer._id,
@@ -173,6 +193,9 @@ async function createOrder(req, res, next) {
       shippingAddress,
       paymentStatus: 'pending',
       paymentMethod,
+      shipping: matchedRate
+        ? { zoneName, rateLabel: matchedRate.label, cost: shippingCost }
+        : undefined,
     });
 
     await PaymentTransaction.create({
@@ -260,4 +283,4 @@ async function confirmStripeOrder(req, res, next) {
   }
 }
 
-module.exports = { listOrders, getOrder, createOrder, updateOrderStatus, getInvoice, confirmStripeOrder };
+module.exports = { listOrders, getOrder, createOrder, updateOrderStatus, updateOrderTracking, getInvoice, confirmStripeOrder };

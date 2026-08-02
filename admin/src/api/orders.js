@@ -19,3 +19,8 @@ export async function fetchInvoice(id) {
   const { data } = await axios.get(`/api/orders/${id}/invoice`);
   return data;
 }
+
+export async function updateOrderTracking(id, payload) {
+  const { data } = await axios.patch(`/api/orders/${id}/tracking`, payload);
+  return data;
+}

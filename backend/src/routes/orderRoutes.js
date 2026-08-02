@@ -1,5 +1,5 @@
 const express = require('express');
-const { listOrders, getOrder, createOrder, updateOrderStatus, getInvoice, confirmStripeOrder } = require('../controllers/orderController');
+const { listOrders, getOrder, createOrder, updateOrderStatus, updateOrderTracking, getInvoice, confirmStripeOrder } = require('../controllers/orderController');
 
 const router = express.Router();
 
@@ -8,6 +8,7 @@ router.post('/', createOrder);
 router.get('/stripe/confirm/:sessionId', confirmStripeOrder);
 router.get('/:id', getOrder);
 router.patch('/:id/status', updateOrderStatus);
+router.patch('/:id/tracking', updateOrderTracking);
 router.get('/:id/invoice', getInvoice);
 
 module.exports = router;

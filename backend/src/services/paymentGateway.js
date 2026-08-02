@@ -38,6 +38,17 @@ async function createStripeCheckoutSession({ order, successUrl, cancelUrl }) {
     quantity: item.quantity,
   }));
 
+  if (order.shipping?.cost > 0) {
+    lineItems.push({
+      price_data: {
+        currency: 'inr',
+        product_data: { name: order.shipping.rateLabel || 'Shipping' },
+        unit_amount: Math.round(order.shipping.cost * 100),
+      },
+      quantity: 1,
+    });
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     payment_method_types: ['card'],
