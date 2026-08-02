@@ -13,7 +13,7 @@ import {
   CookieIcon,
   IdIcon,
   LoginMethodIcon,
-  PuzzleIcon,
+  MenuSquareIcon,
   Settings02Icon,
 } from '@hugeicons/core-free-icons';
 import { fetchApps, installApp, toggleApp, uninstallApp } from '../api/apps';
@@ -105,7 +105,7 @@ export default function Apps() {
   return (
     <div className="p-6">
       <div className="flex items-center gap-3 mb-2">
-        <HugeiconsIcon icon={PuzzleIcon} size={24} strokeWidth={1.5} className="text-gray-900" />
+        <HugeiconsIcon icon={MenuSquareIcon} size={24} strokeWidth={1.5} className="text-gray-900" />
         <h1 className="text-2xl font-semibold text-gray-900">Apps</h1>
       </div>
       <p className="text-sm text-gray-500 mb-6 max-w-2xl">
@@ -123,7 +123,7 @@ export default function Apps() {
             <div key={app.key} className="bg-white rounded-lg shadow border border-gray-100 p-5 flex flex-col">
               <div className="flex items-start justify-between mb-3">
                 <div className="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center">
-                  <HugeiconsIcon icon={ICON_MAP[app.icon] || PuzzleIcon} size={20} strokeWidth={1.5} className="text-gray-700" />
+                  <HugeiconsIcon icon={ICON_MAP[app.icon] || MenuSquareIcon} size={20} strokeWidth={1.5} className="text-gray-700" />
                 </div>
                 <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
                   {app.isFree ? 'Free' : `₹${app.price}`}
