@@ -4,6 +4,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { HeartIcon, RulerIcon } from '@hugeicons/core-free-icons';
 import { fetchProduct } from '../api/products';
 import { useCart } from '../context/CartContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { useWishlist } from '../hooks/useWishlist';
 import { recordView } from '../hooks/useRecentlyViewed';
 import ProductGallery from '../components/product/ProductGallery';
@@ -26,6 +27,7 @@ export default function ProductDetail() {
   const [addedMessage, setAddedMessage] = useState(false);
 
   const { addToCart } = useCart();
+  const { formatPrice } = useCurrency();
   const { isWishlisted, toggle } = useWishlist();
 
   useEffect(() => {
@@ -77,9 +79,9 @@ export default function ProductDetail() {
         <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
 
         <div className="flex items-center gap-3 mt-3">
-          <span className="text-2xl font-semibold text-gray-900">₹{price}</span>
+          <span className="text-2xl font-semibold text-gray-900">{formatPrice(price)}</span>
           {product.compareAtPrice > price && (
-            <span className="text-lg text-gray-400 line-through">₹{product.compareAtPrice}</span>
+            <span className="text-lg text-gray-400 line-through">{formatPrice(product.compareAtPrice)}</span>
           )}
         </div>
 

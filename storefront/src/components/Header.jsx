@@ -5,6 +5,7 @@ import { Mail01Icon, Search01Icon, UserIcon, ShoppingBag01Icon, DashboardSquare0
 import { fetchNavigation } from '../api/navigation';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 import SearchOverlay from './SearchOverlay';
 import MobileMenu from './MobileMenu';
 
@@ -22,6 +23,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { count, openDrawer } = useCart();
   const { isAuthenticated, logout } = useAuth();
+  const { currencies, currency, setCurrency } = useCurrency();
   const navigate = useNavigate();
 
   function handleLogout() {
@@ -111,6 +113,19 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-5">
+          {currencies.length > 1 && (
+            <select
+              value={currency.code}
+              onChange={(e) => setCurrency(e.target.value)}
+              className="hidden md:block bg-transparent text-sm text-gray-200 border border-white/20 rounded-md px-2 py-1 cursor-pointer"
+            >
+              {currencies.map((c) => (
+                <option key={c.code} value={c.code} className="text-gray-900">
+                  {c.code}
+                </option>
+              ))}
+            </select>
+          )}
           <HugeiconsIcon icon={Mail01Icon} size={20} strokeWidth={1.5} className="cursor-pointer hidden md:block" />
           <button onClick={() => setSearchOpen(true)} aria-label="Open search" className="hidden md:block">
             <HugeiconsIcon icon={Search01Icon} size={20} strokeWidth={1.5} className="cursor-pointer" />

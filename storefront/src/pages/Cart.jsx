@@ -4,10 +4,12 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { SquareLock01Icon, ShoppingBag01Icon } from '@hugeicons/core-free-icons';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { validateCoupon } from '../api/coupons';
 
 export default function Cart() {
   const { isAuthenticated } = useAuth();
+  const { formatPrice } = useCurrency();
   const {
     items,
     subtotal,
@@ -81,10 +83,10 @@ export default function Cart() {
               <div className="flex-1">
                 <div className="flex justify-between gap-2">
                   <p className="text-sm text-gray-900 font-medium">{item.name}</p>
-                  <p className="text-sm text-gray-900 font-semibold shrink-0">₹{item.price * item.quantity}</p>
+                  <p className="text-sm text-gray-900 font-semibold shrink-0">{formatPrice(item.price * item.quantity)}</p>
                 </div>
                 {item.variantLabel && <p className="text-sm text-gray-500 mt-1">{item.variantLabel}</p>}
-                <p className="text-sm text-gray-400 mt-1">₹{item.price} each</p>
+                <p className="text-sm text-gray-400 mt-1">{formatPrice(item.price)} each</p>
                 <div className="flex items-center gap-4 mt-3">
                   <div className="flex items-center border border-gray-300 rounded-md">
                     <button
@@ -160,12 +162,12 @@ export default function Cart() {
           <div className="space-y-2 text-sm border-t border-gray-200 pt-4">
             <div className="flex justify-between text-gray-600">
               <span>Subtotal</span>
-              <span>₹{subtotal}</span>
+              <span>{formatPrice(subtotal)}</span>
             </div>
             {appliedCoupon && discount > 0 && (
               <div className="flex justify-between text-green-600">
                 <span>Discount ({appliedCoupon.code})</span>
-                <span>−₹{discount}</span>
+                <span>−{formatPrice(discount)}</span>
               </div>
             )}
             <div className="flex justify-between text-gray-500">
@@ -174,7 +176,7 @@ export default function Cart() {
             </div>
             <div className="flex justify-between text-base font-semibold text-gray-900 border-t border-gray-200 pt-3 mt-3">
               <span>Total</span>
-              <span>₹{total}</span>
+              <span>{formatPrice(total)}</span>
             </div>
           </div>
 

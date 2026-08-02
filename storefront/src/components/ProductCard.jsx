@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useCurrency } from '../context/CurrencyContext';
 
 const BADGE_LABELS = {
   bestseller: 'Best Seller',
@@ -7,6 +8,7 @@ const BADGE_LABELS = {
 };
 
 export default function ProductCard({ product, className = 'shrink-0 w-64 snap-start' }) {
+  const { formatPrice } = useCurrency();
   const image = product.media?.[0]?.url;
   const badge = product.tags?.find((t) => BADGE_LABELS[t]);
 
@@ -26,9 +28,9 @@ export default function ProductCard({ product, className = 'shrink-0 w-64 snap-s
       </div>
       <p className="text-sm text-gray-900 font-medium truncate">{product.name}</p>
       <div className="flex items-center gap-2 mt-1">
-        <span className="text-sm text-gray-900 font-semibold">₹{product.price}</span>
+        <span className="text-sm text-gray-900 font-semibold">{formatPrice(product.price)}</span>
         {product.compareAtPrice > product.price && (
-          <span className="text-sm text-gray-400 line-through">₹{product.compareAtPrice}</span>
+          <span className="text-sm text-gray-400 line-through">{formatPrice(product.compareAtPrice)}</span>
         )}
       </div>
     </Link>

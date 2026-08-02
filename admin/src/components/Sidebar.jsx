@@ -48,6 +48,7 @@ const SETTINGS_CHILDREN = [
   { to: '/settings/payments', label: 'Payments' },
   { to: '/settings/shipping', label: 'Shipping' },
   { to: '/settings/tax', label: 'Tax (GST)' },
+  { to: '/settings/currency', label: 'Currency' },
   { to: '/settings/notifications', label: 'Notifications' },
 ];
 

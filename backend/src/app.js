@@ -24,6 +24,7 @@ const appRoutes = require('./routes/appRoutes');
 const shippingRoutes = require('./routes/shippingRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const giftCardRoutes = require('./routes/giftCardRoutes');
+const currencyRoutes = require('./routes/currencyRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const { UPLOAD_DIR } = require('./middleware/upload');
 
@@ -58,6 +59,7 @@ app.use('/api/apps', appRoutes);
 app.use('/api/shipping', shippingRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/gift-cards', giftCardRoutes);
+app.use('/api/currency', currencyRoutes);
 
 app.use(errorHandler);
 

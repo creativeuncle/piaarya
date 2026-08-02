@@ -31,6 +31,17 @@ const settingsSchema = new mongoose.Schema(
         adminPhone: String,
       },
     },
+    currency: {
+      baseCurrency: { type: String, default: 'INR' },
+      currencies: [
+        {
+          _id: false,
+          code: String,
+          rate: Number,
+          isEnabled: { type: Boolean, default: true },
+        },
+      ],
+    },
     tax: {
       gstEnabled: { type: Boolean, default: false },
       pricesIncludeTax: { type: Boolean, default: true },

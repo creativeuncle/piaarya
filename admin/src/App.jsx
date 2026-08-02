@@ -30,6 +30,7 @@ import ShippingSettings from './pages/ShippingSettings';
 import TaxSettings from './pages/TaxSettings';
 import Analytics from './pages/Analytics';
 import GiftCards from './pages/GiftCards';
+import CurrencySettings from './pages/CurrencySettings';
 
 function AdminLayout({ children }) {
   return (
@@ -76,6 +77,7 @@ function App() {
               <Route path="/settings/navigation" element={<Navigation />} />
               <Route path="/settings/shipping" element={<ShippingSettings />} />
               <Route path="/settings/tax" element={<TaxSettings />} />
+              <Route path="/settings/currency" element={<CurrencySettings />} />
               <Route path="/settings/payments" element={<PaymentSettings />} />
               <Route path="/settings/notifications" element={<NotificationSettings />} />
               <Route path="/apps/social-login" element={<SocialLoginSettings />} />

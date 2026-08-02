@@ -2,6 +2,7 @@ const Settings = require('../models/Settings');
 const NotificationLog = require('../models/NotificationLog');
 const { GATEWAYS } = require('../services/paymentGateway');
 const { EVENTS: NOTIFICATION_EVENTS, getNotificationSettings } = require('../services/notificationService');
+const CURRENCIES_CATALOG = require('../constants/currencies');
 
 function maskSecret(secret) {
   if (!secret) return '';
@@ -64,6 +65,19 @@ async function toPublicSettings(settings) {
     notifications,
     notificationEventDefinitions: NOTIFICATION_EVENTS.map((e) => ({ key: e.key, label: e.label })),
     socialLogin,
+    currency: {
+      baseCurrency: settings?.currency?.baseCurrency || 'INR',
+      currencies: CURRENCIES_CATALOG.map((c) => {
+        const stored = settings?.currency?.currencies?.find((s) => s.code === c.code);
+        return {
+          code: c.code,
+          name: c.name,
+          symbol: c.symbol,
+          rate: c.code === 'INR' ? 1 : stored?.rate || 0,
+          isEnabled: c.code === 'INR' ? true : stored?.isEnabled ?? false,
+        };
+      }),
+    },
     tax: {
       gstEnabled: settings?.tax?.gstEnabled || false,
       pricesIncludeTax: settings?.tax?.pricesIncludeTax ?? true,
@@ -86,7 +100,7 @@ async function getSettings(req, res, next) {
 
 async function updateSettings(req, res, next) {
   try {
-    const { paymentGateway, razorpay, stripe, notifications, socialLogin, tax } = req.body;
+    const { paymentGateway, razorpay, stripe, notifications, socialLogin, tax, currency } = req.body;
 
     if (paymentGateway && !GATEWAYS.includes(paymentGateway)) {
       return res.status(400).json({ message: `paymentGateway must be one of: ${GATEWAYS.join(', ')}` });
@@ -205,6 +219,23 @@ async function updateSettings(req, res, next) {
             ? socialLogin.apple.privateKey
             : existing?.socialLogin?.apple?.privateKey,
         },
+      };
+    }
+
+    if (currency) {
+      const validCodes = CURRENCIES_CATALOG.map((c) => c.code).filter((code) => code !== 'INR');
+      const incoming = Array.isArray(currency.currencies) ? currency.currencies : [];
+      update.currency = {
+        baseCurrency: 'INR',
+        currencies: validCodes.map((code) => {
+          const entry = incoming.find((c) => c.code === code);
+          const prior = existing?.currency?.currencies?.find((c) => c.code === code);
+          return {
+            code,
+            rate: entry?.rate !== undefined ? Number(entry.rate) || 0 : prior?.rate || 0,
+            isEnabled: entry?.isEnabled !== undefined ? Boolean(entry.isEnabled) : prior?.isEnabled ?? false,
+          };
+        }),
       };
     }
 
