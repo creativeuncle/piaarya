@@ -43,6 +43,7 @@ const SETTINGS_CHILDREN = [
   { to: '/settings/pages', label: 'Pages' },
   { to: '/settings/payments', label: 'Payments' },
   { to: '/settings/shipping', label: 'Shipping' },
+  { to: '/settings/tax', label: 'Tax (GST)' },
   { to: '/settings/notifications', label: 'Notifications' },
 ];
 

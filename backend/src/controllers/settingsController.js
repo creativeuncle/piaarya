@@ -64,6 +64,14 @@ async function toPublicSettings(settings) {
     notifications,
     notificationEventDefinitions: NOTIFICATION_EVENTS.map((e) => ({ key: e.key, label: e.label })),
     socialLogin,
+    tax: {
+      gstEnabled: settings?.tax?.gstEnabled || false,
+      pricesIncludeTax: settings?.tax?.pricesIncludeTax ?? true,
+      gstin: settings?.tax?.gstin || '',
+      legalBusinessName: settings?.tax?.legalBusinessName || '',
+      sellerState: settings?.tax?.sellerState || '',
+      defaultGstRate: settings?.tax?.defaultGstRate ?? 18,
+    },
   };
 }
 
@@ -78,7 +86,7 @@ async function getSettings(req, res, next) {
 
 async function updateSettings(req, res, next) {
   try {
-    const { paymentGateway, razorpay, stripe, notifications, socialLogin } = req.body;
+    const { paymentGateway, razorpay, stripe, notifications, socialLogin, tax } = req.body;
 
     if (paymentGateway && !GATEWAYS.includes(paymentGateway)) {
       return res.status(400).json({ message: `paymentGateway must be one of: ${GATEWAYS.join(', ')}` });
@@ -197,6 +205,17 @@ async function updateSettings(req, res, next) {
             ? socialLogin.apple.privateKey
             : existing?.socialLogin?.apple?.privateKey,
         },
+      };
+    }
+
+    if (tax) {
+      update.tax = {
+        gstEnabled: tax.gstEnabled ?? existing?.tax?.gstEnabled ?? false,
+        pricesIncludeTax: tax.pricesIncludeTax ?? existing?.tax?.pricesIncludeTax ?? true,
+        gstin: tax.gstin !== undefined ? tax.gstin : existing?.tax?.gstin,
+        legalBusinessName: tax.legalBusinessName !== undefined ? tax.legalBusinessName : existing?.tax?.legalBusinessName,
+        sellerState: tax.sellerState !== undefined ? tax.sellerState : existing?.tax?.sellerState,
+        defaultGstRate: tax.defaultGstRate !== undefined ? tax.defaultGstRate : existing?.tax?.defaultGstRate,
       };
     }
 

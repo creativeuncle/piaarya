@@ -31,6 +31,14 @@ const settingsSchema = new mongoose.Schema(
         adminPhone: String,
       },
     },
+    tax: {
+      gstEnabled: { type: Boolean, default: false },
+      pricesIncludeTax: { type: Boolean, default: true },
+      gstin: String,
+      legalBusinessName: String,
+      sellerState: String,
+      defaultGstRate: { type: Number, default: 18 },
+    },
     socialLogin: {
       google: {
         enabled: { type: Boolean, default: false },

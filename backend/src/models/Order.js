@@ -6,6 +6,8 @@ const orderItemSchema = new mongoose.Schema(
     variantSku: String,
     quantity: { type: Number, required: true },
     price: { type: Number, required: true },
+    gstRate: { type: Number, default: 0 },
+    hsnCode: String,
   },
   { _id: false }
 );
@@ -44,6 +46,14 @@ const orderSchema = new mongoose.Schema(
       carrier: String,
       trackingNumber: String,
       trackingUrl: String,
+    },
+    taxBreakup: {
+      taxableAmount: { type: Number, default: 0 },
+      cgst: { type: Number, default: 0 },
+      sgst: { type: Number, default: 0 },
+      igst: { type: Number, default: 0 },
+      totalTax: { type: Number, default: 0 },
+      taxType: { type: String, enum: ['intra_state', 'inter_state', null], default: null },
     },
   },
   { timestamps: true }

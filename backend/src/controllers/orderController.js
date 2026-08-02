@@ -8,6 +8,7 @@ const PaymentTransaction = require('../models/PaymentTransaction');
 const { createStripeCheckoutSession, retrieveStripeSession, isStripeConfigured } = require('../services/paymentGateway');
 const { triggerNotification } = require('../services/notificationService');
 const { getRatesForState } = require('../services/shippingService');
+const { computeOrderTax } = require('../services/taxService');
 
 const STATUS_EVENT_MAP = {
   processing: 'order_processing',
@@ -151,7 +152,14 @@ async function createOrder(req, res, next) {
       const quantity = Number(item.quantity) || 1;
       totalAmount += price * quantity;
 
-      orderItems.push({ product: product._id, variantSku: item.variantSku || undefined, quantity, price });
+      orderItems.push({
+        product: product._id,
+        variantSku: item.variantSku || undefined,
+        quantity,
+        price,
+        gstRate: product.gstRate,
+        hsnCode: product.hsnCode,
+      });
       orderItemNames.push(product.name);
 
       if (variant) variant.stock = Math.max(0, variant.stock - quantity);
@@ -184,6 +192,11 @@ async function createOrder(req, res, next) {
     const shippingCost = matchedRate?.price || 0;
     totalAmount += shippingCost;
 
+    const taxBreakup = await computeOrderTax(orderItems, shippingAddress?.state);
+    if (taxBreakup.taxType && taxBreakup.pricesIncludeTax === false) {
+      totalAmount += taxBreakup.totalTax;
+    }
+
     const order = await Order.create({
       orderNumber: `ORD-${Date.now()}`,
       customer: customer._id,
@@ -195,6 +208,16 @@ async function createOrder(req, res, next) {
       paymentMethod,
       shipping: matchedRate
         ? { zoneName, rateLabel: matchedRate.label, cost: shippingCost }
+        : undefined,
+      taxBreakup: taxBreakup.taxType
+        ? {
+            taxableAmount: taxBreakup.taxableAmount,
+            cgst: taxBreakup.cgst,
+            sgst: taxBreakup.sgst,
+            igst: taxBreakup.igst,
+            totalTax: taxBreakup.totalTax,
+            taxType: taxBreakup.taxType,
+          }
         : undefined,
     });
 

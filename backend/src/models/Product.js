@@ -42,6 +42,8 @@ const productSchema = new mongoose.Schema(
     metaDescription: String,
     price: { type: Number, required: true },
     compareAtPrice: { type: Number },
+    gstRate: { type: Number, default: 18 },
+    hsnCode: { type: String, trim: true },
     stock: { type: Number, default: 0 },
     lowStockThreshold: { type: Number, default: 5 },
     damagedStock: { type: Number, default: 0 },

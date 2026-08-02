@@ -24,6 +24,8 @@ const EMPTY_PRODUCT = {
   metaDescription: '',
   price: '',
   compareAtPrice: '',
+  gstRate: '18',
+  hsnCode: '',
   stock: '',
 };
 
@@ -109,6 +111,7 @@ export default function ProductForm() {
         ...rest,
         price: Number(product.price) || 0,
         compareAtPrice: product.compareAtPrice === '' ? undefined : Number(product.compareAtPrice),
+        gstRate: Number(product.gstRate) || 0,
         stock: Number(product.stock) || 0,
         tags: product.tags
           .split(',')
@@ -232,6 +235,25 @@ export default function ProductForm() {
             </Field>
             <Field label="Stock Quantity">
               <input type="number" className="input" value={product.stock} onChange={(e) => set('stock', e.target.value)} />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="GST Rate (%)">
+              <input
+                type="number"
+                className="input"
+                placeholder="18"
+                value={product.gstRate}
+                onChange={(e) => set('gstRate', e.target.value)}
+              />
+            </Field>
+            <Field label="HSN Code">
+              <input
+                className="input"
+                placeholder="e.g. 6109"
+                value={product.hsnCode}
+                onChange={(e) => set('hsnCode', e.target.value)}
+              />
             </Field>
           </div>
           <Field label="Description">
