@@ -1,13 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import type { ProductVariant } from '../../types';
 
-export default function VariantSelector({ variants, onChange }) {
-  const colors = [...new Set(variants.map((v) => v.color).filter(Boolean))];
-  const sizes = [...new Set(variants.map((v) => v.size).filter(Boolean))];
+interface VariantSelectorProps {
+  variants: ProductVariant[];
+  onChange: (variant: ProductVariant | null) => void;
+}
 
-  const [selectedColor, setSelectedColor] = useState(colors[0] || null);
-  const [selectedSize, setSelectedSize] = useState(sizes[0] || null);
+export default function VariantSelector({ variants, onChange }: VariantSelectorProps) {
+  const colors = [...new Set(variants.map((v) => v.color).filter(Boolean))] as string[];
+  const sizes = [...new Set(variants.map((v) => v.size).filter(Boolean))] as string[];
+
+  const [selectedColor, setSelectedColor] = useState<string | null>(colors[0] || null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(sizes[0] || null);
 
   useEffect(() => {
     const match = variants.find(
@@ -17,8 +23,8 @@ export default function VariantSelector({ variants, onChange }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedColor, selectedSize]);
 
-  function isSizeAvailable(size) {
-    return variants.some((v) => (!colors.length || v.color === selectedColor) && v.size === size && v.stock > 0);
+  function isSizeAvailable(size: string) {
+    return variants.some((v) => (!colors.length || v.color === selectedColor) && v.size === size && (v.stock ?? 0) > 0);
   }
 
   if (!variants.length) return null;

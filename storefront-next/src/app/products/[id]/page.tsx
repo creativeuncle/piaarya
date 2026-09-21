@@ -17,13 +17,14 @@ import RelatedProducts from '../../../components/product/RelatedProducts';
 import RecentlyViewedProducts from '../../../components/product/RecentlyViewedProducts';
 import ProductReviews from '../../../components/product/ProductReviews';
 import Accordion from '../../../components/Accordion';
+import type { Product, ProductVariant } from '../../../types';
 
 export default function ProductDetail() {
-  const { id } = useParams();
-  const [product, setProduct] = useState(null);
+  const { id } = useParams<{ id: string }>();
+  const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [addedMessage, setAddedMessage] = useState(false);

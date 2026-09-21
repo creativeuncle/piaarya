@@ -1,6 +1,6 @@
 import client from './client';
 
-export async function uploadFiles(files) {
+export async function uploadFiles(files: FileList | File[]) {
   const formData = new FormData();
   Array.from(files).forEach((file) => formData.append('files', file));
   const { data } = await client.post('/uploads/multiple', formData, {

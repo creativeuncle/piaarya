@@ -503,7 +503,7 @@ export default function Checkout() {
   );
 }
 
-function Field({ label, required, children }) {
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">

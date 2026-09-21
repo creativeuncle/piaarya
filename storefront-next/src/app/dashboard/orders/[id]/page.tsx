@@ -119,7 +119,7 @@ export default function OrderDetail() {
     }
   }
 
-  async function submitRequest(items, refundDetails) {
+  async function submitRequest(items, refundDetails?) {
     setSubmitting(true);
     try {
       await createReturnRequest({
