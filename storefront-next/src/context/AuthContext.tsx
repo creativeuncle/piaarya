@@ -16,12 +16,22 @@ function loadAuth() {
 }
 
 export function AuthProvider({ children }) {
-  const [auth, setAuth] = useState(loadAuth);
+  // Starts null on both server and the first client render (hydration pass) so the
+  // authenticated-vs-guest markup matches; the real cached auth (if any) is only
+  // applied after mount, once hydration has already completed.
+  const [auth, setAuth] = useState(null);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    setAuth(loadAuth());
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
     if (auth) localStorage.setItem(STORAGE_KEY, JSON.stringify(auth));
     else localStorage.removeItem(STORAGE_KEY);
-  }, [auth]);
+  }, [auth, hydrated]);
 
   useEffect(() => {
     if (!auth?.token) return;
@@ -30,7 +40,7 @@ export function AuthProvider({ children }) {
       .then(({ customer }) => setAuth((prev) => (prev ? { ...prev, customer } : prev)))
       .catch(() => setAuth(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [hydrated]);
 
   async function signup(payload) {
     const data = await authApi.signup(payload);

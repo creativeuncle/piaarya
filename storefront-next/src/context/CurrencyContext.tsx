@@ -18,7 +18,15 @@ function loadStoredCurrency() {
 
 export function CurrencyProvider({ children }) {
   const [currencies, setCurrencies] = useState([INR]);
-  const [code, setCode] = useState(loadStoredCurrency);
+  // Starts at INR on both server and the first client render so displayed prices
+  // match during hydration; the real stored currency (if any) applies after mount.
+  const [code, setCode] = useState('INR');
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setCode(loadStoredCurrency());
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     fetchCurrencies()
@@ -27,8 +35,9 @@ export function CurrencyProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem(STORAGE_KEY, code);
-  }, [code]);
+  }, [code, hydrated]);
 
   const current = currencies.find((c) => c.code === code) || INR;
 

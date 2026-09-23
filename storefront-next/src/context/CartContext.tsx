@@ -19,14 +19,23 @@ function lineKey(item) {
 }
 
 export function CartProvider({ children }) {
-  const [items, setItems] = useState(loadCart);
+  // Starts empty on both server and the first client render so the cart badge/count
+  // matches during hydration; the real cached cart (if any) loads right after mount.
+  const [items, setItems] = useState([]);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [orderNote, setOrderNote] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    setItems(loadCart());
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }, [items]);
+  }, [items, hydrated]);
 
   function addToCart(newItem) {
     setItems((prev) => {
