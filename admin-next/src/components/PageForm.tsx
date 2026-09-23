@@ -36,7 +36,7 @@ const EMPTY = {
   isPublished: true,
 };
 
-export default function PageForm({ id }) {
+export default function PageForm({ id }: { id?: string }) {
   const isEdit = Boolean(id);
   const router = useRouter();
 

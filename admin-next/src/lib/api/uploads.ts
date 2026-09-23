@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export async function uploadFile(file) {
+export async function uploadFile(file: File) {
   const formData = new FormData();
   formData.append('file', file);
   const { data } = await axios.post('/api/uploads', formData, {
@@ -9,7 +9,7 @@ export async function uploadFile(file) {
   return data.url;
 }
 
-export async function uploadFiles(files) {
+export async function uploadFiles(files: File[]) {
   const formData = new FormData();
   Array.from(files).forEach((file) => formData.append('files', file));
   const { data } = await axios.post('/api/uploads/multiple', formData, {

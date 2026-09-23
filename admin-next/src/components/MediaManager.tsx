@@ -14,8 +14,8 @@ export default function MediaManager({ media, onChange }) {
   const [error, setError] = useState(null);
   const [activeIndex, setActiveIndex] = useState(null);
 
-  async function handleFiles(fileList) {
-    const files = Array.from(fileList || []);
+  async function handleFiles(fileList: FileList | File[] | null) {
+    const files: File[] = Array.from(fileList || []);
     if (!files.length) return;
     setUploading(true);
     setError(null);

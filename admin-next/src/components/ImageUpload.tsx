@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { uploadFile } from '../lib/api/uploads';
 
-export default function ImageUpload({ label, value, onChange }) {
+export default function ImageUpload({ label, value, onChange }: { label?: string; value?: string; onChange: (url: string) => void }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
 

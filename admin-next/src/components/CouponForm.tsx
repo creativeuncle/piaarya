@@ -28,7 +28,7 @@ function toDateInput(value) {
   return value ? new Date(value).toISOString().slice(0, 10) : '';
 }
 
-export default function CouponForm({ id }) {
+export default function CouponForm({ id }: { id?: string }) {
   const isEdit = Boolean(id);
   const router = useRouter();
 
@@ -218,7 +218,7 @@ export default function CouponForm({ id }) {
   );
 }
 
-function Field({ label, required, children }) {
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">

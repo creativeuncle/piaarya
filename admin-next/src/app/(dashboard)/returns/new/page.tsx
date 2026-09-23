@@ -12,7 +12,7 @@ export default function ReturnForm() {
   const [reasons, setReasons] = useState([]);
   const [orderId, setOrderId] = useState('');
   const [order, setOrder] = useState(null);
-  const [selectedItems, setSelectedItems] = useState({});
+  const [selectedItems, setSelectedItems] = useState<Record<string, { quantity: number | string }>>({});
   const [type, setType] = useState('return');
   const [reason, setReason] = useState('');
   const [notes, setNotes] = useState('');
@@ -148,7 +148,7 @@ export default function ReturnForm() {
   );
 }
 
-function Field({ label, required, children }) {
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">

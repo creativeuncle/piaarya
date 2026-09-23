@@ -30,7 +30,7 @@ export default function Orders() {
   useEffect(() => {
     setLoading(true);
     setError(null);
-    const params = {};
+    const params: Record<string, string> = {};
     if (activeStatus !== 'all') params.status = activeStatus;
     if (customerId) params.customer = customerId;
     if (productId) params.product = productId;

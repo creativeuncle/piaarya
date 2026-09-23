@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { fetchSettings, updateSettings, fetchNotificationLogs } from '../../../../lib/api/settings';
 
-function Toggle({ checked, onChange, label }) {
+function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
   return (
     <label className="flex items-center gap-3 cursor-pointer select-none">
       <span className="relative inline-flex h-6 w-11 shrink-0">

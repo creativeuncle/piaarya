@@ -22,7 +22,7 @@ export default function Customers() {
   function load() {
     setLoading(true);
     setError(null);
-    const params = {};
+    const params: Record<string, string> = {};
     if (search) params.search = search;
     if (productId) params.product = productId;
     if (dateFrom) params.dateFrom = dateFrom;

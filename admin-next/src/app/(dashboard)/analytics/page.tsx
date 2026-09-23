@@ -109,7 +109,7 @@ export default function Analytics() {
               ) : (
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
-                    <Pie data={statusBreakdown} dataKey="count" nameKey="status" outerRadius={90} label={(d) => d.status}>
+                    <Pie data={statusBreakdown} dataKey="count" nameKey="status" outerRadius={90} label={(d: any) => d.status}>
                       {statusBreakdown.map((entry, i) => (
                         <Cell key={entry.status} fill={COLORS[i % COLORS.length]} />
                       ))}

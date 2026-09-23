@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { fetchSettings, updateSettings } from '../../../../lib/api/settings';
 import { INDIAN_STATES } from '../../../../constants/indianStates';
 
-function Toggle({ checked, onChange, label }) {
+function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
   return (
     <label className="flex items-center gap-3 cursor-pointer select-none">
       <span className="relative inline-flex h-6 w-11 shrink-0">
