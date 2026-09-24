@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { fetchProduct } from '../../lib/api/products';
-import { getRecentlyViewed } from '../../hooks/useRecentlyViewed';
-import ProductCard from '../ProductCard';
-import Carousel from '../Carousel';
+import { fetchProduct } from '../../../lib/api/products';
+import { getRecentlyViewed } from '../../../hooks/useRecentlyViewed';
+import ProductCard from '../../../components/ProductCard';
+import Carousel from '../../../components/Carousel';
 
 export default function RecentlyViewedProducts({ excludeProductId }) {
   const [products, setProducts] = useState([]);

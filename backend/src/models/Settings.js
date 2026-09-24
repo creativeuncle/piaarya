@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 
 const settingsSchema = new mongoose.Schema(
   {
+    theme: {
+      active: { type: String, default: 'supercharged' },
+    },
     paymentGateway: { type: String, enum: ['razorpay', 'stripe'], default: 'razorpay' },
     razorpay: {
       mode: { type: String, enum: ['test', 'live'], default: 'test' },

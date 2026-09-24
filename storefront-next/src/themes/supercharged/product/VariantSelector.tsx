@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { ProductVariant } from '../../types';
+import type { ProductVariant } from '../../../types';
 
 interface VariantSelectorProps {
   variants: ProductVariant[];

@@ -8,9 +8,9 @@ import { fetchProducts, fetchProductFacets } from '../../lib/api/products';
 import { fetchCategories } from '../../lib/api/categories';
 import ProductCard from '../../components/ProductCard';
 import Pagination from '../../components/Pagination';
-import FilterDrawer from '../../components/category/FilterDrawer';
-import AppliedFilterPills from '../../components/category/AppliedFilterPills';
-import SortDropdown from '../../components/category/SortDropdown';
+import FilterDrawer from './category/FilterDrawer';
+import AppliedFilterPills from './category/AppliedFilterPills';
+import SortDropdown from './category/SortDropdown';
 
 const PAGE_SIZE = 28;
 
@@ -25,7 +25,7 @@ const EMPTY_FILTERS = {
   priceMax: 0,
 };
 
-function ProductListing() {
+export default function ProductListing() {
   const searchParams = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [facets, setFacets] = useState(null);
@@ -147,5 +147,3 @@ function ProductListing() {
     </div>
   );
 }
-
-export default ProductListing;

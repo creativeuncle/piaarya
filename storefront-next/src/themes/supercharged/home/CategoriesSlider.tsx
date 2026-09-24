@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { fetchCategories } from '../../lib/api/categories';
-import Carousel from '../Carousel';
+import { fetchCategories } from '../../../lib/api/categories';
+import Carousel from '../../../components/Carousel';
 
 export default function CategoriesSlider() {
   const [categories, setCategories] = useState([]);

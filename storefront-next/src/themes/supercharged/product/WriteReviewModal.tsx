@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { StarIcon, Cancel01Icon, ImageUpload01Icon } from '@hugeicons/core-free-icons';
-import { useAuth } from '../../context/AuthContext';
-import { fetchReviewTags, createReview } from '../../lib/api/reviews';
-import { uploadFiles } from '../../lib/api/uploads';
+import { useAuth } from '../../../context/AuthContext';
+import { fetchReviewTags, createReview } from '../../../lib/api/reviews';
+import { uploadFiles } from '../../../lib/api/uploads';
 
 export default function WriteReviewModal({ productId, onClose, onSubmitted }) {
   const { token } = useAuth();

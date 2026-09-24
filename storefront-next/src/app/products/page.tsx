@@ -1,10 +1,13 @@
 import { Suspense } from 'react';
-import ProductListingClient from './ProductListingClient';
+import { getActiveTheme } from '../../lib/theme';
+import { getTheme } from '../../themes';
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const themeKey = await getActiveTheme();
+  const { ProductListing } = getTheme(themeKey);
   return (
     <Suspense fallback={null}>
-      <ProductListingClient />
+      <ProductListing />
     </Suspense>
   );
 }

@@ -46,6 +46,7 @@ const NAV_ITEMS = [
 ];
 
 const SETTINGS_CHILDREN = [
+  { to: '/settings/theme', label: 'Theme' },
   { to: '/settings/navigation', label: 'Navigation' },
   { to: '/settings/pages', label: 'Pages' },
   { to: '/settings/payments', label: 'Payments' },

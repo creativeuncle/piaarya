@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { fetchProducts } from '../../lib/api/products';
-import ProductCard from '../ProductCard';
-import Carousel from '../Carousel';
+import { fetchProducts } from '../../../lib/api/products';
+import ProductCard from '../../../components/ProductCard';
+import Carousel from '../../../components/Carousel';
 
 export default function RelatedProducts({ categoryId, excludeProductId }) {
   const [products, setProducts] = useState([]);

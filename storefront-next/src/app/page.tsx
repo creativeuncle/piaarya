@@ -1,21 +1,8 @@
-import HeroSlider from '../components/home/HeroSlider';
-import ExploreProducts from '../components/home/ExploreProducts';
-import CategoriesSlider from '../components/home/CategoriesSlider';
-import TrendingProducts from '../components/home/TrendingProducts';
-import VideoSection from '../components/home/VideoSection';
-import ReviewsSection from '../components/home/ReviewsSection';
-import FeatureBar from '../components/home/FeatureBar';
+import { getActiveTheme } from '../lib/theme';
+import { getTheme } from '../themes';
 
-export default function Home() {
-  return (
-    <>
-      <HeroSlider />
-      <ExploreProducts />
-      <CategoriesSlider />
-      <TrendingProducts />
-      <VideoSection />
-      <ReviewsSection />
-      <FeatureBar />
-    </>
-  );
+export default async function HomePage() {
+  const themeKey = await getActiveTheme();
+  const { Home } = getTheme(themeKey);
+  return <Home />;
 }

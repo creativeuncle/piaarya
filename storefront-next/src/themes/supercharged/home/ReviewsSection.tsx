@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { fetchFeaturedReviews } from '../../lib/api/reviews';
-import Carousel from '../Carousel';
+import { fetchFeaturedReviews } from '../../../lib/api/reviews';
+import Carousel from '../../../components/Carousel';
 
 function Stars({ rating }) {
   return <span className="text-yellow-500">{'★'.repeat(rating)}{'☆'.repeat(5 - rating)}</span>;

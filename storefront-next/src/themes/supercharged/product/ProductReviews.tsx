@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { StarIcon, PencilEdit02Icon } from '@hugeicons/core-free-icons';
-import { fetchProductReviews } from '../../lib/api/reviews';
-import { useAuth } from '../../context/AuthContext';
+import { fetchProductReviews } from '../../../lib/api/reviews';
+import { useAuth } from '../../../context/AuthContext';
 import ReviewCard from './ReviewCard';
 import WriteReviewModal from './WriteReviewModal';
 

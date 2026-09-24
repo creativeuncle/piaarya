@@ -3,6 +3,7 @@ const NotificationLog = require('../models/NotificationLog');
 const { GATEWAYS } = require('../services/paymentGateway');
 const { EVENTS: NOTIFICATION_EVENTS, getNotificationSettings } = require('../services/notificationService');
 const CURRENCIES_CATALOG = require('../constants/currencies');
+const THEMES_CATALOG = require('../constants/themes');
 
 function maskSecret(secret) {
   if (!secret) return '';
@@ -55,6 +56,10 @@ async function toPublicSettings(settings) {
   };
 
   return {
+    theme: {
+      active: settings?.theme?.active || THEMES_CATALOG[0].key,
+      available: THEMES_CATALOG,
+    },
     paymentGateway: settings?.paymentGateway || 'razorpay',
     razorpay: {
       mode: settings?.razorpay?.mode || 'test',
@@ -106,14 +111,20 @@ async function getSettings(req, res, next) {
 
 async function updateSettings(req, res, next) {
   try {
-    const { paymentGateway, razorpay, stripe, notifications, socialLogin, tax, currency } = req.body;
+    const { theme, paymentGateway, razorpay, stripe, notifications, socialLogin, tax, currency } = req.body;
 
     if (paymentGateway && !GATEWAYS.includes(paymentGateway)) {
       return res.status(400).json({ message: `paymentGateway must be one of: ${GATEWAYS.join(', ')}` });
     }
 
+    const validThemeKeys = THEMES_CATALOG.map((t) => t.key);
+    if (theme?.active && !validThemeKeys.includes(theme.active)) {
+      return res.status(400).json({ message: `theme.active must be one of: ${validThemeKeys.join(', ')}` });
+    }
+
     const existing = await Settings.findOne();
     const update = {};
+    if (theme?.active) update.theme = { active: theme.active };
     if (paymentGateway) update.paymentGateway = paymentGateway;
 
     if (razorpay) {
