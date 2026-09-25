@@ -12,6 +12,9 @@ const EMPTY_PRODUCT = {
   category: '',
   subCategory: '',
   tags: '',
+  style: '',
+  material: '',
+  occasion: '',
   description: '',
   specifications: [],
   media: [],
@@ -21,6 +24,8 @@ const EMPTY_PRODUCT = {
   metaDescription: '',
   price: '',
   compareAtPrice: '',
+  gstRate: '18',
+  hsnCode: '',
   stock: '',
 };
 
@@ -50,6 +55,9 @@ export default function ProductForm() {
           category: data.category?._id || '',
           subCategory: data.subCategory?._id || '',
           tags: (data.tags || []).join(', '),
+          style: (data.style || []).join(', '),
+          material: (data.material || []).join(', '),
+          occasion: (data.occasion || []).join(', '),
           specifications: Object.entries(data.specifications || {}).map(([key, value]) => ({ key, value })),
           variantOptions: deriveOptionsFromVariants(data.variants || []),
         })
@@ -103,8 +111,21 @@ export default function ProductForm() {
         ...rest,
         price: Number(product.price) || 0,
         compareAtPrice: product.compareAtPrice === '' ? undefined : Number(product.compareAtPrice),
+        gstRate: Number(product.gstRate) || 0,
         stock: Number(product.stock) || 0,
         tags: product.tags
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+        style: product.style
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+        material: product.material
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+        occasion: product.occasion
           .split(',')
           .map((t) => t.trim())
           .filter(Boolean),
@@ -184,6 +205,17 @@ export default function ProductForm() {
             <input className="input" value={product.tags} onChange={(e) => set('tags', e.target.value)} />
           </Field>
           <div className="grid grid-cols-3 gap-4">
+            <Field label="Style (comma separated)">
+              <input className="input" placeholder="Casual, Formal" value={product.style} onChange={(e) => set('style', e.target.value)} />
+            </Field>
+            <Field label="Material (comma separated)">
+              <input className="input" placeholder="Cotton, Leather" value={product.material} onChange={(e) => set('material', e.target.value)} />
+            </Field>
+            <Field label="Occasion (comma separated)">
+              <input className="input" placeholder="Party, Wedding" value={product.occasion} onChange={(e) => set('occasion', e.target.value)} />
+            </Field>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
             <Field label="Price" required>
               <input
                 type="number"
@@ -203,6 +235,25 @@ export default function ProductForm() {
             </Field>
             <Field label="Stock Quantity">
               <input type="number" className="input" value={product.stock} onChange={(e) => set('stock', e.target.value)} />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="GST Rate (%)">
+              <input
+                type="number"
+                className="input"
+                placeholder="18"
+                value={product.gstRate}
+                onChange={(e) => set('gstRate', e.target.value)}
+              />
+            </Field>
+            <Field label="HSN Code">
+              <input
+                className="input"
+                placeholder="e.g. 6109"
+                value={product.hsnCode}
+                onChange={(e) => set('hsnCode', e.target.value)}
+              />
             </Field>
           </div>
           <Field label="Description">

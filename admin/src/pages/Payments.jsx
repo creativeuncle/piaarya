@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { fetchTransactions, refundOrder } from '../api/payments';
+import { fetchCustomers } from '../api/customers';
+import { fetchProducts } from '../api/products';
 
 const STATUS_TABS = [
   { key: 'all', label: 'All' },
@@ -16,21 +18,46 @@ const TYPE_LABELS = {
 
 export default function Payments() {
   const [activeStatus, setActiveStatus] = useState('all');
+  const [customerId, setCustomerId] = useState('');
+  const [productId, setProductId] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refundTarget, setRefundTarget] = useState(null);
 
+  useEffect(() => {
+    fetchCustomers().then(setCustomers).catch(() => {});
+    fetchProducts({ limit: 200 }).then((data) => setProducts(data.products)).catch(() => {});
+  }, []);
+
   function load() {
     setLoading(true);
     setError(null);
-    fetchTransactions(activeStatus !== 'all' ? { status: activeStatus } : {})
+    const params = {};
+    if (activeStatus !== 'all') params.status = activeStatus;
+    if (customerId) params.customer = customerId;
+    if (productId) params.product = productId;
+    if (dateFrom) params.dateFrom = dateFrom;
+    if (dateTo) params.dateTo = dateTo;
+
+    fetchTransactions(params)
       .then(setTransactions)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }
 
-  useEffect(load, [activeStatus]);
+  useEffect(load, [activeStatus, customerId, productId, dateFrom, dateTo]);
+
+  function clearFilters() {
+    setCustomerId('');
+    setProductId('');
+    setDateFrom('');
+    setDateTo('');
+  }
 
   return (
     <div className="p-6">
@@ -48,6 +75,38 @@ export default function Payments() {
             {tab.label}
           </button>
         ))}
+      </div>
+
+      <div className="flex flex-wrap items-end gap-3 mb-4">
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">From</label>
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="input" />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">To</label>
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="input" />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Customer</label>
+          <select value={customerId} onChange={(e) => setCustomerId(e.target.value)} className="input min-w-[180px]">
+            <option value="">All Customers</option>
+            {customers.map((c) => (
+              <option key={c._id} value={c._id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Product</label>
+          <select value={productId} onChange={(e) => setProductId(e.target.value)} className="input min-w-[180px]">
+            <option value="">All Products</option>
+            {products.map((p) => (
+              <option key={p._id} value={p._id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+        {(customerId || productId || dateFrom || dateTo) && (
+          <button onClick={clearFilters} className="text-sm text-gray-500 underline mb-2">Clear filters</button>
+        )}
       </div>
 
       {error && <p className="text-red-600 text-sm mb-4">{error}</p>}

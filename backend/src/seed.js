@@ -1,16 +1,51 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
+const tenantScopePlugin = require('./middleware/tenantScopePlugin');
+
+// Must run before any model file is required, same as in app.js, so seeded
+// documents get their `store` field auto-filled instead of failing the
+// now-required `store` validation.
+mongoose.plugin(tenantScopePlugin);
+
+const { runWithStore } = require('./middleware/tenantContext');
 const connectDB = require('./config/db');
+const Store = require('./models/Store');
 const Category = require('./models/Category');
 const Product = require('./models/Product');
 const Customer = require('./models/Customer');
 const Order = require('./models/Order');
 const Review = require('./models/Review');
 const PaymentTransaction = require('./models/PaymentTransaction');
+const Cart = require('./models/Cart');
+const TeamMember = require('./models/TeamMember');
+const Wishlist = require('./models/Wishlist');
+const bcrypt = require('bcryptjs');
+
+async function getOrCreateDefaultStore() {
+  const slug = process.env.DEFAULT_STORE_SLUG || 'default';
+  let store = await Store.findOne({ slug });
+  if (store) return store;
+
+  return Store.create({
+    name: process.env.DEFAULT_STORE_NAME || 'Piaarya',
+    slug,
+    status: 'active',
+    plan: 'pro',
+    owner: {
+      name: process.env.DEFAULT_STORE_OWNER_NAME || 'Store Owner',
+      email: process.env.DEFAULT_STORE_OWNER_EMAIL || 'owner@example.com',
+    },
+  });
+}
 
 async function seed() {
   await connectDB();
+  const store = await getOrCreateDefaultStore();
+  console.log(`Seeding into store: ${store.name} (${store._id})`);
+  return runWithStore(store._id, () => seedData());
+}
 
+async function seedData() {
   await Promise.all([
     Category.deleteMany({}),
     Product.deleteMany({}),
@@ -18,18 +53,148 @@ async function seed() {
     Order.deleteMany({}),
     Review.deleteMany({}),
     PaymentTransaction.deleteMany({}),
+    Cart.deleteMany({}),
+    TeamMember.deleteMany({}),
+    Wishlist.deleteMany({}),
   ]);
 
-  const category = await Category.create({ name: 'Apparel', slug: 'apparel' });
+  const [apparel, electronics, accessories] = await Category.insertMany([
+    { name: 'Apparel', slug: 'apparel', image: 'https://picsum.photos/seed/apparel/400/400' },
+    { name: 'Electronics', slug: 'electronics', image: 'https://picsum.photos/seed/electronics/400/400' },
+    { name: 'Accessories', slug: 'accessories', image: 'https://picsum.photos/seed/accessories/400/400' },
+  ]);
+  const category = apparel;
+
+  function media(seed, alt) {
+    return [{ url: `https://picsum.photos/seed/${seed}/600/600`, type: 'image', altText: alt }];
+  }
 
   const products = await Product.insertMany([
-    { name: 'Classic T-Shirt', slug: 'classic-t-shirt', sku: 'TSHIRT-001', category: category._id, price: 499, stock: 100 },
-    { name: 'Denim Jacket', slug: 'denim-jacket', sku: 'JACKET-001', category: category._id, price: 1999, stock: 40 },
+    {
+      name: 'Classic T-Shirt',
+      slug: 'classic-t-shirt',
+      sku: 'TSHIRT-001',
+      category: apparel._id,
+      price: 499,
+      compareAtPrice: 699,
+      stock: 100,
+      tags: ['bestseller'],
+      style: ['Casual'],
+      material: ['Cotton'],
+      occasion: ['Everyday'],
+      media: media('tshirt', 'Classic T-Shirt'),
+      variants: [
+        { color: 'Black', size: 'S', price: 499, sku: 'TSHIRT-001-BLK-S', stock: 20 },
+        { color: 'Black', size: 'M', price: 499, sku: 'TSHIRT-001-BLK-M', stock: 25 },
+        { color: 'White', size: 'S', price: 499, sku: 'TSHIRT-001-WHT-S', stock: 15 },
+        { color: 'White', size: 'M', price: 499, sku: 'TSHIRT-001-WHT-M', stock: 0 },
+      ],
+    },
+    {
+      name: 'Denim Jacket',
+      slug: 'denim-jacket',
+      sku: 'JACKET-001',
+      category: apparel._id,
+      price: 1999,
+      stock: 40,
+      tags: ['bestseller', 'new'],
+      style: ['Casual', 'Streetwear'],
+      material: ['Denim'],
+      occasion: ['Everyday'],
+      media: media('jacket', 'Denim Jacket'),
+      variants: [
+        { color: 'Blue', size: 'M', price: 1999, sku: 'JACKET-001-BLU-M', stock: 12 },
+        { color: 'Blue', size: 'L', price: 1999, sku: 'JACKET-001-BLU-L', stock: 8 },
+      ],
+    },
+    {
+      name: 'Wireless Earbuds',
+      slug: 'wireless-earbuds',
+      sku: 'AUDIO-001',
+      category: electronics._id,
+      price: 2499,
+      compareAtPrice: 2999,
+      stock: 60,
+      tags: ['bestseller'],
+      style: ['Modern'],
+      material: ['Plastic'],
+      occasion: ['Everyday'],
+      media: media('earbuds', 'Wireless Earbuds'),
+    },
+    {
+      name: 'Smart Fitness Band',
+      slug: 'smart-fitness-band',
+      sku: 'WEAR-001',
+      category: electronics._id,
+      price: 1799,
+      stock: 25,
+      tags: ['new'],
+      style: ['Sporty'],
+      material: ['Silicone'],
+      occasion: ['Sports'],
+      media: media('fitnessband', 'Smart Fitness Band'),
+    },
+    {
+      name: 'Leather Wallet',
+      slug: 'leather-wallet',
+      sku: 'WALLET-001',
+      category: accessories._id,
+      price: 899,
+      stock: 80,
+      tags: ['new'],
+      style: ['Formal'],
+      material: ['Leather'],
+      occasion: ['Office'],
+      media: media('wallet', 'Leather Wallet'),
+    },
+    {
+      name: 'Canvas Backpack',
+      slug: 'canvas-backpack',
+      sku: 'BAG-001',
+      category: accessories._id,
+      price: 1599,
+      stock: 35,
+      tags: ['bestseller'],
+      style: ['Casual'],
+      material: ['Canvas'],
+      occasion: ['Travel'],
+      media: media('backpack', 'Canvas Backpack'),
+    },
+    {
+      name: 'Starter Combo Pack',
+      slug: 'starter-combo-pack',
+      sku: 'BUNDLE-001',
+      category: apparel._id,
+      price: 2299,
+      compareAtPrice: 2997,
+      stock: 20,
+      tags: ['bundle'],
+      style: ['Casual'],
+      material: ['Cotton'],
+      occasion: ['Everyday'],
+      media: media('combopack', 'Starter Combo Pack'),
+    },
+    {
+      name: 'Travel Essentials Bundle',
+      slug: 'travel-essentials-bundle',
+      sku: 'BUNDLE-002',
+      category: accessories._id,
+      price: 2999,
+      compareAtPrice: 3599,
+      stock: 15,
+      tags: ['bundle'],
+      style: ['Casual'],
+      material: ['Canvas'],
+      occasion: ['Travel'],
+      media: media('travelbundle', 'Travel Essentials Bundle'),
+    },
   ]);
 
   const customers = await Customer.insertMany([
     { name: 'Aditi Sharma', email: 'aditi@example.com', passwordHash: 'seed-placeholder' },
     { name: 'Rahul Verma', email: 'rahul@example.com', passwordHash: 'seed-placeholder' },
+    { name: 'Priya Singh', email: 'priya@example.com', passwordHash: 'seed-placeholder' },
+    { name: 'Karan Mehta', email: 'karan@example.com', passwordHash: 'seed-placeholder' },
   ]);
 
   const statuses = Order.ORDER_STATUSES;
@@ -78,10 +243,64 @@ async function seed() {
       comment: 'Received a damaged item.',
       status: 'pending',
     },
+    {
+      product: products[2]._id,
+      customer: customers[2]._id,
+      rating: 5,
+      comment: 'Sound quality is amazing for the price!',
+      status: 'approved',
+      isFeatured: true,
+    },
+    {
+      product: products[5]._id,
+      customer: customers[3]._id,
+      rating: 4,
+      comment: 'Sturdy and spacious, great for daily commute.',
+      status: 'approved',
+      isFeatured: true,
+    },
+    {
+      product: products[6]._id,
+      customer: customers[2]._id,
+      rating: 5,
+      comment: 'Best value bundle I have bought this year.',
+      status: 'approved',
+      isFeatured: true,
+    },
+  ]);
+
+  const carts = await Cart.insertMany([
+    {
+      customer: customers[0]._id,
+      items: [{ product: products[1]._id, quantity: 1, price: products[1].price }],
+      status: 'abandoned',
+      lastActivityAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    },
+    {
+      customer: customers[1]._id,
+      items: [
+        { product: products[0]._id, quantity: 2, price: products[0].price },
+        { product: products[1]._id, quantity: 1, price: products[1].price },
+      ],
+      status: 'abandoned',
+      lastActivityAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+    },
+  ]);
+
+  const seedPasswordHash = await bcrypt.hash('seed-placeholder', 10);
+  const teamMembers = await TeamMember.insertMany([
+    { name: 'Tanvir', email: 'tanvir@piaarya.com', passwordHash: seedPasswordHash, role: 'super_admin' },
+    { name: 'Sharan', email: 'sharan@piaarya.com', passwordHash: seedPasswordHash, role: 'manager' },
+  ]);
+
+  const wishlistEntries = await Wishlist.insertMany([
+    { customer: customers[0]._id, product: products[1]._id },
+    { customer: customers[1]._id, product: products[1]._id },
+    { customer: customers[1]._id, product: products[0]._id },
   ]);
 
   console.log(
-    `Seeded: ${products.length} products, ${customers.length} customers, ${orders.length} orders, ${reviews.length} reviews, ${transactions.length} payment transactions`
+    `Seeded: ${products.length} products, ${customers.length} customers, ${orders.length} orders, ${reviews.length} reviews, ${transactions.length} payment transactions, ${carts.length} abandoned carts, ${teamMembers.length} team members, ${wishlistEntries.length} wishlist entries`
   );
   await mongoose.disconnect();
 }

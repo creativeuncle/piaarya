@@ -77,4 +77,56 @@ async function getAnalytics(req, res, next) {
   }
 }
 
-module.exports = { listCoupons, getCoupon, createCoupon, updateCoupon, deleteCoupon, getAnalytics };
+async function validateCoupon(req, res, next) {
+  try {
+    const { code, subtotal } = req.body;
+    const coupon = await Coupon.findOne({ code: (code || '').toUpperCase().trim() });
+
+    if (!coupon) return res.json({ valid: false, message: 'Coupon code not found' });
+    if (!coupon.isActive) return res.json({ valid: false, message: 'This coupon is no longer active' });
+
+    const now = new Date();
+    if (coupon.startDate && now < coupon.startDate) {
+      return res.json({ valid: false, message: 'This coupon is not active yet' });
+    }
+    if (coupon.endDate && now > coupon.endDate) {
+      return res.json({ valid: false, message: 'This coupon has expired' });
+    }
+    if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
+      return res.json({ valid: false, message: 'This coupon has reached its usage limit' });
+    }
+
+    const amount = Number(subtotal) || 0;
+    let discountAmount = 0;
+    let message = 'Coupon applied';
+
+    if (coupon.discountType === 'fixed') {
+      discountAmount = Math.min(coupon.discountValue || 0, amount);
+    } else if (coupon.discountType === 'percentage') {
+      discountAmount = Math.round((amount * (coupon.discountValue || 0)) / 100);
+    } else if (coupon.discountType === 'buy_x_get_y') {
+      discountAmount = 0;
+      message = `Buy ${coupon.buyQuantity} Get ${coupon.getQuantity} — discount applied at checkout based on items in cart`;
+    }
+
+    res.json({
+      valid: true,
+      code: coupon.code,
+      discountType: coupon.discountType,
+      discountAmount,
+      message,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  listCoupons,
+  getCoupon,
+  createCoupon,
+  updateCoupon,
+  deleteCoupon,
+  getAnalytics,
+  validateCoupon,
+};

@@ -1,17 +1,32 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchCustomers, setCustomerBlocked } from '../api/customers';
+import { fetchProducts } from '../api/products';
 
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState('');
+  const [productId, setProductId] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchProducts({ limit: 200 }).then((data) => setProducts(data.products)).catch(() => {});
+  }, []);
 
   function load() {
     setLoading(true);
     setError(null);
-    fetchCustomers(search ? { search } : {})
+    const params = {};
+    if (search) params.search = search;
+    if (productId) params.product = productId;
+    if (dateFrom) params.dateFrom = dateFrom;
+    if (dateTo) params.dateTo = dateTo;
+
+    fetchCustomers(params)
       .then(setCustomers)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -21,7 +36,14 @@ export default function Customers() {
     const timeout = setTimeout(load, 300);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [search, productId, dateFrom, dateTo]);
+
+  function clearFilters() {
+    setSearch('');
+    setProductId('');
+    setDateFrom('');
+    setDateTo('');
+  }
 
   async function toggleBlock(customer) {
     try {
@@ -38,13 +60,38 @@ export default function Customers() {
     <div className="p-6">
       <h1 className="text-2xl font-semibold text-gray-900 mb-4">Customers</h1>
 
-      <input
-        type="text"
-        placeholder="Search by name or email..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="input w-72 mb-4"
-      />
+      <div className="flex flex-wrap items-end gap-3 mb-4">
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Search</label>
+          <input
+            type="text"
+            placeholder="Search by name or email..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="input w-64"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Registered From</label>
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="input" />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Registered To</label>
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="input" />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Purchased Product</label>
+          <select value={productId} onChange={(e) => setProductId(e.target.value)} className="input min-w-[180px]">
+            <option value="">All Products</option>
+            {products.map((p) => (
+              <option key={p._id} value={p._id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+        {(search || productId || dateFrom || dateTo) && (
+          <button onClick={clearFilters} className="text-sm text-gray-500 underline mb-2">Clear filters</button>
+        )}
+      </div>
 
       {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 

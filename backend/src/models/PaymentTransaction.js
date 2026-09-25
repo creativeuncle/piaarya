@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const paymentTransactionSchema = new mongoose.Schema(
   {
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
     order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true },
     type: { type: String, enum: ['charge', 'refund', 'partial_refund'], required: true },
     amount: { type: Number, required: true },

@@ -7,6 +7,7 @@ import {
   fetchCustomerOrders,
   fetchCustomerActivity,
   adjustRewardPoints,
+  adjustStoreCredit,
 } from '../api/customers';
 
 const EMPTY_ADDRESS = { label: '', line1: '', line2: '', city: '', state: '', pincode: '', country: '', isDefault: false };
@@ -24,6 +25,7 @@ export default function CustomerDetail() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [showRewardModal, setShowRewardModal] = useState(false);
+  const [showCreditModal, setShowCreditModal] = useState(false);
 
   useEffect(() => {
     fetchCustomer(id)
@@ -109,6 +111,8 @@ export default function CustomerDetail() {
         </button>
         <span className="text-sm text-gray-500 ml-auto">Reward Points: <strong>{customer.rewardPoints}</strong></span>
         <button onClick={() => setShowRewardModal(true)} className="btn-secondary text-xs">Adjust Points</button>
+        <span className="text-sm text-gray-500">Store Credit: <strong>₹{customer.storeCredit || 0}</strong></span>
+        <button onClick={() => setShowCreditModal(true)} className="btn-secondary text-xs">Adjust Credit</button>
       </div>
 
       <div className="flex gap-2 mb-4 border-b border-gray-200">
@@ -216,6 +220,18 @@ export default function CustomerDetail() {
           }}
         />
       )}
+
+      {showCreditModal && (
+        <StoreCreditModal
+          customer={customer}
+          onClose={() => setShowCreditModal(false)}
+          onSaved={(updated) => {
+            setCustomer(updated);
+            setShowCreditModal(false);
+            setActivity(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -250,6 +266,48 @@ function RewardPointsModal({ customer, onClose, onSaved }) {
         </Field>
         <Field label="Reason">
           <input className="input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Order reward, goodwill credit" />
+        </Field>
+        <div className="flex gap-3">
+          <button type="submit" disabled={saving} className="bg-gray-900 text-white px-4 py-2 rounded-md text-sm disabled:opacity-50">
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+          <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function StoreCreditModal({ customer, onClose, onSaved }) {
+  const [delta, setDelta] = useState('');
+  const [reason, setReason] = useState('');
+  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      const updated = await adjustStoreCredit(customer._id, { delta: Number(delta), reason });
+      onSaved(updated);
+    } catch (err) {
+      setError(err.response?.data?.message || err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6" onClick={onClose}>
+      <form onSubmit={handleSubmit} onClick={(e) => e.stopPropagation()} className="bg-white rounded-lg p-6 w-full max-w-sm space-y-4">
+        <h2 className="text-lg font-semibold text-gray-900">Adjust Store Credit</h2>
+        {error && <p className="text-red-600 text-sm">{error}</p>}
+        <Field label="Amount change in ₹ (use negative to subtract)">
+          <input type="number" className="input" value={delta} onChange={(e) => setDelta(e.target.value)} required />
+        </Field>
+        <Field label="Reason">
+          <input className="input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Refund, goodwill credit" />
         </Field>
         <div className="flex gap-3">
           <button type="submit" disabled={saving} className="bg-gray-900 text-white px-4 py-2 rounded-md text-sm disabled:opacity-50">

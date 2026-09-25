@@ -6,6 +6,8 @@ const orderItemSchema = new mongoose.Schema(
     variantSku: String,
     quantity: { type: Number, required: true },
     price: { type: Number, required: true },
+    gstRate: { type: Number, default: 0 },
+    hsnCode: String,
   },
   { _id: false }
 );
@@ -24,16 +26,46 @@ const ORDER_STATUSES = [
 
 const orderSchema = new mongoose.Schema(
   {
-    orderNumber: { type: String, required: true, unique: true },
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
+    orderNumber: { type: String, required: true },
     customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
     items: [orderItemSchema],
     totalAmount: { type: Number, required: true },
     status: { type: String, enum: ORDER_STATUSES, default: 'new' },
     shippingAddress: { type: Object },
     paymentStatus: { type: String, enum: ['pending', 'paid', 'failed', 'refunded', 'partially_refunded'], default: 'pending' },
+    paymentMethod: { type: String, enum: ['cod', 'stripe'], default: 'cod' },
+    paymentReference: {
+      gateway: String,
+      checkoutSessionId: String,
+      paymentIntentId: String,
+    },
+    shipping: {
+      zoneName: String,
+      rateLabel: String,
+      cost: { type: Number, default: 0 },
+      carrier: String,
+      trackingNumber: String,
+      trackingUrl: String,
+    },
+    taxBreakup: {
+      taxableAmount: { type: Number, default: 0 },
+      cgst: { type: Number, default: 0 },
+      sgst: { type: Number, default: 0 },
+      igst: { type: Number, default: 0 },
+      totalTax: { type: Number, default: 0 },
+      taxType: { type: String, enum: ['intra_state', 'inter_state', null], default: null },
+    },
+    giftCard: {
+      code: String,
+      amountUsed: Number,
+    },
+    storeCreditUsed: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
+
+orderSchema.index({ store: 1, orderNumber: 1 }, { unique: true });
 
 orderSchema.statics.ORDER_STATUSES = ORDER_STATUSES;
 

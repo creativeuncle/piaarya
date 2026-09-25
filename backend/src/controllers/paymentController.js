@@ -3,10 +3,23 @@ const Order = require('../models/Order');
 
 async function listTransactions(req, res, next) {
   try {
-    const { status, type } = req.query;
+    const { status, type, customer, product, dateFrom, dateTo } = req.query;
     const filter = {};
     if (status && status !== 'all') filter.status = status;
     if (type && type !== 'all') filter.type = type;
+    if (dateFrom || dateTo) {
+      filter.createdAt = {};
+      if (dateFrom) filter.createdAt.$gte = new Date(dateFrom);
+      if (dateTo) filter.createdAt.$lte = new Date(`${dateTo}T23:59:59.999Z`);
+    }
+
+    if (customer || product) {
+      const orderFilter = {};
+      if (customer) orderFilter.customer = customer;
+      if (product) orderFilter['items.product'] = product;
+      const orderIds = await Order.find(orderFilter).distinct('_id');
+      filter.order = { $in: orderIds };
+    }
 
     const transactions = await PaymentTransaction.find(filter)
       .populate({ path: 'order', select: 'orderNumber totalAmount paymentStatus customer', populate: { path: 'customer', select: 'name' } })

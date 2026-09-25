@@ -25,12 +25,16 @@ const variantSchema = new mongoose.Schema(
 
 const productSchema = new mongoose.Schema(
   {
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
     name: { type: String, required: true, trim: true },
-    slug: { type: String, required: true, unique: true, trim: true },
-    sku: { type: String, required: true, unique: true },
+    slug: { type: String, required: true, trim: true },
+    sku: { type: String, required: true },
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
     subCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
     tags: [String],
+    style: [String],
+    material: [String],
+    occasion: [String],
     description: String,
     specifications: { type: Map, of: String },
     media: [mediaSchema],
@@ -39,6 +43,8 @@ const productSchema = new mongoose.Schema(
     metaDescription: String,
     price: { type: Number, required: true },
     compareAtPrice: { type: Number },
+    gstRate: { type: Number, default: 18 },
+    hsnCode: { type: String, trim: true },
     stock: { type: Number, default: 0 },
     lowStockThreshold: { type: Number, default: 5 },
     damagedStock: { type: Number, default: 0 },
@@ -47,5 +53,8 @@ const productSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+productSchema.index({ store: 1, slug: 1 }, { unique: true });
+productSchema.index({ store: 1, sku: 1 }, { unique: true });
 
 module.exports = mongoose.model('Product', productSchema);

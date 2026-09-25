@@ -5,7 +5,8 @@ const APPLIES_TO = ['all', 'category', 'product'];
 
 const couponSchema = new mongoose.Schema(
   {
-    code: { type: String, required: true, unique: true, uppercase: true, trim: true },
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
+    code: { type: String, required: true, uppercase: true, trim: true },
     description: { type: String },
     discountType: { type: String, enum: DISCOUNT_TYPES, required: true },
     discountValue: { type: Number },
@@ -24,6 +25,8 @@ const couponSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+couponSchema.index({ store: 1, code: 1 }, { unique: true });
 
 couponSchema.statics.DISCOUNT_TYPES = DISCOUNT_TYPES;
 couponSchema.statics.APPLIES_TO = APPLIES_TO;

@@ -1,5 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const tenantScopePlugin = require('./middleware/tenantScopePlugin');
+
+// Must run before any model file is required, so every tenant-scoped schema
+// (anything with a `store` path) picks up auto-scoping when it's compiled.
+mongoose.plugin(tenantScopePlugin);
+
+const resolveStore = require('./middleware/resolveStore');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
@@ -12,6 +20,23 @@ const couponRoutes = require('./routes/couponRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const returnRoutes = require('./routes/returnRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const marketingRoutes = require('./routes/marketingRoutes');
+const teamRoutes = require('./routes/teamRoutes');
+const wishlistRoutes = require('./routes/wishlistRoutes');
+const navigationRoutes = require('./routes/navigationRoutes');
+const authRoutes = require('./routes/authRoutes');
+const meRoutes = require('./routes/meRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
+const pageRoutes = require('./routes/pageRoutes');
+const appRoutes = require('./routes/appRoutes');
+const shippingRoutes = require('./routes/shippingRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
+const giftCardRoutes = require('./routes/giftCardRoutes');
+const currencyRoutes = require('./routes/currencyRoutes');
+const themeRoutes = require('./routes/themeRoutes');
+const adminAuthRoutes = require('./routes/adminAuthRoutes');
+const platformRoutes = require('./routes/platformRoutes');
+const { getSitemap, getRobotsTxt } = require('./controllers/seoController');
 const errorHandler = require('./middleware/errorHandler');
 const { UPLOAD_DIR } = require('./middleware/upload');
 
@@ -22,6 +47,10 @@ app.use(express.json());
 app.use('/uploads', express.static(UPLOAD_DIR));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+// Platform (Super Admin) routes are cross-tenant by nature — mounted ahead
+// of resolveStore so they never get bound to any single store's context.
+app.use('/api/platform', platformRoutes);
+app.use(resolveStore);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/categories', categoryRoutes);
@@ -34,6 +63,23 @@ app.use('/api/coupons', couponRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/returns', returnRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/marketing', marketingRoutes);
+app.use('/api/team', teamRoutes);
+app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/navigation', navigationRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/me', meRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/pages', pageRoutes);
+app.use('/api/apps', appRoutes);
+app.use('/api/shipping', shippingRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/gift-cards', giftCardRoutes);
+app.use('/api/currency', currencyRoutes);
+app.use('/api/theme', themeRoutes);
+app.use('/api/admin', adminAuthRoutes);
+app.get('/sitemap.xml', getSitemap);
+app.get('/robots.txt', getRobotsTxt);
 
 app.use(errorHandler);
 
