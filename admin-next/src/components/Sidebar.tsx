@@ -4,8 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
+import { useAdminAuth } from '../context/AdminAuthContext';
 import {
   SidebarLeftIcon,
+  Logout01Icon,
   Home01Icon,
   ShoppingCart01Icon,
   Package01Icon,
@@ -59,6 +61,7 @@ const SETTINGS_CHILDREN = [
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(false);
   const pathname = usePathname();
+  const { member, logout } = useAdminAuth();
   const isSettingsRoute = SETTINGS_CHILDREN.some((c) => pathname.startsWith(c.to));
   const [settingsOpen, setSettingsOpen] = useState(isSettingsRoute);
 
@@ -73,7 +76,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`shrink-0 bg-gray-900 text-gray-200 min-h-screen p-3 transition-all duration-200 ${
+      className={`shrink-0 bg-gray-900 text-gray-200 min-h-screen p-3 flex flex-col transition-all duration-200 ${
         expanded ? 'w-60' : 'w-16'
       }`}
     >
@@ -149,6 +152,22 @@ export default function Sidebar() {
           </div>
         )}
       </nav>
+
+      <div className="mt-auto pt-3 border-t border-gray-800">
+        {expanded && member && (
+          <div className="px-1 pb-2 text-xs text-gray-400 truncate">{member.name}</div>
+        )}
+        <button
+          onClick={logout}
+          title={!expanded ? 'Log out' : undefined}
+          className={`group relative flex items-center gap-3 rounded-md text-sm px-3 py-2 w-full ${
+            expanded ? '' : 'justify-center'
+          } hover:bg-gray-800`}
+        >
+          <HugeiconsIcon icon={Logout01Icon} size={20} strokeWidth={1.5} className="shrink-0" />
+          {expanded && <span>Log out</span>}
+        </button>
+      </div>
     </aside>
   );
 }

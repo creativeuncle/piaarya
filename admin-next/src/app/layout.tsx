@@ -1,4 +1,5 @@
 import "./globals.css";
+import { AdminAuthProvider } from "../context/AdminAuthContext";
 
 export const metadata = {
   title: "Piaarya Admin",
@@ -8,7 +9,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AdminAuthProvider>{children}</AdminAuthProvider>
+      </body>
     </html>
   );
 }

@@ -2,24 +2,44 @@
 // the rest of the request (req.store/req.storeId, plus the AsyncLocalStorage
 // context the tenant-scope plugin reads from).
 //
-// There's no subdomain routing or admin login yet, so for now the store is
-// resolved from an explicit `X-Store-Id` header / `storeId` query param,
-// falling back to the single "default" store created by the migration
-// script. That keeps every existing admin-next/storefront-next request
-// working unchanged (they send neither), while already giving APIs a way to
-// address a specific store once multi-store admin auth exists.
+// Resolution order:
+//   1. A logged-in store admin's token (Authorization: Bearer <admin JWT>)
+//      — the store they belong to, so admin-next requests are scoped to
+//      the store the logged-in team member actually works for.
+//   2. An explicit `X-Store-Id` header / `storeId` query param.
+//   3. The single "default" store created by the migration script.
+// There's no subdomain routing yet for storefront requests, so those still
+// fall through to (3) until a store is resolved from the storefront's
+// domain — that's separate, still-pending work.
 const Store = require('../models/Store');
 const { runWithStore } = require('./tenantContext');
+const { verifyAdminToken } = require('./adminAuth');
 
 const DEFAULT_STORE_SLUG = process.env.DEFAULT_STORE_SLUG || 'default';
 
 async function resolveStore(req, res, next) {
   try {
-    const explicitId = req.headers['x-store-id'] || req.query.storeId;
     let store = null;
 
-    if (explicitId) {
-      store = await Store.findById(explicitId).catch(() => null);
+    const authHeader = req.headers.authorization || '';
+    const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (bearer) {
+      try {
+        const payload = verifyAdminToken(bearer);
+        if (payload.storeId) {
+          store = await Store.findById(payload.storeId);
+        }
+      } catch {
+        // Not a valid admin token (could be a customer token, or none) —
+        // fall through to the other resolution strategies below.
+      }
+    }
+
+    if (!store) {
+      const explicitId = req.headers['x-store-id'] || req.query.storeId;
+      if (explicitId) {
+        store = await Store.findById(explicitId).catch(() => null);
+      }
     }
     if (!store) {
       store = await Store.findOne({ slug: DEFAULT_STORE_SLUG });
