@@ -7,6 +7,7 @@ import { useAdminAuth } from '../../context/AdminAuthContext';
 export default function LoginPage() {
   const router = useRouter();
   const { login, isAuthenticated } = useAdminAuth();
+  const [storeSlug, setStoreSlug] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,7 +24,7 @@ export default function LoginPage() {
     setError('');
     setSubmitting(true);
     try {
-      await login({ email, password });
+      await login({ email, password, storeSlug: storeSlug || undefined });
       router.replace('/');
     } catch (err) {
       setError(err?.response?.data?.message || 'Login failed');
@@ -43,6 +44,15 @@ export default function LoginPage() {
             {error}
           </div>
         )}
+
+        <label className="block text-sm text-gray-700 mb-1">Store</label>
+        <input
+          type="text"
+          className="input mb-4"
+          value={storeSlug}
+          onChange={(e) => setStoreSlug(e.target.value)}
+          placeholder="your-store-slug"
+        />
 
         <label className="block text-sm text-gray-700 mb-1">Email</label>
         <input

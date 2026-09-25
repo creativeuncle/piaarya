@@ -6,7 +6,11 @@
 //   1. A logged-in store admin's token (Authorization: Bearer <admin JWT>)
 //      — the store they belong to, so admin-next requests are scoped to
 //      the store the logged-in team member actually works for.
-//   2. An explicit `X-Store-Id` header / `storeId` query param.
+//   2. An explicit `X-Store-Id` header / `storeId` query param, or a
+//      `storeSlug` in the request body — needed for the admin *login*
+//      request itself, which by definition has no token yet: without this,
+//      TeamMember.findOne({email}) would always be auto-scoped to the
+//      default store below, and no other store's admin could ever log in.
 //   3. The single "default" store created by the migration script.
 // There's no subdomain routing yet for storefront requests, so those still
 // fall through to (3) until a store is resolved from the storefront's
@@ -36,9 +40,15 @@ async function resolveStore(req, res, next) {
     }
 
     if (!store) {
-      const explicitId = req.headers['x-store-id'] || req.query.storeId;
+      const explicitId = req.headers['x-store-id'] || req.query.storeId || req.body?.storeId;
       if (explicitId) {
         store = await Store.findById(explicitId).catch(() => null);
+      }
+    }
+    if (!store) {
+      const explicitSlug = req.headers['x-store-slug'] || req.query.storeSlug || req.body?.storeSlug;
+      if (explicitSlug) {
+        store = await Store.findOne({ slug: String(explicitSlug).toLowerCase().trim() });
       }
     }
     if (!store) {

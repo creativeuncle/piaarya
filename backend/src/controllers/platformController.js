@@ -93,7 +93,7 @@ async function getDashboard(req, res, next) {
         Order.countDocuments(),
         Customer.countDocuments(),
         Order.aggregate([
-          { $match: { status: { $ne: 'cancelled' } } },
+          { $match: { status: { $nin: ['cancelled', 'refunded'] } } },
           { $group: { _id: null, total: { $sum: '$totalAmount' } } },
         ]),
       ]);

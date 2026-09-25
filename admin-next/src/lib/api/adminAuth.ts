@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export async function login(payload: { email: string; password: string }) {
+export async function login(payload: { email: string; password: string; storeSlug?: string }) {
   const { data } = await axios.post('/api/admin/login', payload);
   return data;
 }

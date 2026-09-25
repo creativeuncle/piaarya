@@ -31,7 +31,10 @@ function tenantScopePlugin(schema) {
     next();
   });
 
-  schema.pre('save', function (next) {
+  // Must run on 'validate', not 'save': Mongoose runs schema validation
+  // (including the `store` field's own `required: true`) before 'save'
+  // hooks fire, so filling it in on pre('save') would already be too late.
+  schema.pre('validate', function (next) {
     if (!this.store) {
       const storeId = getCurrentStoreId();
       if (storeId) this.store = storeId;
