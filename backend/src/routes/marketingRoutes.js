@@ -14,8 +14,11 @@ const {
 } = require('../controllers/marketingController');
 const EmailCampaign = require('../models/EmailCampaign');
 const WhatsAppCampaign = require('../models/WhatsAppCampaign');
+const { requireAdminAuth } = require('../middleware/adminAuth');
 
 const router = express.Router();
+
+router.use(requireAdminAuth);
 
 router.get('/abandoned-carts', listAbandonedCarts);
 router.post('/abandoned-carts/:id/send-recovery', sendRecoveryEmail);

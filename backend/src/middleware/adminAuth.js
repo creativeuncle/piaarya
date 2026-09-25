@@ -41,4 +41,31 @@ function requireRole(...roles) {
   };
 }
 
-module.exports = { signAdminToken, verifyAdminToken, requireAdminAuth, requireRole, ADMIN_JWT_SECRET };
+// For endpoints a route shares with storefront-next's public traffic (an
+// endpoint can't require login and stay public at the same time), but whose
+// controller still needs to know "is this call coming from a logged-in
+// store admin, or the public" to decide what to return. Never rejects.
+function optionalAdminAuth(req, res, next) {
+  const header = req.headers.authorization || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  if (token) {
+    try {
+      const payload = verifyAdminToken(token);
+      req.teamMemberId = payload.teamMemberId;
+      req.adminRole = payload.role;
+      req.isAdmin = true;
+    } catch {
+      // Not a valid admin token — treat the request as public.
+    }
+  }
+  next();
+}
+
+module.exports = {
+  signAdminToken,
+  verifyAdminToken,
+  requireAdminAuth,
+  requireRole,
+  optionalAdminAuth,
+  ADMIN_JWT_SECRET,
+};

@@ -1,7 +1,10 @@
 const express = require('express');
 const { getSummary, getSalesTrend, getTopProducts, getOrderStatusBreakdown } = require('../controllers/analyticsController');
+const { requireAdminAuth } = require('../middleware/adminAuth');
 
 const router = express.Router();
+
+router.use(requireAdminAuth);
 
 router.get('/summary', getSummary);
 router.get('/sales-trend', getSalesTrend);

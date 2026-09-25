@@ -42,7 +42,13 @@ async function listReviews(req, res, next) {
   try {
     const { status, featured, product, tag, sort } = req.query;
     const filter = {};
-    if (status && status !== 'all') filter.status = status;
+    if (req.isAdmin) {
+      if (status && status !== 'all') filter.status = status;
+    } else {
+      // Public callers (storefront) may only ever see approved reviews,
+      // regardless of what status they ask for.
+      filter.status = 'approved';
+    }
     if (featured === 'true') filter.isFeatured = true;
     if (product) filter.product = product;
     if (tag) filter.tags = tag;

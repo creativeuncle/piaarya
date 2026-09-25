@@ -8,15 +8,16 @@ const {
   getAnalytics,
   validateCoupon,
 } = require('../controllers/couponController');
+const { requireAdminAuth } = require('../middleware/adminAuth');
 
 const router = express.Router();
 
-router.get('/', listCoupons);
-router.get('/analytics', getAnalytics);
+router.get('/', requireAdminAuth, listCoupons);
+router.get('/analytics', requireAdminAuth, getAnalytics);
 router.post('/validate', validateCoupon);
-router.get('/:id', getCoupon);
-router.post('/', createCoupon);
-router.put('/:id', updateCoupon);
-router.delete('/:id', deleteCoupon);
+router.get('/:id', requireAdminAuth, getCoupon);
+router.post('/', requireAdminAuth, createCoupon);
+router.put('/:id', requireAdminAuth, updateCoupon);
+router.delete('/:id', requireAdminAuth, deleteCoupon);
 
 module.exports = router;

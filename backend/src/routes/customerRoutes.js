@@ -9,8 +9,11 @@ const {
   adjustStoreCredit,
   getActivity,
 } = require('../controllers/customerController');
+const { requireAdminAuth } = require('../middleware/adminAuth');
 
 const router = express.Router();
+
+router.use(requireAdminAuth);
 
 router.get('/', listCustomers);
 router.get('/:id', getCustomer);
