@@ -25,9 +25,10 @@ const variantSchema = new mongoose.Schema(
 
 const productSchema = new mongoose.Schema(
   {
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
     name: { type: String, required: true, trim: true },
-    slug: { type: String, required: true, unique: true, trim: true },
-    sku: { type: String, required: true, unique: true },
+    slug: { type: String, required: true, trim: true },
+    sku: { type: String, required: true },
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
     subCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
     tags: [String],
@@ -52,5 +53,8 @@ const productSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+productSchema.index({ store: 1, slug: 1 }, { unique: true });
+productSchema.index({ store: 1, sku: 1 }, { unique: true });
 
 module.exports = mongoose.model('Product', productSchema);

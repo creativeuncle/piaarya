@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 
 const giftCardSchema = new mongoose.Schema(
   {
-    code: { type: String, required: true, unique: true, uppercase: true, trim: true },
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
+    code: { type: String, required: true, uppercase: true, trim: true },
     initialBalance: { type: Number, required: true },
     balance: { type: Number, required: true },
     isActive: { type: Boolean, default: true },
@@ -12,5 +13,7 @@ const giftCardSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+giftCardSchema.index({ store: 1, code: 1 }, { unique: true });
 
 module.exports = mongoose.model('GiftCard', giftCardSchema);

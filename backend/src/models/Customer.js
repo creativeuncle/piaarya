@@ -16,8 +16,9 @@ const addressSchema = new mongoose.Schema(
 
 const customerSchema = new mongoose.Schema(
   {
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
     name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, trim: true, lowercase: true },
+    email: { type: String, required: true, trim: true, lowercase: true },
     phone: String,
     passwordHash: { type: String, required: true },
     addresses: [addressSchema],
@@ -29,5 +30,7 @@ const customerSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+customerSchema.index({ store: 1, email: 1 }, { unique: true });
 
 module.exports = mongoose.model('Customer', customerSchema);

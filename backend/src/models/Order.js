@@ -26,7 +26,8 @@ const ORDER_STATUSES = [
 
 const orderSchema = new mongoose.Schema(
   {
-    orderNumber: { type: String, required: true, unique: true },
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
+    orderNumber: { type: String, required: true },
     customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
     items: [orderItemSchema],
     totalAmount: { type: Number, required: true },
@@ -63,6 +64,8 @@ const orderSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+orderSchema.index({ store: 1, orderNumber: 1 }, { unique: true });
 
 orderSchema.statics.ORDER_STATUSES = ORDER_STATUSES;
 

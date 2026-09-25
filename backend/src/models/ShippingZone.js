@@ -11,6 +11,7 @@ const shippingRateSchema = new mongoose.Schema(
 
 const shippingZoneSchema = new mongoose.Schema(
   {
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
     name: { type: String, required: true, trim: true },
     states: [{ type: String, trim: true }],
     isDefault: { type: Boolean, default: false },

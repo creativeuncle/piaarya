@@ -12,6 +12,7 @@ const cartItemSchema = new mongoose.Schema(
 
 const cartSchema = new mongoose.Schema(
   {
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
     customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
     items: [cartItemSchema],
     status: { type: String, enum: ['active', 'abandoned', 'recovered', 'converted'], default: 'active' },

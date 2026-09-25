@@ -4,14 +4,17 @@ const ROLES = ['super_admin', 'manager', 'support_staff'];
 
 const teamMemberSchema = new mongoose.Schema(
   {
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
     name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, trim: true, lowercase: true },
+    email: { type: String, required: true, trim: true, lowercase: true },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ROLES, default: 'support_staff' },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
+
+teamMemberSchema.index({ store: 1, email: 1 }, { unique: true });
 
 teamMemberSchema.statics.ROLES = ROLES;
 

@@ -4,6 +4,7 @@ const SEGMENTS = ['all_customers', 'abandoned_cart', 'no_orders_30d', 'first_tim
 
 const whatsAppCampaignSchema = new mongoose.Schema(
   {
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
     name: { type: String, required: true, trim: true },
     message: { type: String, required: true },
     segment: { type: String, enum: SEGMENTS, default: 'all_customers' },

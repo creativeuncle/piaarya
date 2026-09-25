@@ -20,6 +20,7 @@ const returnItemSchema = new mongoose.Schema(
 
 const returnRequestSchema = new mongoose.Schema(
   {
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
     order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true },
     items: [returnItemSchema],
     type: { type: String, enum: ['return', 'exchange'], required: true },

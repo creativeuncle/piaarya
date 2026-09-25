@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const notificationLogSchema = new mongoose.Schema(
   {
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
     event: { type: String, required: true },
     channel: { type: String, enum: ['email', 'sms', 'whatsapp'], required: true },
     recipient: { type: String, required: true },

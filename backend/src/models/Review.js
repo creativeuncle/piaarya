@@ -4,6 +4,7 @@ const REVIEW_TAGS = ['Product Quality', 'Color', 'Material', 'Fit', 'Value For M
 
 const reviewSchema = new mongoose.Schema(
   {
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
     product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
     customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
     rating: { type: Number, min: 1, max: 5, required: true },

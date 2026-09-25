@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const storeCreditLogSchema = new mongoose.Schema(
   {
+    store: { type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true, index: true },
     customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
     amountChange: { type: Number, required: true },
     previousValue: { type: Number, required: true },
