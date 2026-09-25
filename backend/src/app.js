@@ -1,5 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const tenantScopePlugin = require('./middleware/tenantScopePlugin');
+
+// Must run before any model file is required, so every tenant-scoped schema
+// (anything with a `store` path) picks up auto-scoping when it's compiled.
+mongoose.plugin(tenantScopePlugin);
+
+const resolveStore = require('./middleware/resolveStore');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
@@ -37,6 +45,7 @@ app.use(express.json());
 app.use('/uploads', express.static(UPLOAD_DIR));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+app.use(resolveStore);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/categories', categoryRoutes);

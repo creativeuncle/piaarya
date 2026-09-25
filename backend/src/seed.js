@@ -1,6 +1,15 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
+const tenantScopePlugin = require('./middleware/tenantScopePlugin');
+
+// Must run before any model file is required, same as in app.js, so seeded
+// documents get their `store` field auto-filled instead of failing the
+// now-required `store` validation.
+mongoose.plugin(tenantScopePlugin);
+
+const { runWithStore } = require('./middleware/tenantContext');
 const connectDB = require('./config/db');
+const Store = require('./models/Store');
 const Category = require('./models/Category');
 const Product = require('./models/Product');
 const Customer = require('./models/Customer');
@@ -12,9 +21,31 @@ const TeamMember = require('./models/TeamMember');
 const Wishlist = require('./models/Wishlist');
 const bcrypt = require('bcryptjs');
 
+async function getOrCreateDefaultStore() {
+  const slug = process.env.DEFAULT_STORE_SLUG || 'default';
+  let store = await Store.findOne({ slug });
+  if (store) return store;
+
+  return Store.create({
+    name: process.env.DEFAULT_STORE_NAME || 'Piaarya',
+    slug,
+    status: 'active',
+    plan: 'pro',
+    owner: {
+      name: process.env.DEFAULT_STORE_OWNER_NAME || 'Store Owner',
+      email: process.env.DEFAULT_STORE_OWNER_EMAIL || 'owner@example.com',
+    },
+  });
+}
+
 async function seed() {
   await connectDB();
+  const store = await getOrCreateDefaultStore();
+  console.log(`Seeding into store: ${store.name} (${store._id})`);
+  return runWithStore(store._id, () => seedData());
+}
 
+async function seedData() {
   await Promise.all([
     Category.deleteMany({}),
     Product.deleteMany({}),
