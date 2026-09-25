@@ -35,6 +35,7 @@ const giftCardRoutes = require('./routes/giftCardRoutes');
 const currencyRoutes = require('./routes/currencyRoutes');
 const themeRoutes = require('./routes/themeRoutes');
 const adminAuthRoutes = require('./routes/adminAuthRoutes');
+const platformRoutes = require('./routes/platformRoutes');
 const { getSitemap, getRobotsTxt } = require('./controllers/seoController');
 const errorHandler = require('./middleware/errorHandler');
 const { UPLOAD_DIR } = require('./middleware/upload');
@@ -46,6 +47,9 @@ app.use(express.json());
 app.use('/uploads', express.static(UPLOAD_DIR));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+// Platform (Super Admin) routes are cross-tenant by nature — mounted ahead
+// of resolveStore so they never get bound to any single store's context.
+app.use('/api/platform', platformRoutes);
 app.use(resolveStore);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/orders', orderRoutes);
