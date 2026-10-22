@@ -10,6 +10,10 @@ const SECTION_TYPES = [
   'feature_bar',
   'reviews',
   'video_section',
+  'image_with_text',
+  'collapsible_content',
+  'email_subscriber',
+  'contact_form',
 ];
 
 const PAGES = ['home'];

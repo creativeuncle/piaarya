@@ -5,6 +5,10 @@ import TrendingProducts from './TrendingProducts';
 import VideoSection from './VideoSection';
 import ReviewsSection from './ReviewsSection';
 import FeatureBar from './FeatureBar';
+import ImageWithText from './ImageWithText';
+import CollapsibleContent from './CollapsibleContent';
+import EmailSubscriber from './EmailSubscriber';
+import ContactForm from './ContactForm';
 
 // Maps a PageLayout section's `type` to the component that renders it.
 // Each component ignores any settings keys it doesn't understand, so
@@ -19,6 +23,10 @@ export const SECTION_REGISTRY = {
   video_section: VideoSection,
   reviews: ReviewsSection,
   feature_bar: FeatureBar,
+  image_with_text: ImageWithText,
+  collapsible_content: CollapsibleContent,
+  email_subscriber: EmailSubscriber,
+  contact_form: ContactForm,
 } as const;
 
 export type SectionType = keyof typeof SECTION_REGISTRY;
