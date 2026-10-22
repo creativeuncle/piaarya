@@ -8,7 +8,7 @@ function Stars({ rating }) {
   return <span className="text-yellow-500">{'★'.repeat(rating)}{'☆'.repeat(5 - rating)}</span>;
 }
 
-export default function ReviewsSection() {
+export default function ReviewsSection({ title = 'What Our Customers Say' }: { title?: string }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,7 +23,7 @@ export default function ReviewsSection() {
 
   return (
     <section className="max-w-7xl mx-auto px-6 py-16">
-      <h2 className="text-2xl font-bold text-gray-900 mb-8">What Our Customers Say</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-8">{title}</h2>
       {loading && <p className="text-gray-400 text-sm">Loading...</p>}
       {!loading && (
         <Carousel>
