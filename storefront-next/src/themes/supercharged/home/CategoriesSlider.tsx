@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { fetchCategories } from '../../../lib/api/categories';
 import Carousel from '../../../components/Carousel';
 
-export default function CategoriesSlider() {
+export default function CategoriesSlider({ title = 'Shop by Category' }: { title?: string }) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +20,7 @@ export default function CategoriesSlider() {
 
   return (
     <section className="max-w-7xl mx-auto px-6 py-16">
-      <h2 className="text-2xl font-bold text-gray-900 mb-8">Shop by Category</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-8">{title}</h2>
       {loading && <p className="text-gray-400 text-sm">Loading...</p>}
       {!loading && (
         <Carousel>
