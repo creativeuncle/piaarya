@@ -105,6 +105,9 @@ export default function ThemeEditorPage() {
 
   const selected = sections?.find((s) => s.key === selectedKey);
   const selectedMeta = selected ? SECTION_META[selected.type] : null;
+  // Mongoose can strip an empty `settings: {}` from a saved section (its
+  // schema default), so this is never assumed to exist on load.
+  const selectedSettings = selected?.settings || {};
 
   return (
     <div className="flex h-screen">
@@ -179,7 +182,7 @@ export default function ThemeEditorPage() {
                 <label className="block text-xs text-gray-500 mb-1">Title</label>
                 <input
                   className="input"
-                  value={selected.settings.title || ''}
+                  value={selectedSettings.title || ''}
                   onChange={(e) => updateSetting(selected.key, 'title', e.target.value)}
                 />
               </div>
@@ -190,7 +193,7 @@ export default function ThemeEditorPage() {
                 <label className="block text-xs text-gray-500 mb-1">Category</label>
                 <select
                   className="input"
-                  value={selected.settings.category || ''}
+                  value={selectedSettings.category || ''}
                   onChange={(e) => updateSetting(selected.key, 'category', e.target.value)}
                 >
                   <option value="">All products</option>
