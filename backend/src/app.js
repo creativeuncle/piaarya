@@ -38,6 +38,7 @@ const adminAuthRoutes = require('./routes/adminAuthRoutes');
 const platformRoutes = require('./routes/platformRoutes');
 const domainRoutes = require('./routes/domainRoutes');
 const pageLayoutRoutes = require('./routes/pageLayoutRoutes');
+const publicFormsRoutes = require('./routes/publicFormsRoutes');
 const { getSitemap, getRobotsTxt } = require('./controllers/seoController');
 const errorHandler = require('./middleware/errorHandler');
 const { UPLOAD_DIR } = require('./middleware/upload');
@@ -82,6 +83,7 @@ app.use('/api/theme', themeRoutes);
 app.use('/api/admin', adminAuthRoutes);
 app.use('/api/domains', domainRoutes);
 app.use('/api/page-layout', pageLayoutRoutes);
+app.use('/api', publicFormsRoutes);
 app.get('/sitemap.xml', getSitemap);
 app.get('/robots.txt', getRobotsTxt);
 

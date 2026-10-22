@@ -2,24 +2,100 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { DragDropVerticalIcon, ViewIcon, ViewOffIcon } from '@hugeicons/core-free-icons';
+import {
+  DragDropVerticalIcon,
+  ViewIcon,
+  ViewOffIcon,
+  Delete02Icon,
+  PlusSignIcon,
+  ShoppingBag01Icon,
+  Grid2X2Icon,
+  Image02Icon,
+  Video01Icon,
+  StarIcon,
+  ListViewIcon,
+  Mail01Icon,
+  Contact01Icon,
+} from '@hugeicons/core-free-icons';
 import { fetchPageLayout, savePageLayout } from '../../../lib/api/pageLayout';
 import { fetchCategories } from '../../../lib/api/categories';
 
 const STOREFRONT_URL = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'http://localhost:3220';
 
-// Which settings fields each section type exposes — kept in sync with
-// storefront-next's sectionRegistry.ts. Sections not listed here have no
-// editable settings yet (Phase 1): only reorder and show/hide apply.
+// Which settings fields each section type exposes, and how to render each
+// field — kept in sync with storefront-next's component props. Sections
+// with an empty `fields` array have nothing editable yet.
 const SECTION_META = {
   hero_slider: { label: 'Hero Slider', fields: [] },
   explore_products: { label: 'Explore Products', fields: [] },
-  categories_slider: { label: 'Categories Slider', fields: ['title'] },
-  trending_products: { label: 'Trending Products', fields: ['title', 'category'] },
-  video_section: { label: 'Video Section', fields: [] },
-  reviews: { label: 'Customer Reviews', fields: ['title'] },
+  categories_slider: {
+    label: 'Categories Slider',
+    fields: [{ key: 'title', label: 'Title', type: 'text' }],
+  },
+  trending_products: {
+    label: 'Products Slider',
+    fields: [
+      { key: 'title', label: 'Title', type: 'text' },
+      { key: 'category', label: 'Category', type: 'category' },
+    ],
+  },
+  video_section: { label: 'Video', fields: [] },
+  reviews: {
+    label: 'Review Slider',
+    fields: [{ key: 'title', label: 'Title', type: 'text' }],
+  },
   feature_bar: { label: 'Feature Bar', fields: [] },
+  image_with_text: {
+    label: 'Image with Text',
+    fields: [
+      { key: 'imageUrl', label: 'Image URL', type: 'text' },
+      { key: 'heading', label: 'Heading', type: 'text' },
+      { key: 'text', label: 'Text', type: 'textarea' },
+      { key: 'buttonLabel', label: 'Button Label', type: 'text' },
+      { key: 'buttonLink', label: 'Button Link', type: 'text' },
+    ],
+  },
+  collapsible_content: {
+    label: 'Collapsible Content',
+    fields: [
+      { key: 'title', label: 'Title', type: 'text' },
+      { key: 'question1', label: 'Question 1', type: 'text' },
+      { key: 'answer1', label: 'Answer 1', type: 'textarea' },
+      { key: 'question2', label: 'Question 2', type: 'text' },
+      { key: 'answer2', label: 'Answer 2', type: 'textarea' },
+      { key: 'question3', label: 'Question 3', type: 'text' },
+      { key: 'answer3', label: 'Answer 3', type: 'textarea' },
+    ],
+  },
+  email_subscriber: {
+    label: 'Email Subscriber',
+    fields: [
+      { key: 'heading', label: 'Heading', type: 'text' },
+      { key: 'subtext', label: 'Subtext', type: 'textarea' },
+      { key: 'buttonLabel', label: 'Button Label', type: 'text' },
+    ],
+  },
+  contact_form: {
+    label: 'Contact Form',
+    fields: [
+      { key: 'heading', label: 'Heading', type: 'text' },
+      { key: 'subtext', label: 'Subtext', type: 'textarea' },
+    ],
+  },
 };
+
+// Section types a store owner can add from scratch — more will be added
+// here over time.
+const ADDABLE_SECTIONS = [
+  { type: 'trending_products', icon: ShoppingBag01Icon },
+  { type: 'categories_slider', icon: Grid2X2Icon },
+  { type: 'image_with_text', icon: Image02Icon },
+  { type: 'video_section', icon: Video01Icon },
+  { type: 'reviews', icon: StarIcon },
+  { type: 'collapsible_content', icon: ListViewIcon },
+  { type: 'email_subscriber', icon: Mail01Icon },
+  { type: 'contact_form', icon: Contact01Icon },
+];
 
 function getPayload(e) {
   try {
@@ -37,6 +113,7 @@ export default function ThemeEditorPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
   const iframeRef = useRef(null);
   const [previewReady, setPreviewReady] = useState(false);
 
@@ -75,6 +152,18 @@ export default function ThemeEditorPage() {
     setSections((prev) =>
       prev.map((s) => (s.key === key ? { ...s, settings: { ...s.settings, [field]: value } } : s))
     );
+  }
+
+  function addSection(type) {
+    const newKey = `${type}_${Date.now()}`;
+    setSections((prev) => [...prev, { key: newKey, type, visible: true, settings: {} }]);
+    setSelectedKey(newKey);
+    setShowAddModal(false);
+  }
+
+  function removeSection(key) {
+    setSections((prev) => prev.filter((s) => s.key !== key));
+    setSelectedKey((prev) => (prev === key ? null : prev));
   }
 
   function handleDragStart(e, index) {
@@ -141,7 +230,7 @@ export default function ThemeEditorPage() {
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => handleDrop(e, index)}
               onClick={() => setSelectedKey(section.key)}
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-md cursor-pointer text-sm mb-1 ${
+              className={`group flex items-center gap-2 px-3 py-2.5 rounded-md cursor-pointer text-sm mb-1 ${
                 selectedKey === section.key ? 'bg-gray-100' : 'hover:bg-gray-50'
               } ${!section.visible ? 'opacity-50' : ''}`}
             >
@@ -159,8 +248,28 @@ export default function ThemeEditorPage() {
               >
                 <HugeiconsIcon icon={section.visible ? ViewIcon : ViewOffIcon} size={18} />
               </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeSection(section.key);
+                }}
+                title="Remove section"
+                className="text-gray-300 hover:text-red-600 shrink-0 opacity-0 group-hover:opacity-100"
+              >
+                <HugeiconsIcon icon={Delete02Icon} size={16} />
+              </button>
             </div>
           ))}
+        </div>
+
+        <div className="p-2 border-t border-gray-100">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-gray-700 px-3 py-2.5 rounded-md hover:bg-gray-50 border border-dashed border-gray-300"
+          >
+            <HugeiconsIcon icon={PlusSignIcon} size={16} />
+            Add Section
+          </button>
         </div>
       </div>
 
@@ -183,42 +292,82 @@ export default function ThemeEditorPage() {
               <p className="text-sm text-gray-400">This section has no editable settings yet.</p>
             )}
 
-            {selectedMeta?.fields.includes('title') && (
-              <div className="mb-4">
-                <label className="block text-xs text-gray-500 mb-1">Title</label>
-                <input
-                  className="input"
-                  value={selectedSettings.title || ''}
-                  onChange={(e) => updateSetting(selected.key, 'title', e.target.value)}
-                />
-              </div>
-            )}
+            {selectedMeta?.fields.map((field) => (
+              <div className="mb-4" key={field.key}>
+                <label className="block text-xs text-gray-500 mb-1">{field.label}</label>
 
-            {selectedMeta?.fields.includes('category') && (
-              <div className="mb-4">
-                <label className="block text-xs text-gray-500 mb-1">Category</label>
-                <select
-                  className="input"
-                  value={selectedSettings.category || ''}
-                  onChange={(e) => updateSetting(selected.key, 'category', e.target.value)}
-                >
-                  <option value="">All products</option>
-                  {categories.map((c) => (
-                    <option key={c._id} value={c._id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-gray-400 mt-1">
-                  Leave as "All products" to show products from every category.
-                </p>
+                {field.type === 'text' && (
+                  <input
+                    className="input"
+                    value={selectedSettings[field.key] || ''}
+                    onChange={(e) => updateSetting(selected.key, field.key, e.target.value)}
+                  />
+                )}
+
+                {field.type === 'textarea' && (
+                  <textarea
+                    className="input"
+                    rows={3}
+                    value={selectedSettings[field.key] || ''}
+                    onChange={(e) => updateSetting(selected.key, field.key, e.target.value)}
+                  />
+                )}
+
+                {field.type === 'category' && (
+                  <>
+                    <select
+                      className="input"
+                      value={selectedSettings.category || ''}
+                      onChange={(e) => updateSetting(selected.key, 'category', e.target.value)}
+                    >
+                      <option value="">All products</option>
+                      {categories.map((c) => (
+                        <option key={c._id} value={c._id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Leave as "All products" to show products from every category.
+                    </p>
+                  </>
+                )}
               </div>
-            )}
+            ))}
           </div>
         ) : (
           <p className="p-6 text-gray-400 text-sm">Select a section to edit its settings.</p>
         )}
       </div>
+
+      {showAddModal && (
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+          onClick={() => setShowAddModal(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Section</h3>
+            <div className="grid grid-cols-4 gap-3">
+              {ADDABLE_SECTIONS.map(({ type, icon }) => (
+                <button
+                  key={type}
+                  onClick={() => addSection(type)}
+                  className="flex flex-col items-center justify-center gap-2 p-4 rounded-md border border-gray-200 hover:border-gray-900 hover:bg-gray-50 text-center"
+                >
+                  <HugeiconsIcon icon={icon} size={24} className="text-gray-700" />
+                  <span className="text-xs text-gray-700 leading-tight">{SECTION_META[type]?.label}</span>
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setShowAddModal(false)} className="btn-secondary w-full mt-5">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
