@@ -25,7 +25,11 @@ const sectionSchema = new mongoose.Schema(
     // only reading the keys their section type defines.
     settings: { type: mongoose.Schema.Types.Mixed, default: {} },
   },
-  { _id: false }
+  // minimize: false — otherwise Mongoose strips `settings` entirely when
+  // it's `{}` (e.g. hero_slider, feature_bar have no fields yet), and the
+  // admin editor/storefront would see `section.settings` as undefined
+  // instead of an empty object on the next load.
+  { _id: false, minimize: false }
 );
 
 const pageLayoutSchema = new mongoose.Schema(
