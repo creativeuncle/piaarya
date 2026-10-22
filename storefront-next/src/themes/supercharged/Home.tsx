@@ -1,5 +1,5 @@
 import { getPageLayout } from '../../lib/pageLayout';
-import { SECTION_REGISTRY, type SectionType } from './home/sectionRegistry';
+import HomeSectionsClient from './home/HomeSectionsClient';
 import HeroSlider from './home/HeroSlider';
 import ExploreProducts from './home/ExploreProducts';
 import CategoriesSlider from './home/CategoriesSlider';
@@ -27,15 +27,5 @@ export default async function Home() {
     );
   }
 
-  return (
-    <>
-      {sections
-        .filter((section) => section.visible)
-        .map((section) => {
-          const Component = SECTION_REGISTRY[section.type as SectionType];
-          if (!Component) return null;
-          return <Component key={section.key} {...section.settings} />;
-        })}
-    </>
-  );
+  return <HomeSectionsClient initialSections={sections} />;
 }

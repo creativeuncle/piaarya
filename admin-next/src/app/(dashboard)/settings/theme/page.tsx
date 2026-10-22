@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { fetchSettings, updateSettings } from '../../../../lib/api/settings';
 
 export default function ThemeSettings() {
@@ -62,7 +63,16 @@ export default function ThemeSettings() {
                 onChange={() => setActive(theme.key)}
               />
             </div>
-            {theme.description && <p className="text-xs text-gray-500">{theme.description}</p>}
+            {theme.description && <p className="text-xs text-gray-500 mb-3">{theme.description}</p>}
+            {active === theme.key && (
+              <Link
+                href="/theme-editor"
+                onClick={(e) => e.stopPropagation()}
+                className="btn-secondary inline-block text-xs"
+              >
+                Customize (Theme Editor)
+              </Link>
+            )}
           </label>
         ))}
       </div>
