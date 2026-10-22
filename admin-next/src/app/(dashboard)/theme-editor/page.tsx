@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { DragDropVerticalIcon, ViewIcon, ViewOffIcon } from '@hugeicons/core-free-icons';
 import { fetchPageLayout, savePageLayout } from '../../../lib/api/pageLayout';
 import { fetchCategories } from '../../../lib/api/categories';
+
+const STOREFRONT_URL = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'http://localhost:3220';
 
 // Which settings fields each section type exposes — kept in sync with
 // storefront-next's sectionRegistry.ts. Sections not listed here have no
@@ -35,6 +37,8 @@ export default function ThemeEditorPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
+  const iframeRef = useRef(null);
+  const [previewReady, setPreviewReady] = useState(false);
 
   useEffect(() => {
     Promise.all([fetchPageLayout('home'), fetchCategories()])
@@ -46,6 +50,16 @@ export default function ThemeEditorPage() {
       .catch((err) => setError(err.response?.data?.message || err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  // Keep the preview iframe in sync with every unsaved edit — the
+  // storefront's HomeSectionsClient listens for this exact message shape.
+  useEffect(() => {
+    if (!previewReady || !sections) return;
+    iframeRef.current?.contentWindow?.postMessage(
+      { source: 'piaarya-theme-editor', sections },
+      STOREFRONT_URL
+    );
+  }, [sections, previewReady]);
 
   function toggleVisible(key) {
     setSections((prev) => prev.map((s) => (s.key === key ? { ...s, visible: !s.visible } : s)));
@@ -79,7 +93,7 @@ export default function ThemeEditorPage() {
     setMessage(null);
     try {
       await savePageLayout('home', sections);
-      setMessage('Saved — refresh your storefront to see the changes.');
+      setMessage('Saved.');
     } catch (err) {
       setError(err.response?.data?.message || err.message);
     } finally {
@@ -94,7 +108,7 @@ export default function ThemeEditorPage() {
 
   return (
     <div className="flex h-screen">
-      <div className="w-80 shrink-0 border-r border-gray-100 bg-white flex flex-col">
+      <div className="w-72 shrink-0 border-r border-gray-100 bg-white flex flex-col">
         <div className="p-4 border-b border-gray-100 flex items-center justify-between">
           <h1 className="text-lg font-semibold text-gray-900">Theme Editor</h1>
           <button
@@ -141,9 +155,19 @@ export default function ThemeEditorPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 bg-gray-100 overflow-hidden">
+        <iframe
+          ref={iframeRef}
+          src={STOREFRONT_URL}
+          onLoad={() => setPreviewReady(true)}
+          className="w-full h-full border-0"
+          title="Storefront preview"
+        />
+      </div>
+
+      <div className="w-80 shrink-0 border-l border-gray-100 bg-white overflow-y-auto">
         {selected ? (
-          <div className="p-6 max-w-md">
+          <div className="p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">{selectedMeta?.label}</h2>
 
             {selectedMeta?.fields.length === 0 && (

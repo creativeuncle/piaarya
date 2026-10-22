@@ -26,12 +26,10 @@ import {
   MenuSquareIcon,
   Analytics01Icon,
   GiftCardIcon,
-  Layout01Icon,
 } from '@hugeicons/core-free-icons';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Home', icon: Home01Icon },
-  { to: '/theme-editor', label: 'Theme Editor', icon: Layout01Icon },
   { to: '/analytics', label: 'Analytics', icon: Analytics01Icon },
   { to: '/orders', label: 'Orders', icon: ShoppingCart01Icon },
   { to: '/products', label: 'Products', icon: Package01Icon },
