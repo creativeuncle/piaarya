@@ -51,15 +51,21 @@ export default function ThemeEditorPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Keep the preview iframe in sync with every unsaved edit — the
-  // storefront's HomeSectionsClient listens for this exact message shape.
+  // Keep the preview iframe in sync with every unsaved edit, and with
+  // which section is currently selected (so the preview can outline +
+  // label it, same as Shopify's editor) — the storefront's
+  // HomeSectionsClient listens for this exact message shape.
   useEffect(() => {
     if (!previewReady || !sections) return;
+    const selectedSection = sections.find((s) => s.key === selectedKey);
+    const selected = selectedSection
+      ? { key: selectedSection.key, label: SECTION_META[selectedSection.type]?.label || selectedSection.type }
+      : null;
     iframeRef.current?.contentWindow?.postMessage(
-      { source: 'piaarya-theme-editor', sections },
+      { source: 'piaarya-theme-editor', sections, selected },
       STOREFRONT_URL
     );
-  }, [sections, previewReady]);
+  }, [sections, selectedKey, previewReady]);
 
   function toggleVisible(key) {
     setSections((prev) => prev.map((s) => (s.key === key ? { ...s, visible: !s.visible } : s)));
