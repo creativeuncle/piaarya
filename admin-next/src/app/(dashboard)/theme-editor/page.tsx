@@ -317,9 +317,9 @@ export default function ThemeEditorPage() {
                   toggleVisible(section.key);
                 }}
                 title={section.visible ? 'Hide section' : 'Show section'}
-                className="text-gray-400 hover:text-gray-700 shrink-0"
+                className="flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700 shrink-0"
               >
-                <HugeiconsIcon icon={section.visible ? ViewIcon : ViewOffIcon} size={18} />
+                <HugeiconsIcon icon={section.visible ? ViewIcon : ViewOffIcon} size={16} />
               </button>
               <button
                 onClick={(e) => {
@@ -327,9 +327,9 @@ export default function ThemeEditorPage() {
                   removeSection(section.key);
                 }}
                 title="Remove section"
-                className="text-gray-300 hover:text-red-600 shrink-0 opacity-0 group-hover:opacity-100"
+                className="flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 text-gray-400 hover:bg-red-50 hover:border-red-200 hover:text-red-600 shrink-0 opacity-0 group-hover:opacity-100"
               >
-                <HugeiconsIcon icon={Delete02Icon} size={16} />
+                <HugeiconsIcon icon={Delete02Icon} size={14} />
               </button>
             </div>
           ))}
