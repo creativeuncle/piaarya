@@ -327,7 +327,7 @@ export default function ThemeEditorPage() {
                   removeSection(section.key);
                 }}
                 title="Remove section"
-                className="flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 text-gray-400 hover:bg-red-50 hover:border-red-200 hover:text-red-600 shrink-0 opacity-0 group-hover:opacity-100"
+                className="flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 text-gray-400 hover:bg-red-50 hover:border-red-200 hover:text-red-600 shrink-0"
               >
                 <HugeiconsIcon icon={Delete02Icon} size={14} />
               </button>
