@@ -59,12 +59,7 @@ const SECTION_META = {
     label: 'Collapsible Content',
     fields: [
       { key: 'title', label: 'Title', type: 'text' },
-      { key: 'question1', label: 'Question 1', type: 'text' },
-      { key: 'answer1', label: 'Answer 1', type: 'textarea' },
-      { key: 'question2', label: 'Question 2', type: 'text' },
-      { key: 'answer2', label: 'Answer 2', type: 'textarea' },
-      { key: 'question3', label: 'Question 3', type: 'text' },
-      { key: 'answer3', label: 'Answer 3', type: 'textarea' },
+      { key: 'items', label: 'Questions', type: 'faq' },
     ],
   },
   email_subscriber: {
@@ -103,6 +98,84 @@ function getPayload(e) {
   } catch {
     return null;
   }
+}
+
+const DEFAULT_FAQ_ITEMS = [
+  { question: 'What is your return policy?', answer: 'You can return any item within 30 days of delivery for a full refund.' },
+  { question: 'How long does shipping take?', answer: 'Orders are typically delivered within 3-5 business days.' },
+  { question: 'Do you offer international shipping?', answer: 'Yes, we ship to most countries. Shipping costs are calculated at checkout.' },
+];
+
+// Each Q&A pair is its own collapsible block — matches how the sections
+// list itself behaves, and keeps a long FAQ from turning into a wall of
+// always-open fields.
+function FaqEditor({ items, onChange }) {
+  const list = items && items.length > 0 ? items : DEFAULT_FAQ_ITEMS;
+  const [openIndex, setOpenIndex] = useState(0);
+
+  function updateItem(i, field, value) {
+    onChange(list.map((item, idx) => (idx === i ? { ...item, [field]: value } : item)));
+  }
+
+  function addItem() {
+    onChange([...list, { question: '', answer: '' }]);
+    setOpenIndex(list.length);
+  }
+
+  function removeItem(i) {
+    onChange(list.filter((_, idx) => idx !== i));
+    setOpenIndex(null);
+  }
+
+  return (
+    <div>
+      {list.map((item, i) => (
+        <div key={i} className="border border-gray-200 rounded-md mb-2 overflow-hidden">
+          <div
+            onClick={() => setOpenIndex(openIndex === i ? null : i)}
+            className="flex items-center justify-between px-3 py-2 cursor-pointer bg-gray-50 hover:bg-gray-100"
+          >
+            <span className="text-xs font-medium text-gray-700 truncate">
+              {item.question || `Question ${i + 1}`}
+            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeItem(i);
+                }}
+                title="Remove question"
+                className="text-gray-400 hover:text-red-600"
+              >
+                <HugeiconsIcon icon={Delete02Icon} size={14} />
+              </button>
+              <span className="text-gray-400 text-xs">{openIndex === i ? '−' : '+'}</span>
+            </div>
+          </div>
+          {openIndex === i && (
+            <div className="p-3 space-y-2">
+              <input
+                className="input"
+                placeholder="Question"
+                value={item.question || ''}
+                onChange={(e) => updateItem(i, 'question', e.target.value)}
+              />
+              <textarea
+                className="input"
+                rows={3}
+                placeholder="Answer"
+                value={item.answer || ''}
+                onChange={(e) => updateItem(i, 'answer', e.target.value)}
+              />
+            </div>
+          )}
+        </div>
+      ))}
+      <button onClick={addItem} className="btn-secondary w-full text-xs mt-1">
+        + Add Question
+      </button>
+    </div>
+  );
 }
 
 export default function ThemeEditorPage() {
@@ -244,9 +317,9 @@ export default function ThemeEditorPage() {
                   toggleVisible(section.key);
                 }}
                 title={section.visible ? 'Hide section' : 'Show section'}
-                className="text-gray-400 hover:text-gray-700 shrink-0"
+                className="flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700 shrink-0"
               >
-                <HugeiconsIcon icon={section.visible ? ViewIcon : ViewOffIcon} size={18} />
+                <HugeiconsIcon icon={section.visible ? ViewIcon : ViewOffIcon} size={16} />
               </button>
               <button
                 onClick={(e) => {
@@ -254,9 +327,9 @@ export default function ThemeEditorPage() {
                   removeSection(section.key);
                 }}
                 title="Remove section"
-                className="text-gray-300 hover:text-red-600 shrink-0 opacity-0 group-hover:opacity-100"
+                className="flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 text-gray-400 hover:bg-red-50 hover:border-red-200 hover:text-red-600 shrink-0 opacity-0 group-hover:opacity-100"
               >
-                <HugeiconsIcon icon={Delete02Icon} size={16} />
+                <HugeiconsIcon icon={Delete02Icon} size={14} />
               </button>
             </div>
           ))}
@@ -310,6 +383,13 @@ export default function ThemeEditorPage() {
                     rows={3}
                     value={selectedSettings[field.key] || ''}
                     onChange={(e) => updateSetting(selected.key, field.key, e.target.value)}
+                  />
+                )}
+
+                {field.type === 'faq' && (
+                  <FaqEditor
+                    items={selectedSettings.items}
+                    onChange={(items) => updateSetting(selected.key, 'items', items)}
                   />
                 )}
 
