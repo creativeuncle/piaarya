@@ -1,8 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import {
+  DragDropVerticalIcon,
+  ArrowDown01Icon,
+  ArrowRight01Icon,
+  Delete02Icon,
+  PlusSignIcon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons';
 import { fetchNavigation, saveNavigation } from '../../../../lib/api/navigation';
 import { fetchCategories } from '../../../../lib/api/categories';
+import { fetchPages } from '../../../../lib/api/pages';
+
+const STATIC_LINKS = [
+  { label: 'Home', route: '/' },
+  { label: 'All products', route: '/products' },
+  { label: 'Cart', route: '/cart' },
+  { label: 'Search', route: '/search' },
+];
 
 function getPayload(e) {
   try {
@@ -12,6 +29,296 @@ function getPayload(e) {
   }
 }
 
+function cloneTree(tree) {
+  return tree.map((n) => ({ label: n.label, route: n.route || '', children: cloneTree(n.children || []) }));
+}
+
+function pathsEqual(a, b) {
+  return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
+function getChildrenAtParentPath(tree, parentPath) {
+  let children = tree;
+  for (const idx of parentPath) {
+    children = children[idx].children;
+  }
+  return children;
+}
+
+function getNodeAtPath(tree, path) {
+  const parentPath = path.slice(0, -1);
+  const idx = path[path.length - 1];
+  return getChildrenAtParentPath(tree, parentPath)[idx];
+}
+
+function removeAtPath(tree, path) {
+  const parentPath = path.slice(0, -1);
+  const idx = path[path.length - 1];
+  const siblings = getChildrenAtParentPath(tree, parentPath);
+  const [removed] = siblings.splice(idx, 1);
+  return removed;
+}
+
+function insertAtParentPath(tree, parentPath, index, node) {
+  const siblings = getChildrenAtParentPath(tree, parentPath);
+  siblings.splice(index, 0, node);
+}
+
+function updateAtPath(tree, path, updates) {
+  const parentPath = path.slice(0, -1);
+  const idx = path[path.length - 1];
+  const siblings = getChildrenAtParentPath(tree, parentPath);
+  siblings[idx] = { ...siblings[idx], ...updates };
+}
+
+function moveNode(tree, sourcePath, targetParentPath, targetIndex) {
+  const clone = cloneTree(tree);
+  const sourceParentPath = sourcePath.slice(0, -1);
+  const sourceIndex = sourcePath[sourcePath.length - 1];
+  // Never drop a node into its own subtree.
+  if (pathsEqual(sourcePath, targetParentPath.slice(0, sourcePath.length))) return tree;
+  const removed = removeAtPath(clone, sourcePath);
+  let insertIndex = targetIndex;
+  if (pathsEqual(sourceParentPath, targetParentPath) && sourceIndex < targetIndex) {
+    insertIndex -= 1;
+  }
+  insertAtParentPath(clone, targetParentPath, insertIndex, removed);
+  return clone;
+}
+
+function insertNewNode(tree, parentPath, index, node) {
+  const clone = cloneTree(tree);
+  insertAtParentPath(clone, parentPath, index, node);
+  return clone;
+}
+
+function LinkPicker({ label, route, onChange, suggestions }) {
+  const [labelValue, setLabelValue] = useState(label);
+  const [routeValue, setRouteValue] = useState(route);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => setLabelValue(label), [label]);
+  useEffect(() => setRouteValue(route), [route]);
+
+  const filtered = useMemo(() => {
+    if (!routeValue) return suggestions.slice(0, 8);
+    const q = routeValue.toLowerCase();
+    return suggestions.filter((s) => s.label.toLowerCase().includes(q) || s.route.toLowerCase().includes(q)).slice(0, 8);
+  }, [routeValue, suggestions]);
+
+  return (
+    <div className="flex items-center gap-2 flex-1">
+      <div className="flex-1">
+        <label className="block text-xs text-gray-500 mb-1">Label</label>
+        <input
+          className="input text-sm"
+          placeholder="e.g., About us"
+          value={labelValue}
+          onChange={(e) => {
+            setLabelValue(e.target.value);
+            onChange(e.target.value, routeValue);
+          }}
+        />
+      </div>
+      <div className="flex-1 relative">
+        <label className="block text-xs text-gray-500 mb-1">Link</label>
+        <input
+          className="input text-sm"
+          placeholder="Search or paste link"
+          value={routeValue}
+          onFocus={() => setShowSuggestions(true)}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+          onChange={(e) => {
+            setRouteValue(e.target.value);
+            onChange(labelValue, e.target.value);
+          }}
+        />
+        {showSuggestions && filtered.length > 0 && (
+          <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-56 overflow-auto">
+            {filtered.map((s) => (
+              <button
+                key={s.route + s.label}
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setLabelValue((prev) => prev || s.label);
+                  setRouteValue(s.route);
+                  onChange(labelValue || s.label, s.route);
+                  setShowSuggestions(false);
+                }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center justify-between"
+              >
+                <span className="text-gray-700">{s.label}</span>
+                <span className="text-gray-400 text-xs">{s.route}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AddItemRow({ depth, suggestions, onSave, onCancel }) {
+  const [label, setLabel] = useState('');
+  const [route, setRoute] = useState('');
+
+  return (
+    <div
+      className="flex items-end gap-2 bg-white border border-gray-200 rounded-md px-3 py-2"
+      style={{ marginLeft: depth * 24 }}
+    >
+      <span className="w-4 shrink-0" />
+      <LinkPicker label={label} route={route} suggestions={suggestions} onChange={(l, r) => { setLabel(l); setRoute(r); }} />
+      <button
+        type="button"
+        disabled={!label.trim()}
+        onClick={() => onSave(label.trim(), route.trim())}
+        className="flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-200 disabled:opacity-40 shrink-0"
+        title="Save"
+      >
+        <HugeiconsIcon icon={Tick02Icon} size={16} />
+      </button>
+      <button
+        type="button"
+        onClick={onCancel}
+        className="flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 text-gray-400 hover:bg-red-50 hover:border-red-200 hover:text-red-600 shrink-0"
+        title="Cancel"
+      >
+        <HugeiconsIcon icon={Delete02Icon} size={16} />
+      </button>
+    </div>
+  );
+}
+
+function MenuNodeRow({ node, path, depth, suggestions, editingKey, setEditingKey, addingKey, setAddingKey, collapsed, setCollapsed, onDrop, onDragStartNode, onSaveEdit, onRemove, onAddChild }) {
+  const key = path.join('-');
+  const isEditing = editingKey === key;
+  const isAdding = addingKey === key;
+  const isCollapsed = collapsed.has(key);
+  const hasChildren = (node.children || []).length > 0;
+
+  return (
+    <div style={{ marginLeft: depth * 24 }}>
+      {isEditing ? (
+        <div className="flex items-end gap-2 bg-white border border-blue-200 rounded-md px-3 py-2">
+          <span className="w-4 shrink-0" />
+          <LinkPicker
+            label={node.label}
+            route={node.route}
+            suggestions={suggestions}
+            onChange={(l, r) => onSaveEdit(path, l, r, false)}
+          />
+          <button
+            type="button"
+            onClick={() => setEditingKey(null)}
+            className="flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 text-green-600 hover:bg-green-50 hover:border-green-200 shrink-0"
+            title="Done"
+          >
+            <HugeiconsIcon icon={Tick02Icon} size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onRemove(path);
+              setEditingKey(null);
+            }}
+            className="flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 text-gray-400 hover:bg-red-50 hover:border-red-200 hover:text-red-600 shrink-0"
+            title="Delete"
+          >
+            <HugeiconsIcon icon={Delete02Icon} size={16} />
+          </button>
+        </div>
+      ) : (
+        <div
+          draggable
+          onDragStart={(e) => onDragStartNode(e, path)}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => onDrop(e, path.slice(0, -1), path[path.length - 1])}
+          className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-md px-2 py-2 cursor-grab hover:border-gray-300"
+        >
+          <span className="text-gray-400 shrink-0">
+            <HugeiconsIcon icon={DragDropVerticalIcon} size={16} />
+          </span>
+          <button
+            type="button"
+            onClick={() => hasChildren && setCollapsed((prev) => {
+              const next = new Set(prev);
+              if (next.has(key)) next.delete(key); else next.add(key);
+              return next;
+            })}
+            className={`shrink-0 text-gray-400 ${hasChildren ? 'hover:text-gray-700' : 'opacity-0 cursor-default'}`}
+          >
+            <HugeiconsIcon icon={isCollapsed ? ArrowRight01Icon : ArrowDown01Icon} size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditingKey(key)}
+            className="flex-1 text-left text-sm text-gray-800 py-0.5"
+          >
+            {node.label}
+          </button>
+          <button
+            type="button"
+            onClick={() => onRemove(path)}
+            className="flex items-center justify-center w-7 h-7 rounded-md border border-gray-200 text-gray-400 hover:bg-red-50 hover:border-red-200 hover:text-red-600 shrink-0"
+            title="Remove"
+          >
+            <HugeiconsIcon icon={Delete02Icon} size={14} />
+          </button>
+        </div>
+      )}
+
+      {!isCollapsed && (
+        <div
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => onDrop(e, path, (node.children || []).length)}
+          className="mt-2 space-y-2 pl-6 border-l border-gray-200 ml-2"
+        >
+          {(node.children || []).map((child, ci) => (
+            <MenuNodeRow
+              key={ci}
+              node={child}
+              path={[...path, ci]}
+              depth={0}
+              suggestions={suggestions}
+              editingKey={editingKey}
+              setEditingKey={setEditingKey}
+              addingKey={addingKey}
+              setAddingKey={setAddingKey}
+              collapsed={collapsed}
+              setCollapsed={setCollapsed}
+              onDrop={onDrop}
+              onDragStartNode={onDragStartNode}
+              onSaveEdit={onSaveEdit}
+              onRemove={onRemove}
+              onAddChild={onAddChild}
+            />
+          ))}
+
+          {isAdding ? (
+            <AddItemRow
+              depth={0}
+              suggestions={suggestions}
+              onSave={(l, r) => onAddChild(path, l, r)}
+              onCancel={() => setAddingKey(null)}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setAddingKey(key)}
+              className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 px-1 py-1"
+            >
+              <HugeiconsIcon icon={PlusSignIcon} size={14} />
+              Add menu item to <span className="font-medium">{node.label}</span>
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Navigation() {
   const [menus, setMenus] = useState([]);
   const [categoryPages, setCategoryPages] = useState([]);
@@ -19,212 +326,64 @@ export default function Navigation() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
-  const [newGroupName, setNewGroupName] = useState('');
-  const [newColumnName, setNewColumnName] = useState({});
+
+  const [editingKey, setEditingKey] = useState(null);
+  const [addingKey, setAddingKey] = useState(null);
+  const [collapsed, setCollapsed] = useState(new Set());
 
   useEffect(() => {
-    Promise.all([fetchNavigation(), fetchCategories()])
-      .then(([tree, categories]) => {
-        setMenus(
-          tree.map((m) => ({
-            label: m.label,
-            route: m.route,
-            children: (m.children || []).map((c) => ({
-              label: c.label,
-              route: c.route,
-              children: (c.children || []).map((g) => ({ label: g.label, route: g.route })),
-            })),
-          }))
-        );
-        setCategoryPages(
-          categories.map((c) => ({ label: c.name, route: `/products?category=${c._id}` }))
-        );
+    Promise.all([fetchNavigation(), fetchCategories(), fetchPages().catch(() => [])])
+      .then(([tree, categories, pages]) => {
+        function normalize(nodes) {
+          return (nodes || []).map((n) => ({ label: n.label, route: n.route || '', children: normalize(n.children) }));
+        }
+        setMenus(normalize(tree));
+        setCategoryPages([
+          ...STATIC_LINKS,
+          ...categories.map((c) => ({ label: c.name, route: `/products?category=${c._id}` })),
+          ...(pages || []).map((p) => ({ label: p.title, route: `/pages/${p.slug}` })),
+        ]);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
-  const usedRoutes = new Set();
-  menus.forEach((m) => {
-    if (m.route) usedRoutes.add(m.route);
-    m.children.forEach((c) => {
-      if (c.route) usedRoutes.add(c.route);
-      (c.children || []).forEach((g) => usedRoutes.add(g.route));
+  function onDragStartNode(e, path) {
+    e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'node', path }));
+  }
+
+  function onDrop(e, targetParentPath, targetIndex) {
+    e.preventDefault();
+    e.stopPropagation();
+    const payload = getPayload(e);
+    if (!payload) return;
+    if (payload.type === 'node') {
+      setMenus((prev) => moveNode(prev, payload.path, targetParentPath, targetIndex));
+    } else if (payload.type === 'pool') {
+      setMenus((prev) => insertNewNode(prev, targetParentPath, targetIndex, { label: payload.label, route: payload.route, children: [] }));
+    }
+  }
+
+  function onSaveEdit(path, label, route) {
+    setMenus((prev) => {
+      const clone = cloneTree(prev);
+      updateAtPath(clone, path, { label, route });
+      return clone;
     });
-  });
-  const availablePages = categoryPages.filter((p) => !usedRoutes.has(p.route));
-
-  function addGroup() {
-    if (!newGroupName.trim()) return;
-    setMenus((prev) => [...prev, { label: newGroupName.trim(), route: '', children: [] }]);
-    setNewGroupName('');
   }
 
-  function addColumn(menuIndex) {
-    const name = (newColumnName[menuIndex] || '').trim();
-    if (!name) return;
-    setMenus((prev) =>
-      prev.map((m, i) => (i === menuIndex ? { ...m, children: [...m.children, { label: name, route: '', children: [] }] } : m))
-    );
-    setNewColumnName((prev) => ({ ...prev, [menuIndex]: '' }));
+  function onRemove(path) {
+    setMenus((prev) => {
+      const clone = cloneTree(prev);
+      removeAtPath(clone, path);
+      return clone;
+    });
   }
 
-  function removeTopLevel(index) {
-    setMenus((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  function removeChild(menuIndex, childIndex) {
-    setMenus((prev) =>
-      prev.map((m, i) => (i === menuIndex ? { ...m, children: m.children.filter((_, ci) => ci !== childIndex) } : m))
-    );
-  }
-
-  function removeGrandchild(menuIndex, childIndex, grandchildIndex) {
-    setMenus((prev) =>
-      prev.map((m, mi) =>
-        mi === menuIndex
-          ? {
-              ...m,
-              children: m.children.map((c, ci) =>
-                ci === childIndex ? { ...c, children: c.children.filter((_, gi) => gi !== grandchildIndex) } : c
-              ),
-            }
-          : m
-      )
-    );
-  }
-
-  function handleDropOnRoot(e) {
-    e.preventDefault();
-    const payload = getPayload(e);
-    if (!payload) return;
-    if (payload.type === 'pool') {
-      setMenus((prev) => [...prev, { label: payload.label, route: payload.route, children: [] }]);
-    } else if (payload.type === 'top') {
-      setMenus((prev) => {
-        const next = [...prev];
-        const [moved] = next.splice(payload.index, 1);
-        next.push(moved);
-        return next;
-      });
-    }
-  }
-
-  function handleDropOnMenuHeader(e, targetIndex) {
-    e.preventDefault();
-    e.stopPropagation();
-    const payload = getPayload(e);
-    if (!payload) return;
-    if (payload.type === 'top') {
-      setMenus((prev) => {
-        const next = [...prev];
-        const [moved] = next.splice(payload.index, 1);
-        next.splice(targetIndex, 0, moved);
-        return next;
-      });
-    } else if (payload.type === 'pool') {
-      setMenus((prev) => {
-        const next = [...prev];
-        next.splice(targetIndex, 0, { label: payload.label, route: payload.route, children: [] });
-        return next;
-      });
-    }
-  }
-
-  function handleDropOnChildrenZone(e, menuIndex) {
-    e.preventDefault();
-    e.stopPropagation();
-    const payload = getPayload(e);
-    if (!payload) return;
-    if (payload.type === 'pool') {
-      setMenus((prev) =>
-        prev.map((m, i) =>
-          i === menuIndex
-            ? { ...m, children: [...m.children, { label: payload.label, route: payload.route, children: [] }] }
-            : m
-        )
-      );
-    } else if (payload.type === 'child') {
-      setMenus((prev) => {
-        const next = prev.map((m) => ({ ...m, children: [...m.children] }));
-        const [moved] = next[payload.menuIndex].children.splice(payload.childIndex, 1);
-        next[menuIndex].children.push(moved);
-        return next;
-      });
-    }
-  }
-
-  function handleDropOnChildItem(e, menuIndex, targetChildIndex) {
-    e.preventDefault();
-    e.stopPropagation();
-    const payload = getPayload(e);
-    if (!payload) return;
-    if (payload.type === 'child') {
-      setMenus((prev) => {
-        const next = prev.map((m) => ({ ...m, children: [...m.children] }));
-        const [moved] = next[payload.menuIndex].children.splice(payload.childIndex, 1);
-        next[menuIndex].children.splice(targetChildIndex, 0, moved);
-        return next;
-      });
-    } else if (payload.type === 'pool') {
-      setMenus((prev) => {
-        const next = prev.map((m) => ({ ...m, children: [...m.children] }));
-        next[menuIndex].children.splice(targetChildIndex, 0, { label: payload.label, route: payload.route, children: [] });
-        return next;
-      });
-    }
-  }
-
-  function handleDropOnGrandchildrenZone(e, menuIndex, childIndex) {
-    e.preventDefault();
-    e.stopPropagation();
-    const payload = getPayload(e);
-    if (!payload) return;
-    if (payload.type === 'pool') {
-      setMenus((prev) =>
-        prev.map((m, mi) =>
-          mi === menuIndex
-            ? {
-                ...m,
-                children: m.children.map((c, ci) =>
-                  ci === childIndex ? { ...c, children: [...c.children, { label: payload.label, route: payload.route }] } : c
-                ),
-              }
-            : m
-        )
-      );
-    } else if (payload.type === 'grandchild') {
-      setMenus((prev) => {
-        const next = prev.map((m) => ({ ...m, children: m.children.map((c) => ({ ...c, children: [...c.children] })) }));
-        const [moved] = next[payload.menuIndex].children[payload.childIndex].children.splice(payload.grandchildIndex, 1);
-        next[menuIndex].children[childIndex].children.push(moved);
-        return next;
-      });
-    }
-  }
-
-  function handleDropOnGrandchildItem(e, menuIndex, childIndex, targetGrandchildIndex) {
-    e.preventDefault();
-    e.stopPropagation();
-    const payload = getPayload(e);
-    if (!payload) return;
-    if (payload.type === 'grandchild') {
-      setMenus((prev) => {
-        const next = prev.map((m) => ({ ...m, children: m.children.map((c) => ({ ...c, children: [...c.children] })) }));
-        const [moved] = next[payload.menuIndex].children[payload.childIndex].children.splice(payload.grandchildIndex, 1);
-        next[menuIndex].children[childIndex].children.splice(targetGrandchildIndex, 0, moved);
-        return next;
-      });
-    } else if (payload.type === 'pool') {
-      setMenus((prev) => {
-        const next = prev.map((m) => ({ ...m, children: m.children.map((c) => ({ ...c, children: [...c.children] })) }));
-        next[menuIndex].children[childIndex].children.splice(targetGrandchildIndex, 0, {
-          label: payload.label,
-          route: payload.route,
-        });
-        return next;
-      });
-    }
+  function onAddChild(parentPath, label, route) {
+    if (!label) return;
+    setMenus((prev) => insertNewNode(prev, parentPath, getChildrenAtParentPath(prev, parentPath).length, { label, route, children: [] }));
+    setAddingKey(null);
   }
 
   async function handleSave() {
@@ -244,9 +403,9 @@ export default function Navigation() {
   if (loading) return <p className="p-6 text-gray-400 text-sm">Loading...</p>;
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-5xl">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold text-gray-900">Navigation</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Main menu</h1>
         <button onClick={handleSave} disabled={saving} className="bg-gray-900 text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 disabled:opacity-50">
           {saving ? 'Saving...' : 'Save Navigation'}
         </button>
@@ -256,17 +415,16 @@ export default function Navigation() {
       {message && <p className="text-green-600 text-sm mb-4">{message}</p>}
 
       <p className="text-sm text-gray-500 mb-4">
-        Drag a category from "Available Categories" into the menu area to make it a Menu, or drop it onto a menu's
-        Sub-menu zone to nest it underneath as a Column, or into a Column to add it as an Item (for mega-menus like
-        "Shop by Device" with IPHONE / MACBOOK / IPAD columns). Drag items to reorder them.
+        Drag items by the handle to reorder, or drop one onto another to nest it as a sub-menu. Click any item to
+        edit its label or link, or use "Add menu item" to add a new one at any level — nested as deep as you like.
       </p>
 
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-1">
-          <h2 className="text-sm font-medium text-gray-700 mb-2">Available Categories</h2>
+          <h2 className="text-sm font-medium text-gray-700 mb-2">Quick add</h2>
           <div className="bg-white rounded-lg shadow border border-gray-100 p-3 space-y-2 min-h-[120px]">
-            {availablePages.length === 0 && <p className="text-xs text-gray-400">All categories are placed in the menu.</p>}
-            {availablePages.map((page) => (
+            <p className="text-xs text-gray-400 mb-1">Drag into the menu, or use "Add menu item" below.</p>
+            {categoryPages.map((page) => (
               <div
                 key={page.route}
                 draggable
@@ -277,111 +435,56 @@ export default function Navigation() {
               </div>
             ))}
           </div>
-
-          <div className="mt-4 flex gap-2">
-            <input
-              className="input"
-              placeholder="New group name (e.g. Settings)"
-              value={newGroupName}
-              onChange={(e) => setNewGroupName(e.target.value)}
-            />
-            <button onClick={addGroup} className="btn-secondary whitespace-nowrap">+ Add Group</button>
-          </div>
         </div>
 
         <div className="col-span-2">
-          <h2 className="text-sm font-medium text-gray-700 mb-2">Menu Structure</h2>
+          <h2 className="text-sm font-medium text-gray-700 mb-2">Menu items</h2>
           <div
             onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDropOnRoot}
-            className="space-y-3 min-h-[300px] border-2 border-dashed border-gray-200 rounded-lg p-3"
+            onDrop={(e) => onDrop(e, [], menus.length)}
+            className="space-y-2 min-h-[200px] border border-gray-200 rounded-lg p-3 bg-white"
           >
             {menus.length === 0 && (
-              <p className="text-xs text-gray-400 text-center py-10">Drag a page here to start building your menu.</p>
+              <p className="text-xs text-gray-400 text-center py-10">Add a menu item to start building your menu.</p>
             )}
-            {menus.map((menu, mi) => (
-              <div key={mi} className="bg-white rounded-lg shadow border border-gray-100">
-                <div
-                  draggable
-                  onDragStart={(e) => e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'top', index: mi }))}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => handleDropOnMenuHeader(e, mi)}
-                  className="flex items-center justify-between px-3 py-2 border-b border-gray-100 cursor-grab"
-                >
-                  <span className="text-sm font-medium text-gray-900">{menu.label}</span>
-                  <button onClick={() => removeTopLevel(mi)} className="text-red-600 text-xs">Remove</button>
-                </div>
-                <div
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => handleDropOnChildrenZone(e, mi)}
-                  className="p-3 space-y-2 min-h-[48px]"
-                >
-                  {menu.children.length === 0 && (
-                    <p className="text-xs text-gray-400">Drop a page here to add it as a sub-menu / column.</p>
-                  )}
-                  {menu.children.map((child, ci) => (
-                    <div
-                      key={ci}
-                      draggable
-                      onDragStart={(e) =>
-                        e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'child', menuIndex: mi, childIndex: ci }))
-                      }
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={(e) => handleDropOnChildItem(e, mi, ci)}
-                      className="bg-gray-50 border border-gray-200 rounded-md ml-4"
-                    >
-                      <div className="flex items-center justify-between px-3 py-1.5 cursor-grab">
-                        <span className="text-sm font-medium text-gray-700">{child.label}</span>
-                        <button onClick={() => removeChild(mi, ci)} className="text-red-600 text-xs">×</button>
-                      </div>
-                      <div
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={(e) => {
-                          e.stopPropagation();
-                          handleDropOnGrandchildrenZone(e, mi, ci);
-                        }}
-                        className="px-3 pb-2 space-y-1 min-h-[32px]"
-                      >
-                        {(child.children || []).length === 0 && (
-                          <p className="text-xs text-gray-400">Drop a page here to add it as an item in this column.</p>
-                        )}
-                        {(child.children || []).map((grandchild, gi) => (
-                          <div
-                            key={gi}
-                            draggable
-                            onDragStart={(e) => {
-                              e.stopPropagation();
-                              e.dataTransfer.setData(
-                                'text/plain',
-                                JSON.stringify({ type: 'grandchild', menuIndex: mi, childIndex: ci, grandchildIndex: gi })
-                              );
-                            }}
-                            onDragOver={(e) => e.preventDefault()}
-                            onDrop={(e) => {
-                              e.stopPropagation();
-                              handleDropOnGrandchildItem(e, mi, ci, gi);
-                            }}
-                            className="flex items-center justify-between bg-white border border-gray-200 rounded-md px-3 py-1 text-sm text-gray-600 cursor-grab ml-4"
-                          >
-                            <span>{grandchild.label}</span>
-                            <button onClick={() => removeGrandchild(mi, ci, gi)} className="text-red-600 text-xs">×</button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                  <div className="flex gap-2 ml-4">
-                    <input
-                      className="input text-sm"
-                      placeholder="New column name (e.g. IPHONE)"
-                      value={newColumnName[mi] || ''}
-                      onChange={(e) => setNewColumnName((prev) => ({ ...prev, [mi]: e.target.value }))}
-                    />
-                    <button onClick={() => addColumn(mi)} className="btn-secondary whitespace-nowrap text-sm">+ Add Column</button>
-                  </div>
-                </div>
-              </div>
+            {menus.map((node, i) => (
+              <MenuNodeRow
+                key={i}
+                node={node}
+                path={[i]}
+                depth={0}
+                suggestions={categoryPages}
+                editingKey={editingKey}
+                setEditingKey={setEditingKey}
+                addingKey={addingKey}
+                setAddingKey={setAddingKey}
+                collapsed={collapsed}
+                setCollapsed={setCollapsed}
+                onDrop={onDrop}
+                onDragStartNode={onDragStartNode}
+                onSaveEdit={onSaveEdit}
+                onRemove={onRemove}
+                onAddChild={onAddChild}
+              />
             ))}
+
+            {addingKey === 'root' ? (
+              <AddItemRow
+                depth={0}
+                suggestions={categoryPages}
+                onSave={(l, r) => onAddChild([], l, r)}
+                onCancel={() => setAddingKey(null)}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAddingKey('root')}
+                className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 px-1 py-1"
+              >
+                <HugeiconsIcon icon={PlusSignIcon} size={14} />
+                Add menu item
+              </button>
+            )}
           </div>
         </div>
       </div>
