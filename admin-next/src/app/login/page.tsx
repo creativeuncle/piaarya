@@ -75,6 +75,11 @@ export default function LoginPage() {
         <button type="submit" disabled={submitting} className="btn-secondary w-full justify-center bg-gray-900 text-white border-gray-900 hover:bg-gray-800">
           {submitting ? 'Signing in…' : 'Sign in'}
         </button>
+
+        <p className="text-sm text-gray-500 text-center mt-4">
+          New to Piaarya?{' '}
+          <a href="/signup" className="text-gray-900 font-medium hover:underline">Create a store</a>
+        </p>
       </form>
     </div>
   );

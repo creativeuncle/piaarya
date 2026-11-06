@@ -36,6 +36,7 @@ const currencyRoutes = require('./routes/currencyRoutes');
 const themeRoutes = require('./routes/themeRoutes');
 const adminAuthRoutes = require('./routes/adminAuthRoutes');
 const platformRoutes = require('./routes/platformRoutes');
+const signupRoutes = require('./routes/signupRoutes');
 const domainRoutes = require('./routes/domainRoutes');
 const pageLayoutRoutes = require('./routes/pageLayoutRoutes');
 const publicFormsRoutes = require('./routes/publicFormsRoutes');
@@ -53,6 +54,9 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 // Platform (Super Admin) routes are cross-tenant by nature — mounted ahead
 // of resolveStore so they never get bound to any single store's context.
 app.use('/api/platform', platformRoutes);
+// Store creation itself happens before any store exists, so it must run
+// ahead of resolveStore too (same reasoning as /api/platform above).
+app.use('/api/signup', signupRoutes);
 app.use(resolveStore);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/orders', orderRoutes);
