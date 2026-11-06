@@ -54,6 +54,12 @@ export function AdminAuthProvider({ children }) {
     setAuth(null);
   }
 
+  // Used by the signup wizard, which already has {token, member} back from
+  // POST /api/signup and just needs to adopt it as the active session.
+  function setSession(data) {
+    setAuth(data);
+  }
+
   return (
     <AdminAuthContext.Provider
       value={{
@@ -63,6 +69,7 @@ export function AdminAuthProvider({ children }) {
         hydrated,
         login,
         logout,
+        setSession,
       }}
     >
       {children}

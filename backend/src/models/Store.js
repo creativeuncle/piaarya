@@ -22,9 +22,16 @@ const storeSchema = new mongoose.Schema(
       name: { type: String, required: true, trim: true },
       email: { type: String, required: true, trim: true, lowercase: true },
       phone: { type: String, trim: true, default: '' },
+      address: {
+        line: { type: String, trim: true, default: '' },
+        city: { type: String, trim: true, default: '' },
+        state: { type: String, trim: true, default: '' },
+        pincode: { type: String, trim: true, default: '' },
+      },
     },
+    category: { type: String, trim: true, default: '' },
     status: { type: String, enum: ['active', 'suspended'], default: 'active' },
-    plan: { type: String, enum: ['free', 'starter', 'pro'], default: 'free' },
+    plan: { type: String, enum: ['free', 'starter', 'pro', 'basic', 'super'], default: 'free' },
   },
   { timestamps: true }
 );
