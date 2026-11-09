@@ -1,10 +1,12 @@
 import * as supercharged from './supercharged';
+import * as stretch from './stretch';
 
 // Every theme must export the same shape: Home, ProductListing, ProductDetail,
 // ProductReviewsPage. Shared pages (navbar, cart drawer, checkout, login,
 // dashboard) live outside themes/ and never change between themes.
 export const THEMES = {
   supercharged,
+  stretch,
 } as const;
 
 export const DEFAULT_THEME = 'supercharged';

@@ -4,6 +4,7 @@
 // themes — only the Home/Product Listing/Product Detail experience does.
 const THEMES_CATALOG = [
   { key: 'supercharged', name: 'Supercharged', description: 'The original Piaarya storefront design.' },
+  { key: 'stretch', name: 'Stretch', description: 'An editorial, natural-fabric look with a dark, serif-led design.' },
 ];
 
 module.exports = THEMES_CATALOG;
