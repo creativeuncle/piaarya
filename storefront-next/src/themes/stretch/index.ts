@@ -1,8 +1,12 @@
 export { default as Home } from './Home';
+export { default as ProductListing } from './ProductListing';
+export { default as ProductDetail } from './ProductDetail';
+export { default as ProductReviewsPage } from './ProductReviewsPage';
 
-// Product Listing / Detail / Reviews are shared with Supercharged for now —
-// Stretch only re-designs the Home page in this first pass. These will get
-// their own Stretch-styled versions in a follow-up.
-export { default as ProductListing } from '../supercharged/ProductListing';
-export { default as ProductDetail } from '../supercharged/ProductDetail';
-export { default as ProductReviewsPage } from '../supercharged/ProductReviewsPage';
+export { default as Header } from './Header';
+export { default as Footer } from './Footer';
+export { default as CartDrawer } from './CartDrawer';
+
+import { stretchDisplay, stretchSans } from './fonts';
+export const fontVariables = `${stretchDisplay.variable} ${stretchSans.variable}`;
+export const bodyFontFamily = 'var(--font-stretch-sans)';
