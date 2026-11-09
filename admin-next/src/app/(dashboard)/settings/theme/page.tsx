@@ -6,6 +6,11 @@ import { fetchSettings, updateSettings } from '../../../../lib/api/settings';
 
 export default function ThemeSettings() {
   const [active, setActive] = useState('supercharged');
+  // Tracks the theme actually live on the storefront (what the server has
+  // saved), separately from `active` (the radio selection, which can be
+  // changed before Save is clicked) — so the "Active" badge always points
+  // at what's really live, not just what's currently selected.
+  const [savedActive, setSavedActive] = useState('supercharged');
   const [available, setAvailable] = useState([{ key: 'supercharged', name: 'Supercharged', description: '' }]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -14,7 +19,9 @@ export default function ThemeSettings() {
   useEffect(() => {
     fetchSettings()
       .then((data) => {
-        setActive(data.theme?.active || 'supercharged');
+        const key = data.theme?.active || 'supercharged';
+        setActive(key);
+        setSavedActive(key);
         setAvailable(data.theme?.available?.length ? data.theme.available : available);
       })
       .catch(() => {})
@@ -27,7 +34,9 @@ export default function ThemeSettings() {
     setMessage('');
     try {
       const data = await updateSettings({ theme: { active } });
-      setActive(data.theme?.active || active);
+      const key = data.theme?.active || active;
+      setActive(key);
+      setSavedActive(key);
       setMessage('Theme updated. It goes live on the storefront immediately — no redeploy needed.');
     } catch (err) {
       setMessage(err.response?.data?.message || err.message);
@@ -55,7 +64,14 @@ export default function ThemeSettings() {
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-semibold text-gray-900">{theme.name}</span>
+              <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                {theme.name}
+                {savedActive === theme.key && (
+                  <span className="bg-green-100 text-green-700 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full">
+                    Active
+                  </span>
+                )}
+              </span>
               <input
                 type="radio"
                 name="theme"
