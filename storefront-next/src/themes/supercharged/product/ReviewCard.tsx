@@ -1,7 +1,12 @@
+'use client';
+
+import { useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { StarIcon, CheckmarkBadge01Icon, ThumbsUpIcon } from '@hugeicons/core-free-icons';
+import { StarIcon, CheckmarkBadge01Icon, ThumbsUpIcon, Cancel01Icon } from '@hugeicons/core-free-icons';
 
 export default function ReviewCard({ review }) {
+  const [lightboxUrl, setLightboxUrl] = useState(null);
+
   return (
     <div className="border-b border-gray-100 pb-6">
       <div className="flex items-center gap-3 mb-2">
@@ -30,10 +35,37 @@ export default function ReviewCard({ review }) {
       {review.images?.length > 0 && (
         <div className="flex gap-2 mb-3">
           {review.images.map((url, idx) => (
-            <div key={idx} className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 shrink-0">
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setLightboxUrl(url)}
+              className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 shrink-0 cursor-zoom-in"
+            >
               <img src={url} alt={`Review photo ${idx + 1}`} className="w-full h-full object-cover" />
-            </div>
+            </button>
           ))}
+        </div>
+      )}
+
+      {lightboxUrl && (
+        <div
+          onClick={() => setLightboxUrl(null)}
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6 cursor-zoom-out"
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxUrl(null)}
+            className="absolute top-4 right-4 text-white/80 hover:text-white"
+            title="Close"
+          >
+            <HugeiconsIcon icon={Cancel01Icon} size={28} />
+          </button>
+          <img
+            src={lightboxUrl}
+            alt="Review photo"
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-full max-h-full rounded-lg object-contain cursor-default"
+          />
         </div>
       )}
 
