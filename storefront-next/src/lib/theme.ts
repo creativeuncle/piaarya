@@ -1,4 +1,5 @@
 import { DEFAULT_THEME } from '../themes';
+import { getTenantHeaders } from './serverHeaders';
 
 // Server-only helper (used from Server Components) — hits the backend
 // directly, not through the browser-facing /api rewrite, since this runs
@@ -7,7 +8,7 @@ import { DEFAULT_THEME } from '../themes';
 export async function getActiveTheme(): Promise<string> {
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:5001';
   try {
-    const res = await fetch(`${backendUrl}/api/theme`, { cache: 'no-store' });
+    const res = await fetch(`${backendUrl}/api/theme`, { cache: 'no-store', headers: await getTenantHeaders() });
     if (!res.ok) throw new Error('theme request failed');
     const data = await res.json();
     return data.theme || DEFAULT_THEME;
