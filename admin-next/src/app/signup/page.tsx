@@ -30,6 +30,10 @@ const PLANS = [
 
 const BUILD_STEPS = ['Creating your store…', 'Setting up your theme…', 'Preparing your dashboard…'];
 
+// Must match the backend's CENTRAL_DOMAIN (see resolveStore.js) — that's
+// what actually turns `<slug>.<domain>` into a working storefront.
+const CENTRAL_DOMAIN = process.env.NEXT_PUBLIC_CENTRAL_DOMAIN || 'piaarya.com';
+
 function slugify(value) {
   return value
     .toLowerCase()
@@ -234,7 +238,7 @@ export default function SignupPage() {
                     onChange={(e) => setStore((prev) => ({ ...prev, slug: slugify(e.target.value), slugEdited: true }))}
                   />
                   <span className="text-sm text-gray-500 bg-gray-50 border border-l-0 border-gray-200 rounded-r-md px-3 py-2 whitespace-nowrap">
-                    .piaarya.com
+                    .{CENTRAL_DOMAIN}
                   </span>
                 </div>
                 {slugStatus === 'checking' && <p className="text-xs text-gray-400 mt-1">Checking availability…</p>}
