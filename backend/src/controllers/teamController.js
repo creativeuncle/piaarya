@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const TeamMember = require('../models/TeamMember');
+const { getPlanLimits } = require('../constants/planLimits');
 
 async function listMembers(req, res, next) {
   try {
@@ -16,6 +17,15 @@ async function createMember(req, res, next) {
     if (!password || password.length < 6) {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
+
+    const { maxTeamMembers } = getPlanLimits(req.store?.plan);
+    const currentCount = await TeamMember.countDocuments();
+    if (currentCount >= maxTeamMembers) {
+      return res.status(403).json({
+        message: `Your plan allows up to ${maxTeamMembers} team members. Upgrade your plan to add more.`,
+      });
+    }
+
     const passwordHash = await bcrypt.hash(password, 10);
     const member = await TeamMember.create({ name, email, passwordHash, role });
     const { passwordHash: _omit, ...rest } = member.toObject();

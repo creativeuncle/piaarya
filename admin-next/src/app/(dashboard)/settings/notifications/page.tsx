@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { fetchSettings, updateSettings, fetchNotificationLogs } from '../../../../lib/api/settings';
 
-function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
+function Toggle({ checked, onChange, label, disabled }: { checked: boolean; onChange: (v: boolean) => void; label?: string; disabled?: boolean }) {
   return (
-    <label className="flex items-center gap-3 cursor-pointer select-none">
+    <label className={`flex items-center gap-3 select-none ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}>
       <span className="relative inline-flex h-6 w-11 shrink-0">
         <input
           type="checkbox"
           checked={checked}
+          disabled={disabled}
           onChange={(e) => onChange(e.target.checked)}
           className="peer sr-only"
         />
@@ -76,11 +77,13 @@ export default function NotificationSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [smsAllowed, setSmsAllowed] = useState(true);
 
   function load() {
     fetchSettings()
       .then((data) => {
         setChannels(data.notifications.channels);
+        setSmsAllowed(data.plan?.smsNotifications ?? true);
         setEvents(data.notifications.events);
         setEventDefs(data.notificationEventDefinitions);
         setEmailConfig({
@@ -380,12 +383,18 @@ export default function NotificationSettings() {
               {Object.keys(CHANNEL_LABELS).map((key) => (
                 <Toggle
                   key={key}
-                  checked={channels[key]}
+                  checked={key === 'sms' && !smsAllowed ? false : channels[key]}
                   onChange={(v) => setChannel(key, v)}
                   label={CHANNEL_LABELS[key]}
+                  disabled={key === 'sms' && !smsAllowed}
                 />
               ))}
             </div>
+            {!smsAllowed && (
+              <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 text-sm mt-4">
+                SMS notifications are a Super-plan feature. Upgrade your plan to turn this on.
+              </p>
+            )}
           </div>
 
           <div className="bg-white rounded-lg shadow border border-gray-100 p-6 max-w-3xl mb-6">

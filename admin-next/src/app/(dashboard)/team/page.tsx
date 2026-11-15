@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { UserMultiple02Icon } from '@hugeicons/core-free-icons';
 import { fetchTeamMembers, fetchTeamRoles, createTeamMember, updateTeamMember, deleteTeamMember } from '../../../lib/api/team';
+import { fetchSettings } from '../../../lib/api/settings';
 
 const ROLE_LABELS = {
   super_admin: 'Super Admin',
@@ -17,6 +18,7 @@ export default function Team() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [maxTeamMembers, setMaxTeamMembers] = useState(null);
 
   function load() {
     setLoading(true);
@@ -30,7 +32,10 @@ export default function Team() {
   useEffect(load, []);
   useEffect(() => {
     fetchTeamRoles().then(setRoles).catch(() => {});
+    fetchSettings().then((data) => setMaxTeamMembers(data.plan?.maxTeamMembers ?? null)).catch(() => {});
   }, []);
+
+  const atLimit = maxTeamMembers != null && members.length >= maxTeamMembers;
 
   async function handleRoleChange(id, role) {
     try {
@@ -66,11 +71,25 @@ export default function Team() {
         <h1 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
           <HugeiconsIcon icon={UserMultiple02Icon} size={22} strokeWidth={1.5} />
           Team Management
+          {maxTeamMembers != null && (
+            <span className="text-sm font-normal text-gray-400">({members.length}/{maxTeamMembers} used)</span>
+          )}
         </h1>
-        <button onClick={() => setShowForm(true)} className="bg-gray-900 text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800">
+        <button
+          onClick={() => setShowForm(true)}
+          disabled={atLimit}
+          title={atLimit ? 'Upgrade your plan to add more team members' : undefined}
+          className="bg-gray-900 text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           Add Team Member
         </button>
       </div>
+
+      {atLimit && (
+        <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 text-sm mb-4">
+          Your plan allows up to {maxTeamMembers} team members. Upgrade your plan to add more.
+        </p>
+      )}
 
       {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 
