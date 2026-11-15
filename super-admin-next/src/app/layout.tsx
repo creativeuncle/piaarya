@@ -2,8 +2,8 @@ import "./globals.css";
 import { PlatformAuthProvider } from "../context/PlatformAuthContext";
 
 export const metadata = {
-  title: "Piaarya Super Admin",
-  description: "Platform-level control panel for the Piaarya SaaS.",
+  title: "CartDodo Super Admin",
+  description: "Platform-level control panel for the CartDodo SaaS.",
 };
 
 export default function RootLayout({ children }) {

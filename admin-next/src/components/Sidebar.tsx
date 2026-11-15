@@ -82,7 +82,7 @@ export default function Sidebar() {
       }`}
     >
       <div className={`flex items-center mb-6 ${expanded ? 'justify-between px-1' : 'justify-center'}`}>
-        {expanded && <span className="text-base font-bold text-white truncate">Piaarya Admin</span>}
+        {expanded && <span className="text-base font-bold text-white truncate">CartDodo Admin</span>}
         <button
           onClick={() => setExpanded((v) => !v)}
           className="flex items-center justify-center w-9 h-9 shrink-0 rounded-md hover:bg-gray-800 text-gray-300"

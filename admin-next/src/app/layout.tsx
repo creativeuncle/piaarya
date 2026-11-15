@@ -2,8 +2,8 @@ import "./globals.css";
 import { AdminAuthProvider } from "../context/AdminAuthContext";
 
 export const metadata = {
-  title: "Piaarya Admin",
-  description: "Piaarya store admin dashboard.",
+  title: "CartDodo Admin",
+  description: "CartDodo store admin dashboard.",
 };
 
 export default function RootLayout({ children }) {

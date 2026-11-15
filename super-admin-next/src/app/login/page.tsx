@@ -35,7 +35,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <form onSubmit={handleSubmit} className="w-full max-w-sm bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-        <h1 className="text-lg font-semibold text-gray-900 mb-1">Piaarya Super Admin</h1>
+        <h1 className="text-lg font-semibold text-gray-900 mb-1">CartDodo Super Admin</h1>
         <p className="text-sm text-gray-500 mb-6">Platform control panel — sign in.</p>
 
         {error && (

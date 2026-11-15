@@ -23,7 +23,7 @@ export default function Sidebar() {
   return (
     <aside className="shrink-0 w-60 bg-gray-900 text-gray-200 min-h-screen p-3 flex flex-col">
       <div className="px-1 mb-6">
-        <span className="text-base font-bold text-white">Piaarya Super Admin</span>
+        <span className="text-base font-bold text-white">CartDodo Super Admin</span>
       </div>
 
       <nav className="flex flex-col gap-1">

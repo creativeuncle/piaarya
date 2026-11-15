@@ -4,8 +4,8 @@ import { getActiveTheme } from "../lib/theme";
 import { getTheme } from "../themes";
 
 export const metadata = {
-  title: "Piaarya",
-  description: "Piaarya — shop the latest collection.",
+  title: "CartDodo",
+  description: "CartDodo — shop the latest collection.",
 };
 
 export default async function RootLayout({ children }) {

@@ -256,7 +256,7 @@ export default function NotificationSettings() {
               <label className="block text-xs text-gray-500 mb-1">Sender Name</label>
               <input
                 className="input w-full"
-                placeholder="Piaarya"
+                placeholder="CartDodo"
                 value={emailConfig.senderName}
                 onChange={(e) => setEmailField('senderName', e.target.value)}
               />
