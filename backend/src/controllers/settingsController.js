@@ -4,6 +4,7 @@ const { GATEWAYS } = require('../services/paymentGateway');
 const { EVENTS: NOTIFICATION_EVENTS, getNotificationSettings } = require('../services/notificationService');
 const CURRENCIES_CATALOG = require('../constants/currencies');
 const THEMES_CATALOG = require('../constants/themes');
+const { getPlanLimits } = require('../constants/planLimits');
 
 function maskSecret(secret) {
   if (!secret) return '';
@@ -11,7 +12,8 @@ function maskSecret(secret) {
   return `${'*'.repeat(secret.length - 4)}${secret.slice(-4)}`;
 }
 
-async function toPublicSettings(settings) {
+async function toPublicSettings(settings, plan) {
+  const planLimits = getPlanLimits(plan);
   const notifications = await getNotificationSettings();
   notifications.email = {
     brevoApiKeyMasked: maskSecret(settings?.notifications?.email?.brevoApiKey),
@@ -59,6 +61,12 @@ async function toPublicSettings(settings) {
     theme: {
       active: settings?.theme?.active || THEMES_CATALOG[0].key,
       available: THEMES_CATALOG,
+      lockedKeys: THEMES_CATALOG.map((t) => t.key).filter((key) => !planLimits.themeKeys.includes(key)),
+    },
+    plan: {
+      key: plan || 'basic',
+      maxTeamMembers: planLimits.maxTeamMembers === Infinity ? null : planLimits.maxTeamMembers,
+      smsNotifications: planLimits.smsNotifications,
     },
     paymentGateway: settings?.paymentGateway || 'razorpay',
     razorpay: {
@@ -103,7 +111,7 @@ async function toPublicSettings(settings) {
 async function getSettings(req, res, next) {
   try {
     const settings = await Settings.findOne();
-    res.json(await toPublicSettings(settings));
+    res.json(await toPublicSettings(settings, req.store?.plan));
   } catch (err) {
     next(err);
   }
@@ -120,6 +128,11 @@ async function updateSettings(req, res, next) {
     const validThemeKeys = THEMES_CATALOG.map((t) => t.key);
     if (theme?.active && !validThemeKeys.includes(theme.active)) {
       return res.status(400).json({ message: `theme.active must be one of: ${validThemeKeys.join(', ')}` });
+    }
+
+    const planLimits = getPlanLimits(req.store?.plan);
+    if (theme?.active && !planLimits.themeKeys.includes(theme.active)) {
+      return res.status(403).json({ message: 'That theme is not included in your plan. Upgrade to unlock it.' });
     }
 
     const existing = await Settings.findOne();
@@ -161,7 +174,11 @@ async function updateSettings(req, res, next) {
       update.notifications = {
         channels: {
           email: notifications.channels?.email ?? existing?.notifications?.channels?.email ?? true,
-          sms: notifications.channels?.sms ?? existing?.notifications?.channels?.sms ?? true,
+          // SMS is a Super-plan feature — force it off regardless of what was
+          // requested if the store's plan doesn't include it.
+          sms: planLimits.smsNotifications
+            ? notifications.channels?.sms ?? existing?.notifications?.channels?.sms ?? true
+            : false,
           whatsapp: notifications.channels?.whatsapp ?? existing?.notifications?.channels?.whatsapp ?? true,
         },
         events,
@@ -288,7 +305,7 @@ async function updateSettings(req, res, next) {
       setDefaultsOnInsert: true,
     });
 
-    res.json(await toPublicSettings(settings));
+    res.json(await toPublicSettings(settings, req.store?.plan));
   } catch (err) {
     next(err);
   }

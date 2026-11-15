@@ -1,5 +1,18 @@
 const Settings = require('../models/Settings');
 const NotificationLog = require('../models/NotificationLog');
+const Store = require('../models/Store');
+const { getCurrentStoreId } = require('../middleware/tenantContext');
+const { getPlanLimits } = require('../constants/planLimits');
+
+// Defense-in-depth: settingsController already refuses to turn SMS on for a
+// plan that doesn't include it, but this covers stores whose data predates
+// that check (or a downgrade after SMS was already enabled).
+async function canUseSms() {
+  const storeId = getCurrentStoreId();
+  if (!storeId) return true;
+  const store = await Store.findById(storeId).select('plan').lean();
+  return getPlanLimits(store?.plan).smsNotifications;
+}
 
 const EVENTS = [
   {
@@ -62,10 +75,11 @@ function formatIndianMobile(phone) {
 async function getNotificationSettings() {
   const settings = await Settings.findOne();
   const stored = settings?.notifications || {};
+  const smsAllowed = await canUseSms();
 
   const channels = {
     email: stored.channels?.email ?? true,
-    sms: stored.channels?.sms ?? true,
+    sms: smsAllowed && (stored.channels?.sms ?? true),
     whatsapp: stored.channels?.whatsapp ?? true,
   };
 
@@ -176,6 +190,8 @@ async function sendWhatsAppMessage({ accessToken, phoneNumberId, phone, message 
 // SMS was sent, false if Fast2SMS isn't configured yet (caller should fall
 // back to returning the OTP in the response for testing, as before).
 async function sendOtpSms(phone, otp) {
+  if (!(await canUseSms())) return false;
+
   const settings = await Settings.findOne();
   const apiKey = settings?.notifications?.sms?.fast2smsApiKey;
   if (!apiKey || !phone) return false;
@@ -251,9 +267,10 @@ async function triggerNotification(eventKey, { customer, order, vars }) {
   try {
     const settings = await Settings.findOne();
     const stored = settings?.notifications || {};
+    const smsAllowed = await canUseSms();
     const channels = {
       email: stored.channels?.email ?? true,
-      sms: stored.channels?.sms ?? true,
+      sms: smsAllowed && (stored.channels?.sms ?? true),
       whatsapp: stored.channels?.whatsapp ?? true,
     };
 
