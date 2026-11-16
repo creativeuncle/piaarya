@@ -106,7 +106,7 @@ async function sendBrevoEmail({ apiKey, senderName, senderEmail, to, toName, sub
       'api-key': apiKey,
     },
     body: JSON.stringify({
-      sender: { name: senderName || 'Piaarya', email: senderEmail },
+      sender: { name: senderName || 'CartDodo', email: senderEmail },
       to: [{ email: to, name: toName || undefined }],
       subject,
       textContent: text,

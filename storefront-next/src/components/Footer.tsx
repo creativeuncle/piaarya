@@ -52,8 +52,8 @@ export default function Footer() {
 
       <div className="border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-6 py-4 text-xs text-gray-500 flex justify-between">
-          <span>© {new Date().getFullYear()} Piaarya. All rights reserved.</span>
-          <span>Made with Piaarya Admin</span>
+          <span>© {new Date().getFullYear()} CartDodo. All rights reserved.</span>
+          <span>Made with CartDodo</span>
         </div>
       </div>
     </footer>

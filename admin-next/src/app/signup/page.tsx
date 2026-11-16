@@ -161,7 +161,7 @@ export default function SignupPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-lg">
         <div className="text-center mb-6">
-          <h1 className="text-xl font-semibold text-gray-900">Create your Piaarya store</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Create your CartDodo store</h1>
           <p className="text-sm text-gray-500 mt-1">Step {Math.min(step, 4)} of 4</p>
           <div className="flex gap-1.5 mt-3 justify-center">
             {[1, 2, 3, 4].map((s) => (

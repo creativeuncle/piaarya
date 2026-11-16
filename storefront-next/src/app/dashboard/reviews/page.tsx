@@ -85,7 +85,7 @@ export default function MyReviews() {
 
             {review.reply && (
               <div className="bg-gray-50 rounded-md p-3 mt-2">
-                <p className="text-xs font-medium text-gray-700 mb-1">Response from Piaarya</p>
+                <p className="text-xs font-medium text-gray-700 mb-1">Response from CartDodo</p>
                 <p className="text-xs text-gray-600">{review.reply}</p>
               </div>
             )}

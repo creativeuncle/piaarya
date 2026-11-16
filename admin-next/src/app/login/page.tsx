@@ -36,7 +36,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <form onSubmit={handleSubmit} className="w-full max-w-sm bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-        <h1 className="text-lg font-semibold text-gray-900 mb-1">Piaarya Admin</h1>
+        <h1 className="text-lg font-semibold text-gray-900 mb-1">CartDodo Admin</h1>
         <p className="text-sm text-gray-500 mb-6">Sign in to manage your store.</p>
 
         {error && (
@@ -77,7 +77,7 @@ export default function LoginPage() {
         </button>
 
         <p className="text-sm text-gray-500 text-center mt-4">
-          New to Piaarya?{' '}
+          New to CartDodo?{' '}
           <a href="/signup" className="text-gray-900 font-medium hover:underline">Create a store</a>
         </p>
       </form>

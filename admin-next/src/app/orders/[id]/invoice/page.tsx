@@ -28,7 +28,7 @@ export default function Invoice() {
     <div className="p-8 max-w-2xl mx-auto text-gray-900">
       <div className="flex justify-between items-start mb-8">
         <div>
-          <h1 className="text-xl font-bold">{tax?.legalBusinessName || 'Piaarya'}</h1>
+          <h1 className="text-xl font-bold">{tax?.legalBusinessName || 'CartDodo'}</h1>
           <p className="text-sm text-gray-500">Invoice</p>
           {tax?.gstEnabled && tax?.gstin && <p className="text-xs text-gray-500 mt-1">GSTIN: {tax.gstin}</p>}
         </div>
