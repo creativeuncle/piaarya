@@ -14,6 +14,7 @@ import {
   Cell,
 } from 'recharts';
 import { fetchAnalyticsSummary, fetchSalesTrend, fetchTopProducts, fetchOrderStatusBreakdown } from '../../../lib/api/analytics';
+import { SkeletonInline } from '../../../components/Skeleton';
 
 const COLORS = ['#111827', '#4b5563', '#9ca3af', '#d1d5db', '#6366f1', '#f59e0b', '#10b981', '#ef4444'];
 
@@ -72,7 +73,7 @@ export default function Analytics() {
       </div>
 
       {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
-      {loading && <p className="text-gray-400 text-sm">Loading...</p>}
+      {loading && <SkeletonInline />}
 
       {!loading && summary && (
         <>

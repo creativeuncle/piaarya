@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { HeartIcon } from '@hugeicons/core-free-icons';
 import { fetchWishlist, fetchPopularWishlistProducts, removeWishlistEntry } from '../../../lib/api/wishlist';
+import { SkeletonTableRows } from '../../../components/Skeleton';
 
 export default function Wishlist() {
   const [allEntries, setAllEntries] = useState([]);
@@ -140,9 +141,7 @@ export default function Wishlist() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>Loading...</td></tr>
-            )}
+            {loading && <SkeletonTableRows colSpan={7} />}
             {!loading && entries.length === 0 && (
               <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>No wishlist entries found.</td></tr>
             )}

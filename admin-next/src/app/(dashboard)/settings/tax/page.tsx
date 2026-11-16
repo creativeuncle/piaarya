@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { fetchSettings, updateSettings } from '../../../../lib/api/settings';
 import { INDIAN_STATES } from '../../../../constants/indianStates';
+import { SkeletonPage } from '../../../../components/Skeleton';
 
 function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
   return (
@@ -57,7 +58,7 @@ export default function TaxSettings() {
     }
   }
 
-  if (loading) return <p className="p-6 text-gray-400 text-sm">Loading...</p>;
+  if (loading) return <SkeletonPage />;
 
   return (
     <div className="p-6 max-w-2xl">

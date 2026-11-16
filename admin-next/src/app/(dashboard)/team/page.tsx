@@ -5,6 +5,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { UserMultiple02Icon } from '@hugeicons/core-free-icons';
 import { fetchTeamMembers, fetchTeamRoles, createTeamMember, updateTeamMember, deleteTeamMember } from '../../../lib/api/team';
 import { fetchSettings } from '../../../lib/api/settings';
+import { SkeletonTableRows } from '../../../components/Skeleton';
 
 const ROLE_LABELS = {
   super_admin: 'Super Admin',
@@ -105,9 +106,7 @@ export default function Team() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={5}>Loading...</td></tr>
-            )}
+            {loading && <SkeletonTableRows colSpan={5} />}
             {!loading && members.length === 0 && (
               <tr><td className="px-4 py-4 text-gray-400" colSpan={5}>No team members yet.</td></tr>
             )}

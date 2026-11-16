@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchProducts, deleteProduct } from '../../../lib/api/products';
+import { SkeletonTableRows } from '../../../components/Skeleton';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -71,11 +72,7 @@ export default function Products() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && (
-              <tr>
-                <td className="px-4 py-4 text-gray-400" colSpan={7}>Loading...</td>
-              </tr>
-            )}
+            {loading && <SkeletonTableRows colSpan={7} />}
             {!loading && products.length === 0 && (
               <tr>
                 <td className="px-4 py-4 text-gray-400" colSpan={7}>No products found.</td>

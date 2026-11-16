@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { SkeletonTableRows } from '../../../components/Skeleton';
 import {
   fetchAbandonedCarts,
   sendRecoveryEmail,
@@ -119,9 +120,7 @@ function AbandonedCartRecovery() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={6}>Loading...</td></tr>
-            )}
+            {loading && <SkeletonTableRows colSpan={6} />}
             {!loading && carts.length === 0 && (
               <tr><td className="px-4 py-4 text-gray-400" colSpan={6}>No abandoned carts.</td></tr>
             )}
@@ -216,9 +215,7 @@ function EmailMarketing() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>Loading...</td></tr>
-            )}
+            {loading && <SkeletonTableRows colSpan={7} />}
             {!loading && campaigns.length === 0 && (
               <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>No campaigns yet.</td></tr>
             )}
@@ -345,9 +342,7 @@ function WhatsAppMarketing() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>Loading...</td></tr>
-            )}
+            {loading && <SkeletonTableRows colSpan={7} />}
             {!loading && campaigns.length === 0 && (
               <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>No campaigns yet.</td></tr>
             )}

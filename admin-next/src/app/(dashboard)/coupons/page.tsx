@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchCoupons, deleteCoupon, fetchCouponAnalytics } from '../../../lib/api/coupons';
+import { SkeletonTableRows, SkeletonInline } from '../../../components/Skeleton';
 
 const TYPE_LABELS = {
   fixed: 'Fixed',
@@ -100,9 +101,7 @@ export default function Coupons() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {loading && (
-                  <tr><td className="px-4 py-4 text-gray-400" colSpan={8}>Loading...</td></tr>
-                )}
+                {loading && <SkeletonTableRows colSpan={8} />}
                 {!loading && coupons.length === 0 && (
                   <tr><td className="px-4 py-4 text-gray-400" colSpan={8}>No coupons yet.</td></tr>
                 )}
@@ -144,7 +143,7 @@ export default function Coupons() {
 
       {tab === 'analytics' && (
         <div>
-          {analytics === null && <p className="text-gray-400 text-sm">Loading...</p>}
+          {analytics === null && <SkeletonInline />}
           {analytics && (
             <>
               <div className="grid grid-cols-3 gap-4 mb-6">

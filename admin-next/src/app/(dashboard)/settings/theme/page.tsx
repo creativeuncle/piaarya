@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchSettings, updateSettings } from '../../../../lib/api/settings';
+import { SkeletonPage } from '../../../../components/Skeleton';
 
 export default function ThemeSettings() {
   const [active, setActive] = useState('supercharged');
@@ -47,7 +48,7 @@ export default function ThemeSettings() {
     }
   }
 
-  if (loading) return <p className="p-6 text-gray-400 text-sm">Loading...</p>;
+  if (loading) return <SkeletonPage />;
 
   return (
     <div className="p-6 max-w-2xl">

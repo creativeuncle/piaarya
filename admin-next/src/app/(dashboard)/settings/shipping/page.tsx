@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { fetchShippingZones, createShippingZone, updateShippingZone, deleteShippingZone } from '../../../../lib/api/shipping';
 import { INDIAN_STATES } from '../../../../constants/indianStates';
+import { SkeletonPage } from '../../../../components/Skeleton';
 
 function emptyZone() {
   return { name: '', states: [], isDefault: false, rates: [{ label: '', price: '', freeAboveAmount: '' }] };
@@ -111,7 +112,7 @@ export default function ShippingSettings() {
     }
   }
 
-  if (loading) return <p className="p-6 text-gray-400 text-sm">Loading...</p>;
+  if (loading) return <SkeletonPage />;
 
   return (
     <div className="p-6 max-w-3xl">

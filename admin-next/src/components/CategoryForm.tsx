@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { fetchCategories, createCategory, updateCategory } from '../lib/api/categories';
 import { buildTree, flattenTree, MAX_DEPTH, LEVEL_LABELS } from '../utils/categoryTree';
 import ImageUpload from './ImageUpload';
+import { SkeletonPage } from './Skeleton';
 
 const EMPTY = { name: '', slug: '', parent: '', image: '', banner: '', seoTitle: '', metaDescription: '' };
 
@@ -70,7 +71,7 @@ export default function CategoryForm({ id }: { id?: string }) {
     }
   }
 
-  if (loading) return <p className="p-6 text-gray-400 text-sm">Loading...</p>;
+  if (loading) return <SkeletonPage />;
 
   const { tree } = buildTree(allCategories);
   const excludedIds = new Set();

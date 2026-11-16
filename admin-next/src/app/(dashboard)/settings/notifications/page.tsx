@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { fetchSettings, updateSettings, fetchNotificationLogs } from '../../../../lib/api/settings';
+import { SkeletonInline } from '../../../../components/Skeleton';
 
 function Toggle({ checked, onChange, label, disabled }: { checked: boolean; onChange: (v: boolean) => void; label?: string; disabled?: boolean }) {
   return (
@@ -200,7 +201,7 @@ export default function NotificationSettings() {
   if (loading) {
     return (
       <div className="p-6">
-        <p className="text-sm text-gray-400">Loading...</p>
+        <SkeletonInline />
       </div>
     );
   }

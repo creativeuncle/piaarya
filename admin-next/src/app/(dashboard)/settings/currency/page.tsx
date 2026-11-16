@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { fetchSettings, updateSettings } from '../../../../lib/api/settings';
+import { SkeletonPage } from '../../../../components/Skeleton';
 
 export default function CurrencySettings() {
   const [currencies, setCurrencies] = useState([]);
@@ -36,7 +37,7 @@ export default function CurrencySettings() {
     }
   }
 
-  if (loading) return <p className="p-6 text-gray-400 text-sm">Loading...</p>;
+  if (loading) return <SkeletonPage />;
 
   return (
     <div className="p-6 max-w-2xl">

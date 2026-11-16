@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchPages, deletePage } from '../../../../lib/api/pages';
+import { SkeletonTableRows } from '../../../../components/Skeleton';
 
 export default function Pages() {
   const [pages, setPages] = useState([]);
@@ -66,9 +67,7 @@ export default function Pages() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={5}>Loading...</td></tr>
-            )}
+            {loading && <SkeletonTableRows colSpan={5} />}
             {!loading && pages.length === 0 && (
               <tr><td className="px-4 py-4 text-gray-400" colSpan={5}>No pages yet.</td></tr>
             )}

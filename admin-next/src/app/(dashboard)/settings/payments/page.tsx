@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { fetchSettings, updateSettings } from '../../../../lib/api/settings';
+import { SkeletonInline } from '../../../../components/Skeleton';
 
 const GATEWAYS = [
   { key: 'razorpay', label: 'Razorpay' },
@@ -96,7 +97,7 @@ export default function PaymentSettings() {
   if (loading) {
     return (
       <div className="p-6">
-        <p className="text-sm text-gray-400">Loading...</p>
+        <SkeletonInline />
       </div>
     );
   }

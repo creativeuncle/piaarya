@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { fetchDomains, connectDomain, verifyDomain, makePrimaryDomain, removeDomain } from '../../../../lib/api/domains';
+import { SkeletonPage } from '../../../../components/Skeleton';
 
 const STATUS_STYLES = {
   verified: 'btn-action-green',
@@ -86,7 +87,7 @@ export default function DomainsSettings() {
     }
   }
 
-  if (loading) return <p className="p-6 text-gray-400 text-sm">Loading...</p>;
+  if (loading) return <SkeletonPage />;
 
   return (
     <div className="p-6 max-w-3xl">

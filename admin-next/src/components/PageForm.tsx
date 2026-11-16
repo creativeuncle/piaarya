@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
 import { fetchPage, createPage, updatePage } from '../lib/api/pages';
+import { SkeletonPage as SkeletonLoader } from './Skeleton';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
@@ -102,7 +103,7 @@ export default function PageForm({ id }: { id?: string }) {
     }
   }
 
-  if (loading) return <p className="p-6 text-gray-400 text-sm">Loading...</p>;
+  if (loading) return <SkeletonLoader />;
 
   return (
     <div className="p-6 max-w-3xl">

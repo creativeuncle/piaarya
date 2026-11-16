@@ -6,6 +6,7 @@ import { fetchOrders, updateOrderStatus, updateOrderTracking } from '../../../li
 import { fetchCustomers } from '../../../lib/api/customers';
 import { fetchProducts } from '../../../lib/api/products';
 import { ORDER_STATUSES } from '../../../constants/orderStatuses';
+import { SkeletonTableRows } from '../../../components/Skeleton';
 
 const TABS = [{ key: 'all', label: 'All' }, ...ORDER_STATUSES];
 
@@ -137,11 +138,7 @@ export default function Orders() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && (
-              <tr>
-                <td className="px-4 py-4 text-gray-400" colSpan={7}>Loading...</td>
-              </tr>
-            )}
+            {loading && <SkeletonTableRows colSpan={7} />}
             {!loading && orders.length === 0 && (
               <tr>
                 <td className="px-4 py-4 text-gray-400" colSpan={7}>No orders found.</td>
