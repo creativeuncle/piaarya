@@ -11,6 +11,7 @@ import {
   adjustRewardPoints,
   adjustStoreCredit,
 } from '../../../../lib/api/customers';
+import { SkeletonPage, SkeletonTableRows, SkeletonInline } from '../../../../components/Skeleton';
 
 const EMPTY_ADDRESS = { label: '', line1: '', line2: '', city: '', state: '', pincode: '', country: '', isDefault: false };
 const TABS = ['Profile', 'Orders', 'Activity'];
@@ -91,7 +92,7 @@ export default function CustomerDetail() {
     }
   }
 
-  if (loading) return <p className="p-6 text-gray-400 text-sm">Loading...</p>;
+  if (loading) return <SkeletonPage />;
   if (!customer) return <p className="p-6 text-red-600 text-sm">Customer not found.</p>;
 
   return (
@@ -177,9 +178,7 @@ export default function CustomerDetail() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {orders === null && (
-                <tr><td className="px-4 py-4 text-gray-400" colSpan={4}>Loading...</td></tr>
-              )}
+              {orders === null && <SkeletonTableRows colSpan={4} />}
               {orders?.length === 0 && (
                 <tr><td className="px-4 py-4 text-gray-400" colSpan={4}>No orders yet.</td></tr>
               )}
@@ -198,7 +197,7 @@ export default function CustomerDetail() {
 
       {tab === 'Activity' && (
         <div className="bg-white rounded-lg shadow border border-gray-100 p-5">
-          {activity === null && <p className="text-gray-400 text-sm">Loading...</p>}
+          {activity === null && <SkeletonInline />}
           {activity?.length === 0 && <p className="text-gray-400 text-sm">No activity yet.</p>}
           <ul className="space-y-3">
             {activity?.map((event, i) => (

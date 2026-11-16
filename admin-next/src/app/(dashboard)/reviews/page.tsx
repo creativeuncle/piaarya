@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { fetchReviews, setReviewStatus, setReviewReply, setReviewFeatured } from '../../../lib/api/reviews';
+import { SkeletonTableRows } from '../../../components/Skeleton';
 
 const TABS = [
   { key: 'all', label: 'All' },
@@ -86,9 +87,7 @@ export default function Reviews() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>Loading...</td></tr>
-            )}
+            {loading && <SkeletonTableRows colSpan={7} />}
             {!loading && reviews.length === 0 && (
               <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>No reviews found.</td></tr>
             )}

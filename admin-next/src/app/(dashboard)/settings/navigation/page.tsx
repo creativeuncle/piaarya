@@ -13,6 +13,7 @@ import {
 import { fetchNavigation, saveNavigation } from '../../../../lib/api/navigation';
 import { fetchCategories } from '../../../../lib/api/categories';
 import { fetchPages } from '../../../../lib/api/pages';
+import { SkeletonPage } from '../../../../components/Skeleton';
 
 const STATIC_LINKS = [
   { label: 'Home', route: '/' },
@@ -400,7 +401,7 @@ export default function Navigation() {
     }
   }
 
-  if (loading) return <p className="p-6 text-gray-400 text-sm">Loading...</p>;
+  if (loading) return <SkeletonPage />;
 
   return (
     <div className="p-6 max-w-5xl">

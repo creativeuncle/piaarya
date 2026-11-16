@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchCustomers, setCustomerBlocked } from '../../../lib/api/customers';
 import { fetchProducts } from '../../../lib/api/products';
+import { SkeletonTableRows } from '../../../components/Skeleton';
 
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
@@ -111,7 +112,7 @@ export default function Customers() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={6}>Loading...</td></tr>
+              <SkeletonTableRows colSpan={6} />
             )}
             {!loading && customers.length === 0 && (
               <tr><td className="px-4 py-4 text-gray-400" colSpan={6}>No customers found.</td></tr>

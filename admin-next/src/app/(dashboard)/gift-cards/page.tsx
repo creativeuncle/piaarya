@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { fetchGiftCards, createGiftCard, toggleGiftCard, deleteGiftCard } from '../../../lib/api/giftCards';
+import { SkeletonTableRows } from '../../../components/Skeleton';
 
 export default function GiftCards() {
   const [giftCards, setGiftCards] = useState([]);
@@ -76,9 +77,7 @@ export default function GiftCards() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={6}>Loading...</td></tr>
-            )}
+            {loading && <SkeletonTableRows colSpan={6} />}
             {!loading && giftCards.length === 0 && (
               <tr><td className="px-4 py-4 text-gray-400" colSpan={6}>No gift cards yet.</td></tr>
             )}

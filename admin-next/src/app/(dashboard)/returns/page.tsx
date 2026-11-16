@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchReturns, setReturnStatus, setPickupStatus, setRefundStatus } from '../../../lib/api/returns';
+import { SkeletonTableRows } from '../../../components/Skeleton';
 
 const STATUS_TABS = [
   { key: 'all', label: 'All' },
@@ -112,9 +113,7 @@ export default function Returns() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>Loading...</td></tr>
-            )}
+            {loading && <SkeletonTableRows colSpan={7} />}
             {!loading && returns.length === 0 && (
               <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>No return requests found.</td></tr>
             )}

@@ -19,6 +19,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { fetchPageLayout, savePageLayout } from '../../../lib/api/pageLayout';
 import { fetchCategories } from '../../../lib/api/categories';
+import { SkeletonPage } from '../../../components/Skeleton';
 
 const STOREFRONT_URL = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'http://localhost:3220';
 
@@ -269,7 +270,7 @@ export default function ThemeEditorPage() {
     }
   }
 
-  if (loading) return <p className="p-6 text-gray-400 text-sm">Loading...</p>;
+  if (loading) return <SkeletonPage />;
 
   const selected = sections?.find((s) => s.key === selectedKey);
   const selectedMeta = selected ? SECTION_META[selected.type] : null;

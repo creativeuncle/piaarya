@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { fetchTransactions, refundOrder } from '../../../lib/api/payments';
 import { fetchCustomers } from '../../../lib/api/customers';
 import { fetchProducts } from '../../../lib/api/products';
+import { SkeletonTableRows } from '../../../components/Skeleton';
 
 const STATUS_TABS = [
   { key: 'all', label: 'All' },
@@ -128,9 +129,7 @@ export default function Payments() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={8}>Loading...</td></tr>
-            )}
+            {loading && <SkeletonTableRows colSpan={8} />}
             {!loading && transactions.length === 0 && (
               <tr><td className="px-4 py-4 text-gray-400" colSpan={8}>No transactions found.</td></tr>
             )}

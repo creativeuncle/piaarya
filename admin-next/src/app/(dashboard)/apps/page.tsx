@@ -19,6 +19,7 @@ import {
   Settings02Icon,
 } from '@hugeicons/core-free-icons';
 import { fetchApps, installApp, toggleApp, uninstallApp } from '../../../lib/api/apps';
+import { SkeletonInline } from '../../../components/Skeleton';
 
 const ICON_MAP = {
   Chatting01Icon,
@@ -117,7 +118,7 @@ export default function Apps() {
       </p>
 
       {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
-      {loading && <p className="text-gray-400 text-sm">Loading...</p>}
+      {loading && <SkeletonInline />}
 
       {!loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

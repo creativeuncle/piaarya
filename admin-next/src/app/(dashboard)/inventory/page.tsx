@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { fetchInventory, adjustInventory, fetchInventoryHistory, fetchWarehouses, createWarehouse } from '../../../lib/api/inventory';
 import { updateProduct } from '../../../lib/api/products';
+import { SkeletonTableRows, SkeletonInline } from '../../../components/Skeleton';
 
 export default function Inventory() {
   const [products, setProducts] = useState([]);
@@ -116,9 +117,7 @@ export default function Inventory() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={8}>Loading...</td></tr>
-            )}
+            {loading && <SkeletonTableRows colSpan={8} />}
             {!loading && products.length === 0 && (
               <tr><td className="px-4 py-4 text-gray-400" colSpan={8}>No products found.</td></tr>
             )}
@@ -256,7 +255,7 @@ function HistoryModal({ product, onClose }) {
       <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Inventory History — {product.name}</h2>
         {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
-        {loading && <p className="text-gray-400 text-sm">Loading...</p>}
+        {loading && <SkeletonInline />}
         {!loading && logs.length === 0 && <p className="text-gray-400 text-sm">No history yet.</p>}
         {!loading && logs.length > 0 && (
           <table className="min-w-full text-sm">

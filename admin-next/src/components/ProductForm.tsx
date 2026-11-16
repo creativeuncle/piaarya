@@ -6,6 +6,7 @@ import { fetchProduct, createProduct, updateProduct } from '../lib/api/products'
 import { fetchCategories, createCategory } from '../lib/api/categories';
 import MediaManager from './MediaManager';
 import VariantOptions, { deriveOptionsFromVariants } from './VariantOptions';
+import { SkeletonPage } from './Skeleton';
 
 const EMPTY_PRODUCT = {
   name: '',
@@ -149,7 +150,7 @@ export default function ProductForm({ id }: { id?: string }) {
     }
   }
 
-  if (loading) return <p className="p-6 text-gray-400 text-sm">Loading...</p>;
+  if (loading) return <SkeletonPage />;
 
   const subCategories = categories.filter((c) => c.parent?._id === product.category || c.parent === product.category);
 

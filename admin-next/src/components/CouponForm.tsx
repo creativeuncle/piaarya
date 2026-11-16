@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { fetchCoupon, createCoupon, updateCoupon } from '../lib/api/coupons';
 import { fetchCategories } from '../lib/api/categories';
 import { fetchProducts } from '../lib/api/products';
+import { SkeletonPage } from './Skeleton';
 
 const EMPTY = {
   code: '',
@@ -96,7 +97,7 @@ export default function CouponForm({ id }: { id?: string }) {
     }
   }
 
-  if (loading) return <p className="p-6 text-gray-400 text-sm">Loading...</p>;
+  if (loading) return <SkeletonPage />;
 
   return (
     <div className="p-6 max-w-2xl">

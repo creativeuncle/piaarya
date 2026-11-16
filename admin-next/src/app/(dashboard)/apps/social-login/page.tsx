@@ -6,6 +6,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowLeft01Icon } from '@hugeicons/core-free-icons';
 import { fetchSettings, updateSettings } from '../../../../lib/api/settings';
 import { fetchApps } from '../../../../lib/api/apps';
+import { SkeletonInline } from '../../../../components/Skeleton';
 
 function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
   return (
@@ -130,7 +131,7 @@ export default function SocialLoginSettings() {
   if (loading) {
     return (
       <div className="p-6">
-        <p className="text-sm text-gray-400">Loading...</p>
+        <SkeletonInline />
       </div>
     );
   }

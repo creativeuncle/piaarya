@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchCategories, deleteCategory } from '../../../lib/api/categories';
 import { buildTree, flattenTree, LEVEL_LABELS } from '../../../utils/categoryTree';
+import { SkeletonTableRows } from '../../../components/Skeleton';
 
 export default function Categories() {
   const [rows, setRows] = useState([]);
@@ -57,9 +58,7 @@ export default function Categories() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={5}>Loading...</td></tr>
-            )}
+            {loading && <SkeletonTableRows colSpan={5} />}
             {!loading && rows.length === 0 && (
               <tr><td className="px-4 py-4 text-gray-400" colSpan={5}>No categories yet.</td></tr>
             )}
