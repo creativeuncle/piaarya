@@ -1,8 +1,17 @@
 const Settings = require('../models/Settings');
+const PlatformSettings = require('../models/PlatformSettings');
 const NotificationLog = require('../models/NotificationLog');
 const Store = require('../models/Store');
 const { getCurrentStoreId } = require('../middleware/tenantContext');
 const { getPlanLimits } = require('../constants/planLimits');
+
+// Fast2SMS is configured once, platform-wide (Super Admin > SMS Settings) —
+// every store's OTP logins and order-update SMS send through this one key,
+// rather than each store owner needing their own Fast2SMS account.
+async function getPlatformFast2SmsKey() {
+  const platformSettings = await PlatformSettings.findOne();
+  return platformSettings?.sms?.fast2smsApiKey || '';
+}
 
 // Defense-in-depth: settingsController already refuses to turn SMS on for a
 // plan that doesn't include it, but this covers stores whose data predates
@@ -193,8 +202,7 @@ async function sendWhatsAppMessage({ accessToken, phoneNumberId, phone, message 
 // real SMS was sent, false if Fast2SMS isn't configured yet (caller should
 // fall back to returning the OTP in the response for testing, as before).
 async function sendOtpSms(phone, otp) {
-  const settings = await Settings.findOne();
-  const apiKey = settings?.notifications?.sms?.fast2smsApiKey;
+  const apiKey = await getPlatformFast2SmsKey();
   if (!apiKey || !phone) return false;
 
   await sendFast2SmsOtp({ apiKey, phone, otp });
@@ -224,7 +232,7 @@ async function dispatch(recipient, ctx) {
 
   if (recipient.channel === 'sms' && ctx.canSendRealSms) {
     try {
-      await sendFast2SmsMessage({ apiKey: ctx.smsConfig.fast2smsApiKey, phone: recipient.to, message: ctx.message });
+      await sendFast2SmsMessage({ apiKey: ctx.platformSmsApiKey, phone: recipient.to, message: ctx.message });
       status = 'sent';
     } catch (err) {
       status = 'failed';
@@ -286,7 +294,8 @@ async function triggerNotification(eventKey, { customer, order, vars }) {
     const emailConfig = stored.email || {};
     const canSendRealEmail = Boolean(emailConfig.brevoApiKey && emailConfig.senderEmail);
     const smsConfig = stored.sms || {};
-    const canSendRealSms = Boolean(smsConfig.fast2smsApiKey);
+    const platformSmsApiKey = await getPlatformFast2SmsKey();
+    const canSendRealSms = Boolean(platformSmsApiKey);
     const whatsappConfig = stored.whatsapp || {};
     const canSendRealWhatsapp = Boolean(whatsappConfig.accessToken && whatsappConfig.phoneNumberId);
 
@@ -307,6 +316,7 @@ async function triggerNotification(eventKey, { customer, order, vars }) {
       canSendRealEmail,
       smsConfig,
       canSendRealSms,
+      platformSmsApiKey,
       whatsappConfig,
       canSendRealWhatsapp,
     };

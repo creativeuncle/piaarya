@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Home01Icon, Store02Icon, Logout01Icon, CreditCardIcon } from '@hugeicons/core-free-icons';
+import { Home01Icon, Store02Icon, Logout01Icon, CreditCardIcon, MessageNotificationIcon } from '@hugeicons/core-free-icons';
 import { usePlatformAuth } from '../context/PlatformAuthContext';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: Home01Icon },
   { to: '/stores', label: 'Stores', icon: Store02Icon },
   { to: '/settings/payments', label: 'Payment Settings', icon: CreditCardIcon },
+  { to: '/settings/sms', label: 'SMS Settings', icon: MessageNotificationIcon },
 ];
 
 export default function Sidebar() {
