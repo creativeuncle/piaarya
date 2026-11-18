@@ -11,6 +11,7 @@ export default function MediaManager({ media, onChange }) {
   const fileInputRef = useRef(null);
   const dragIndexRef = useRef(null);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
   const [activeIndex, setActiveIndex] = useState(null);
 
@@ -18,9 +19,10 @@ export default function MediaManager({ media, onChange }) {
     const files: File[] = Array.from(fileList || []);
     if (!files.length) return;
     setUploading(true);
+    setProgress(0);
     setError(null);
     try {
-      const urls = await uploadFiles(files);
+      const urls = await uploadFiles(files, setProgress);
       const newItems = urls.map((url, i) => ({ url, type: typeFor(files[i]), altText: '' }));
       onChange([...media, ...newItems]);
     } catch (err) {
@@ -110,7 +112,17 @@ export default function MediaManager({ media, onChange }) {
         onChange={(e) => handleFiles(e.target.files)}
       />
 
-      {uploading && <p className="text-xs text-gray-400 mt-2">Uploading...</p>}
+      {uploading && (
+        <div className="mt-2 w-40">
+          <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gray-900 rounded-full transition-all"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <span className="text-xs text-gray-400">Uploading... {progress}%</span>
+        </div>
+      )}
       {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
       <p className="text-xs text-gray-400 mt-2">
         First item is used as the featured image. Drag tiles to reorder, click a tile to edit alt text.
