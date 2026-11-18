@@ -18,6 +18,7 @@ import RecentlyViewedProducts from './product/RecentlyViewedProducts';
 import ProductReviews from './product/ProductReviews';
 import Accordion from './product/Accordion';
 import { DISPLAY_FONT, EYEBROW } from './styles';
+import { SkeletonProductDetail } from '../../components/Skeleton';
 import type { Product, ProductVariant } from '../../types';
 
 export default function ProductDetail({ id }: { id: string }) {
@@ -51,7 +52,7 @@ export default function ProductDetail({ id }: { id: string }) {
     };
   }, [product]);
 
-  if (loading) return <p className="text-center text-white/50 text-sm py-20 bg-[#41473d]">Loading...</p>;
+  if (loading) return <div className="bg-[#41473d] py-16 md:py-20"><SkeletonProductDetail tone="dark" /></div>;
   if (error) return <p className="text-center text-red-300 text-sm py-20 bg-[#41473d]">{error}</p>;
   if (!product) return null;
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { fetchPageBySlug } from '../../../lib/api/pages';
+import { SkeletonList } from '../../../components/Skeleton';
 
 export default function StaticPage() {
   const { slug } = useParams();
@@ -27,7 +28,7 @@ export default function StaticPage() {
     };
   }, [page]);
 
-  if (loading) return <p className="max-w-3xl mx-auto px-6 py-16 text-center text-gray-400 text-sm">Loading...</p>;
+  if (loading) return <div className="max-w-3xl mx-auto px-6 py-16"><SkeletonList rows={4} /></div>;
 
   if (notFound) {
     return (

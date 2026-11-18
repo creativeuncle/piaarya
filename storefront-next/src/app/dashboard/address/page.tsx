@@ -5,6 +5,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { Delete02Icon, Add01Icon, Edit02Icon } from '@hugeicons/core-free-icons';
 import { useAuth } from '../../../context/AuthContext';
 import { fetchAddresses, addAddress, updateAddress, deleteAddress } from '../../../lib/api/me';
+import { SkeletonList } from '../../../components/Skeleton';
 
 const EMPTY_FORM = { label: '', line1: '', line2: '', city: '', state: '', pincode: '', country: 'India', isDefault: false };
 
@@ -163,7 +164,7 @@ export default function Address() {
         </form>
       )}
 
-      {loading && <p className="text-sm text-gray-500">Loading...</p>}
+      {loading && <SkeletonList rows={3} />}
       {!loading && addresses.length === 0 && (
         <p className="text-sm text-gray-500">No saved addresses yet.</p>
       )}

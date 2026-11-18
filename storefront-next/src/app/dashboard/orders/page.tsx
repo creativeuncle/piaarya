@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../../context/AuthContext';
 import { fetchMyOrders } from '../../../lib/api/me';
+import { SkeletonList } from '../../../components/Skeleton';
 
 export default function Orders() {
   const { token } = useAuth();
@@ -20,7 +21,7 @@ export default function Orders() {
   return (
     <div>
       <h1 className="text-xl font-bold text-gray-900 mb-6">Your Orders</h1>
-      {loading && <p className="text-sm text-gray-500">Loading...</p>}
+      {loading && <SkeletonList rows={3} />}
       {!loading && orders.length === 0 && (
         <p className="text-sm text-gray-500">You haven't placed any orders yet.</p>
       )}

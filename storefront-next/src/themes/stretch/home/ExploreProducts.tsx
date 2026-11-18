@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { fetchProducts } from '../../../lib/api/products';
 import { MID_BG, DISPLAY_FONT, EYEBROW } from '../styles';
 import ProductTile from './ProductTile';
+import { SkeletonProductGrid } from '../../../components/Skeleton';
 
 const TABS = [
   { key: 'bestseller', label: 'Best Sellers' },
@@ -48,7 +49,7 @@ export default function ExploreProducts() {
           ))}
         </div>
 
-        {loading && <p className="mt-12 text-center text-white/50 text-sm">Loading...</p>}
+        {loading && <SkeletonProductGrid tone="dark" count={8} className="mt-12 grid grid-cols-2 gap-6 md:grid-cols-4" />}
         {!loading && products.length === 0 && (
           <p className="mt-12 text-center text-white/50 text-sm">No products in this tab yet.</p>
         )}

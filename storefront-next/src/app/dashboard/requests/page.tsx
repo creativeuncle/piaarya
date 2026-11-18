@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { fetchMyRequests } from '../../../lib/api/me';
+import { SkeletonList } from '../../../components/Skeleton';
 
 const STATUS_STYLES = {
   approved: 'bg-green-600 text-white',
@@ -25,7 +26,7 @@ export default function Requests() {
   return (
     <div>
       <h1 className="text-xl font-bold text-gray-900 mb-6">Requests</h1>
-      {loading && <p className="text-sm text-gray-500">Loading...</p>}
+      {loading && <SkeletonList rows={3} />}
       {!loading && requests.length === 0 && (
         <p className="text-sm text-gray-500">You haven't raised any return or exchange requests yet.</p>
       )}

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { fetchProducts } from '../../../lib/api/products';
 import ProductCard from '../../../components/ProductCard';
 import Carousel from '../../../components/Carousel';
+import { SkeletonProductRow } from '../../../components/Skeleton';
 
 const TABS = [
   { key: 'bestseller', label: 'Best Sellers' },
@@ -41,7 +42,7 @@ export default function ExploreProducts() {
         ))}
       </div>
 
-      {loading && <p className="text-center text-gray-400 text-sm">Loading...</p>}
+      {loading && <SkeletonProductRow />}
       {!loading && products.length === 0 && (
         <p className="text-center text-gray-400 text-sm">No products in this tab yet.</p>
       )}

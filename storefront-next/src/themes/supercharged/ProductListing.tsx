@@ -8,6 +8,7 @@ import { fetchProducts, fetchProductFacets } from '../../lib/api/products';
 import { fetchCategories } from '../../lib/api/categories';
 import ProductCard from '../../components/ProductCard';
 import Pagination from '../../components/Pagination';
+import { SkeletonProductGrid } from '../../components/Skeleton';
 import FilterDrawer from './category/FilterDrawer';
 import AppliedFilterPills from './category/AppliedFilterPills';
 import SortDropdown from './category/SortDropdown';
@@ -122,7 +123,7 @@ export default function ProductListing() {
 
       <AppliedFilterPills filters={filters} categories={categories} facets={facets} onChange={handleFiltersChange} />
 
-      {loading && <p className="text-center text-gray-400 text-sm py-10">Loading...</p>}
+      {loading && <SkeletonProductGrid />}
       {!loading && products.length === 0 && (
         <p className="text-center text-gray-400 text-sm py-10">No products match these filters.</p>
       )}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '../../../context/AuthContext';
 import { useCart } from '../../../context/CartContext';
 import { fetchMyWishlist, removeFromWishlist } from '../../../lib/api/wishlist';
+import { SkeletonList } from '../../../components/Skeleton';
 
 export default function Wishlist() {
   const { token } = useAuth();
@@ -42,7 +43,7 @@ export default function Wishlist() {
   return (
     <div>
       <h1 className="text-xl font-bold text-gray-900 mb-6">Wishlist</h1>
-      {loading && <p className="text-sm text-gray-500">Loading...</p>}
+      {loading && <SkeletonList rows={3} />}
       {!loading && entries.length === 0 && (
         <p className="text-sm text-gray-500">
           You haven't added anything to your wishlist yet.{' '}
