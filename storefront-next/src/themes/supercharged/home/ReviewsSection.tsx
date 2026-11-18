@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { fetchFeaturedReviews } from '../../../lib/api/reviews';
 import Carousel from '../../../components/Carousel';
+import { SkeletonReviewRow } from '../../../components/Skeleton';
 
 function Stars({ rating }) {
   return <span className="text-yellow-500">{'★'.repeat(rating)}{'☆'.repeat(5 - rating)}</span>;
@@ -24,7 +25,7 @@ export default function ReviewsSection({ title = 'What Our Customers Say' }: { t
   return (
     <section className="max-w-7xl mx-auto px-6 py-16">
       <h2 className="text-2xl font-bold text-gray-900 mb-8">{title}</h2>
-      {loading && <p className="text-gray-400 text-sm">Loading...</p>}
+      {loading && <SkeletonReviewRow />}
       {!loading && (
         <Carousel>
           {reviews.map((review) => (

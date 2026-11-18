@@ -6,6 +6,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { StarIcon } from '@hugeicons/core-free-icons';
 import { useAuth } from '../../../context/AuthContext';
 import { fetchMyReviews } from '../../../lib/api/me';
+import { SkeletonList } from '../../../components/Skeleton';
 
 const STATUS_STYLES = {
   approved: 'bg-green-600 text-white',
@@ -28,7 +29,7 @@ export default function MyReviews() {
   return (
     <div>
       <h1 className="text-xl font-bold text-gray-900 mb-6">My Reviews</h1>
-      {loading && <p className="text-sm text-gray-500">Loading...</p>}
+      {loading && <SkeletonList rows={3} />}
       {!loading && reviews.length === 0 && (
         <p className="text-sm text-gray-500">
           You haven't written any reviews yet.{' '}

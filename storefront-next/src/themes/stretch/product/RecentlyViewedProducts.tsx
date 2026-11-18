@@ -6,6 +6,7 @@ import { getRecentlyViewed } from '../../../hooks/useRecentlyViewed';
 import Carousel from '../../../components/Carousel';
 import ProductTile from '../home/ProductTile';
 import { DISPLAY_FONT } from '../styles';
+import { SkeletonProductRow } from '../../../components/Skeleton';
 
 export default function RecentlyViewedProducts({ excludeProductId }) {
   const [products, setProducts] = useState([]);
@@ -28,7 +29,7 @@ export default function RecentlyViewedProducts({ excludeProductId }) {
     <section className="bg-[#41473d] py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-6 md:px-10">
         <h2 className={`${DISPLAY_FONT} text-2xl text-white md:text-3xl mb-8`}>Recently Viewed</h2>
-        {loading && <p className="text-white/50 text-sm">Loading...</p>}
+        {loading && <SkeletonProductRow tone="dark" cardClassName="shrink-0 w-56 snap-start" />}
         {!loading && (
           <Carousel>
             {products.map((product) => (

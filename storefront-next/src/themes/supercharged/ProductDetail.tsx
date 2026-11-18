@@ -16,6 +16,7 @@ import RelatedProducts from './product/RelatedProducts';
 import RecentlyViewedProducts from './product/RecentlyViewedProducts';
 import ProductReviews from './product/ProductReviews';
 import Accordion from '../../components/Accordion';
+import { SkeletonProductDetail } from '../../components/Skeleton';
 import type { Product, ProductVariant } from '../../types';
 
 export default function ProductDetail({ id }: { id: string }) {
@@ -49,7 +50,7 @@ export default function ProductDetail({ id }: { id: string }) {
     };
   }, [product]);
 
-  if (loading) return <p className="text-center text-gray-400 text-sm py-20">Loading...</p>;
+  if (loading) return <SkeletonProductDetail />;
   if (error) return <p className="text-center text-red-600 text-sm py-20">{error}</p>;
   if (!product) return null;
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { fetchProducts } from '../../../lib/api/products';
 import ProductCard from '../../../components/ProductCard';
 import Carousel from '../../../components/Carousel';
+import { SkeletonProductRow } from '../../../components/Skeleton';
 
 export default function TrendingProducts({
   title = 'Trending Now',
@@ -29,7 +30,7 @@ export default function TrendingProducts({
   return (
     <section className="max-w-7xl mx-auto px-6 py-16">
       <h2 className="text-2xl font-bold text-gray-900 mb-8">{title}</h2>
-      {loading && <p className="text-gray-400 text-sm">Loading...</p>}
+      {loading && <SkeletonProductRow />}
       {!loading && (
         <Carousel>
           {products.map((product) => (

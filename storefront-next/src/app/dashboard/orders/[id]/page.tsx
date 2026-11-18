@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { useAuth } from '../../../../context/AuthContext';
 import { fetchMyOrder, cancelMyOrder } from '../../../../lib/api/me';
 import { fetchReturnReasons, createReturnRequest } from '../../../../lib/api/returns';
+import { SkeletonList } from '../../../../components/Skeleton';
 
 const CANCEL_WINDOW_MS = 10 * 60 * 1000;
 
@@ -162,7 +163,7 @@ export default function OrderDetail() {
     submitRequest(items, refundDetails);
   }
 
-  if (loading) return <p className="text-sm text-gray-500">Loading...</p>;
+  if (loading) return <SkeletonList rows={4} />;
   if (error && !order) return <p className="text-sm text-red-600">{error}</p>;
   if (!order) return null;
 

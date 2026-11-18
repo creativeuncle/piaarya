@@ -12,6 +12,7 @@ import AppliedFilterPills from './category/AppliedFilterPills';
 import SortDropdown from './category/SortDropdown';
 import ProductTile from './home/ProductTile';
 import { DISPLAY_FONT, EYEBROW } from './styles';
+import { SkeletonProductGrid } from '../../components/Skeleton';
 
 const PAGE_SIZE = 28;
 
@@ -130,7 +131,9 @@ export default function ProductListing() {
 
           <AppliedFilterPills filters={filters} categories={categories} facets={facets} onChange={handleFiltersChange} />
 
-          {loading && <p className="text-center text-white/50 text-sm py-10">Loading...</p>}
+          {loading && (
+            <SkeletonProductGrid tone="dark" className="mt-10 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4" />
+          )}
           {!loading && products.length === 0 && (
             <p className="text-center text-white/50 text-sm py-10">No products match these filters.</p>
           )}

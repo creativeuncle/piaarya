@@ -5,6 +5,7 @@ import { fetchProduct } from '../../../lib/api/products';
 import { getRecentlyViewed } from '../../../hooks/useRecentlyViewed';
 import ProductCard from '../../../components/ProductCard';
 import Carousel from '../../../components/Carousel';
+import { SkeletonProductRow } from '../../../components/Skeleton';
 
 export default function RecentlyViewedProducts({ excludeProductId }) {
   const [products, setProducts] = useState([]);
@@ -26,7 +27,7 @@ export default function RecentlyViewedProducts({ excludeProductId }) {
   return (
     <section className="max-w-6xl mx-auto px-6 py-12 border-t border-gray-200">
       <h2 className="text-xl font-bold text-gray-900 mb-6">Recently Viewed</h2>
-      {loading && <p className="text-gray-400 text-sm">Loading...</p>}
+      {loading && <SkeletonProductRow />}
       {!loading && (
         <Carousel>
           {products.map((product) => (

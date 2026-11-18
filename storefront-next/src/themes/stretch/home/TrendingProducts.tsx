@@ -5,6 +5,7 @@ import { fetchProducts } from '../../../lib/api/products';
 import Carousel from '../../../components/Carousel';
 import { MID_BG, DISPLAY_FONT, EYEBROW } from '../styles';
 import ProductTile from './ProductTile';
+import { SkeletonProductRow } from '../../../components/Skeleton';
 
 export default function TrendingProducts({
   title = 'Trending Now',
@@ -34,7 +35,7 @@ export default function TrendingProducts({
           <p className={EYEBROW}>Just In</p>
           <h2 className={`${DISPLAY_FONT} mt-2 text-3xl text-white md:text-4xl`}>{title}</h2>
         </div>
-        {loading && <p className="text-center text-white/50 text-sm">Loading...</p>}
+        {loading && <SkeletonProductRow tone="dark" cardClassName="shrink-0 w-56 snap-start" />}
         {!loading && (
           <Carousel>
             {products.map((product) => (

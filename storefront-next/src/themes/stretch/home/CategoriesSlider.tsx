@@ -5,6 +5,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowRight02Icon } from '@hugeicons/core-free-icons';
 import { fetchCategories } from '../../../lib/api/categories';
 import { DARK_BG, DISPLAY_FONT, EYEBROW } from '../styles';
+import { SkeletonBlock } from '../../../components/Skeleton';
 
 export default function CategoriesSlider({ title = 'Shop by Category' }: { title?: string }) {
   const [categories, setCategories] = useState([]);
@@ -27,7 +28,13 @@ export default function CategoriesSlider({ title = 'Shop by Category' }: { title
           <h2 className={`${DISPLAY_FONT} mt-2 text-3xl text-white md:text-4xl`}>{title}</h2>
         </div>
 
-        {loading && <p className="text-center text-white/50 text-sm">Loading...</p>}
+        {loading && (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonBlock key={i} tone="dark" className="aspect-[4/3] rounded-2xl" />
+            ))}
+          </div>
+        )}
         {!loading && (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
             {categories.map((category) => (

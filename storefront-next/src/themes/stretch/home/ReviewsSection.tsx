@@ -6,6 +6,7 @@ import { StarIcon } from '@hugeicons/core-free-icons';
 import { fetchFeaturedReviews } from '../../../lib/api/reviews';
 import Carousel from '../../../components/Carousel';
 import { DARK_BG, DISPLAY_FONT, EYEBROW } from '../styles';
+import { SkeletonReviewRow } from '../../../components/Skeleton';
 
 function Stars({ rating }: { rating: number }) {
   return (
@@ -43,7 +44,7 @@ export default function ReviewsSection({ title = 'What Our Customers Say' }: { t
           <p className={EYEBROW}>Reviews</p>
           <h2 className={`${DISPLAY_FONT} mt-2 text-3xl text-white md:text-4xl`}>{title}</h2>
         </div>
-        {loading && <p className="text-center text-white/50 text-sm">Loading...</p>}
+        {loading && <SkeletonReviewRow tone="dark" />}
         {!loading && (
           <Carousel>
             {reviews.map((review) => (
