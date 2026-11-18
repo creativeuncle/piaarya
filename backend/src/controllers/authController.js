@@ -85,8 +85,14 @@ async function requestOtp(req, res, next) {
       return res.status(400).json({ message: 'Enter a valid 10-digit phone number' });
     }
 
-    const customer = await Customer.findOne({ phone: new RegExp(`${digits}$`) });
-    if (!customer) return res.status(404).json({ message: 'No account found for this phone number' });
+    let customer = await Customer.findOne({ phone: digits });
+    if (!customer) {
+      // First time this phone number is seen: create the account right here
+      // rather than requiring a separate signup step — a new customer logs
+      // in with just their phone + OTP, same as an existing one.
+      customer = await Customer.create({ phone: digits });
+    }
+    if (customer.isBlocked) return res.status(403).json({ message: 'This account has been blocked' });
 
     const otpCode = String(Math.floor(100000 + Math.random() * 900000));
     customer.otpCode = otpCode;
@@ -119,16 +125,17 @@ async function verifyOtp(req, res, next) {
   try {
     const { phone, otp } = req.body;
     const digits = phoneDigits(phone);
-    const customer = await Customer.findOne({ phone: new RegExp(`${digits}$`) }).select('+otpCode +otpExpiresAt');
+    const customer = await Customer.findOne({ phone: digits }).select('+otpCode +otpExpiresAt');
     if (!customer || !customer.otpCode) return res.status(400).json({ message: 'Request an OTP first' });
     if (customer.otpExpiresAt < new Date()) return res.status(400).json({ message: 'OTP has expired' });
     if (customer.otpCode !== otp) return res.status(400).json({ message: 'Incorrect OTP' });
 
+    const isNewCustomer = !customer.name && !customer.email;
     customer.otpCode = undefined;
     customer.otpExpiresAt = undefined;
     await customer.save();
 
-    res.json({ token: signToken(customer._id), customer: toPublicCustomer(customer) });
+    res.json({ token: signToken(customer._id), customer: toPublicCustomer(customer), isNewCustomer });
   } catch (err) {
     next(err);
   }

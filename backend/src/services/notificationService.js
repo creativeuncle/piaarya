@@ -186,12 +186,13 @@ async function sendWhatsAppMessage({ accessToken, phoneNumberId, phone, message 
   return data;
 }
 
-// Standalone helper used by the login-with-OTP flow. Returns true if a real
-// SMS was sent, false if Fast2SMS isn't configured yet (caller should fall
-// back to returning the OTP in the response for testing, as before).
+// Standalone helper used by the login-with-OTP flow. Deliberately NOT gated
+// by canUseSms()/the plan's SMS-notifications limit — phone+OTP login is a
+// core auth feature available on every plan, unlike order-update SMS
+// notifications (which the Basic plan doesn't include). Returns true if a
+// real SMS was sent, false if Fast2SMS isn't configured yet (caller should
+// fall back to returning the OTP in the response for testing, as before).
 async function sendOtpSms(phone, otp) {
-  if (!(await canUseSms())) return false;
-
   const settings = await Settings.findOne();
   const apiKey = settings?.notifications?.sms?.fast2smsApiKey;
   if (!apiKey || !phone) return false;
