@@ -40,12 +40,20 @@ export default function Products() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold text-gray-900">Products</h1>
-        <Link
-          href="/products/new"
-          className="bg-gray-900 text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800"
-        >
-          Add Product
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/products/import"
+            className="bg-white text-gray-900 text-sm px-4 py-2 rounded-md border border-gray-200 hover:bg-gray-50"
+          >
+            Import CSV
+          </Link>
+          <Link
+            href="/products/new"
+            className="bg-gray-900 text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800"
+          >
+            Add Product
+          </Link>
+        </div>
       </div>
 
       <input

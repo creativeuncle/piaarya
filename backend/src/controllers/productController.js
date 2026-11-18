@@ -1,4 +1,6 @@
 const Product = require('../models/Product');
+const Category = require('../models/Category');
+const { parseCsvWithHeader } = require('../utils/csv');
 
 function slugify(text) {
   return text
@@ -170,4 +172,122 @@ async function deleteProduct(req, res, next) {
   }
 }
 
-module.exports = { listProducts, getFacets, getProduct, createProduct, updateProduct, deleteProduct };
+const IMPORT_TEMPLATE_HEADERS = [
+  'name',
+  'sku',
+  'price',
+  'category',
+  'stock',
+  'description',
+  'compareAtPrice',
+  'gstRate',
+  'hsnCode',
+  'image',
+];
+
+function downloadImportTemplate(req, res) {
+  const sampleRow = [
+    'Classic Hoodie',
+    'HOOD1',
+    '999',
+    'Hoodies',
+    '50',
+    'A warm, classic-fit hoodie.',
+    '1299',
+    '18',
+    '6109',
+    'https://example.com/hoodie.jpg',
+  ];
+  const csv = `${IMPORT_TEMPLATE_HEADERS.join(',')}\n${sampleRow.join(',')}\n`;
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="products-import-template.csv"');
+  res.send(csv);
+}
+
+const categoryCache = new Map();
+
+async function findOrCreateCategory(name) {
+  const trimmed = name.trim();
+  if (!trimmed) return null;
+  const cacheKey = trimmed.toLowerCase();
+  if (categoryCache.has(cacheKey)) return categoryCache.get(cacheKey);
+
+  let category = await Category.findOne({ name: new RegExp(`^${trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') });
+  if (!category) {
+    category = await Category.create({ name: trimmed, slug: slugify(trimmed) });
+  }
+  categoryCache.set(cacheKey, category._id);
+  return category._id;
+}
+
+async function importProductsCsv(req, res, next) {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No CSV file uploaded' });
+
+    const { records } = parseCsvWithHeader(req.file.buffer.toString('utf-8'));
+    if (!records.length) return res.status(400).json({ message: 'CSV file has no data rows' });
+
+    categoryCache.clear();
+
+    let created = 0;
+    let updated = 0;
+    const skipped = [];
+
+    for (let i = 0; i < records.length; i++) {
+      const rowNumber = i + 2; // +1 for header, +1 for 1-indexing
+      const record = records[i];
+
+      try {
+        const name = record.name;
+        const sku = record.sku;
+        const price = Number(record.price);
+
+        if (!name) throw new Error('Missing name');
+        if (!sku) throw new Error('Missing SKU');
+        if (!record.price || Number.isNaN(price)) throw new Error('Missing or invalid price');
+
+        const categoryId = record.category ? await findOrCreateCategory(record.category) : undefined;
+
+        const payload = {
+          name,
+          sku,
+          slug: slugify(name),
+          price,
+          stock: record.stock ? Number(record.stock) || 0 : 0,
+          description: record.description || undefined,
+          compareAtPrice: record.compareatprice ? Number(record.compareatprice) || undefined : undefined,
+          gstRate: record.gstrate ? Number(record.gstrate) || undefined : undefined,
+          hsnCode: record.hsncode || undefined,
+          media: record.image ? [{ url: record.image }] : undefined,
+        };
+        if (categoryId) payload.category = categoryId;
+
+        const existing = await Product.findOne({ sku });
+        if (existing) {
+          await Product.findByIdAndUpdate(existing._id, payload, { runValidators: true });
+          updated++;
+        } else {
+          await Product.create(payload);
+          created++;
+        }
+      } catch (err) {
+        skipped.push({ row: rowNumber, sku: record.sku || '', reason: err.message });
+      }
+    }
+
+    res.json({ created, updated, skipped, total: records.length });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  listProducts,
+  getFacets,
+  getProduct,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  importProductsCsv,
+  downloadImportTemplate,
+};
