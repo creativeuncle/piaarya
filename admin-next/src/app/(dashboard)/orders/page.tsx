@@ -168,7 +168,10 @@ export default function Orders() {
                 <td className="px-4 py-3 text-gray-500">
                   {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '—'}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 space-x-3">
+                  <Link href={`/orders/${order._id}`} className="btn-action btn-action-blue">
+                    View Order
+                  </Link>
                   <Link
                     href={`/orders/${order._id}/invoice`}
                     target="_blank"
