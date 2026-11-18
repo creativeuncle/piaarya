@@ -31,7 +31,8 @@ const settingsSchema = new mongoose.Schema(
         adminEmail: String,
       },
       sms: {
-        fast2smsApiKey: String,
+        // Fast2SMS API key is configured once platform-wide, not per store
+        // (Super Admin > SMS Settings) — see PlatformSettings.sms.
         adminPhone: String,
       },
       whatsapp: {

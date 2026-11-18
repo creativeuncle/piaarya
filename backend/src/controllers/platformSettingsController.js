@@ -57,4 +57,49 @@ async function updatePaymentSettings(req, res, next) {
   }
 }
 
-module.exports = { getPaymentSettings, updatePaymentSettings };
+async function getSmsSettings(req, res, next) {
+  try {
+    const settings = await PlatformSettings.findOne();
+    res.json({
+      sms: {
+        fast2smsApiKeyMasked: maskSecret(settings?.sms?.fast2smsApiKey),
+        hasFast2smsApiKey: Boolean(settings?.sms?.fast2smsApiKey),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function updateSmsSettings(req, res, next) {
+  try {
+    const { sms } = req.body;
+    const existing = await PlatformSettings.findOne();
+    const update = {};
+
+    if (sms) {
+      update.sms = {
+        // Blank API key in the request means "keep the existing one" — the
+        // UI never sends the real key back, only a masked placeholder.
+        fast2smsApiKey: sms.fast2smsApiKey ? sms.fast2smsApiKey : existing?.sms?.fast2smsApiKey,
+      };
+    }
+
+    const settings = await PlatformSettings.findOneAndUpdate({}, update, {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true,
+    });
+
+    res.json({
+      sms: {
+        fast2smsApiKeyMasked: maskSecret(settings.sms?.fast2smsApiKey),
+        hasFast2smsApiKey: Boolean(settings.sms?.fast2smsApiKey),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { getPaymentSettings, updatePaymentSettings, getSmsSettings, updateSmsSettings };

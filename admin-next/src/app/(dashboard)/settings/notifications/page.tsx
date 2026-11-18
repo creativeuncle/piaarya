@@ -52,9 +52,6 @@ const EMPTY_EMAIL_CONFIG = {
 };
 
 const EMPTY_SMS_CONFIG = {
-  fast2smsApiKey: '',
-  fast2smsApiKeyMasked: '',
-  hasFast2smsApiKey: false,
   adminPhone: '',
 };
 
@@ -96,9 +93,6 @@ export default function NotificationSettings() {
           adminEmail: data.notifications.email.adminEmail,
         });
         setSmsConfig({
-          fast2smsApiKey: '',
-          fast2smsApiKeyMasked: data.notifications.sms.fast2smsApiKeyMasked,
-          hasFast2smsApiKey: data.notifications.sms.hasFast2smsApiKey,
           adminPhone: data.notifications.sms.adminPhone,
         });
         setWhatsappConfig({
@@ -157,7 +151,6 @@ export default function NotificationSettings() {
             adminEmail: emailConfig.adminEmail,
           },
           sms: {
-            fast2smsApiKey: smsConfig.fast2smsApiKey,
             adminPhone: smsConfig.adminPhone,
           },
           whatsapp: {
@@ -178,9 +171,6 @@ export default function NotificationSettings() {
         adminEmail: data.notifications.email.adminEmail,
       });
       setSmsConfig({
-        fast2smsApiKey: '',
-        fast2smsApiKeyMasked: data.notifications.sms.fast2smsApiKeyMasked,
-        hasFast2smsApiKey: data.notifications.sms.hasFast2smsApiKey,
         adminPhone: data.notifications.sms.adminPhone,
       });
       setWhatsappConfig({
@@ -293,23 +283,10 @@ export default function NotificationSettings() {
         <div className="bg-white rounded-lg shadow border border-gray-100 p-6 max-w-3xl mb-6">
           <h2 className="text-base font-semibold text-gray-900 mb-1">SMS Provider — Fast2SMS</h2>
           <p className="text-xs text-gray-500 mb-4">
-            Get your API key from Fast2SMS → Dev API. Used for both login-with-OTP delivery and order/return SMS
-            updates. Numbers are sent as plain 10-digit Indian mobile numbers.
+            SMS is sent through CartDodo's own Fast2SMS account, included with your plan — there's no API key to set
+            up here. This powers both login-with-OTP delivery and order/return SMS updates to your customers.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="sm:col-span-2">
-              <label className="block text-xs text-gray-500 mb-1">Fast2SMS API Key</label>
-              <input
-                type="password"
-                className="input w-full"
-                placeholder={smsConfig.hasFast2smsApiKey ? smsConfig.fast2smsApiKeyMasked : 'Enter API Key'}
-                value={smsConfig.fast2smsApiKey}
-                onChange={(e) => setSmsField('fast2smsApiKey', e.target.value)}
-              />
-              {smsConfig.hasFast2smsApiKey && (
-                <p className="text-xs text-gray-400 mt-1">Currently saved: {smsConfig.fast2smsApiKeyMasked}. Leave blank to keep it.</p>
-              )}
-            </div>
             <div className="sm:col-span-2">
               <label className="block text-xs text-gray-500 mb-1">Admin Notification Phone</label>
               <input
