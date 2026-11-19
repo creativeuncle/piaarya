@@ -19,9 +19,19 @@ import {
 } from '@hugeicons/core-free-icons';
 import { fetchPageLayout, savePageLayout } from '../../../lib/api/pageLayout';
 import { fetchCategories } from '../../../lib/api/categories';
+import { useAdminAuth } from '../../../context/AdminAuthContext';
 import { SkeletonPage } from '../../../components/Skeleton';
 
-const STOREFRONT_URL = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'http://localhost:3220';
+const CENTRAL_DOMAIN = process.env.NEXT_PUBLIC_CENTRAL_DOMAIN || '';
+const FALLBACK_STOREFRONT_URL = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'http://localhost:3220';
+
+// Every store has its own subdomain, so the preview must point at the
+// logged-in admin's own store — a single fixed env var would always preview
+// the same one store for every admin.
+function storefrontUrlFor(slug) {
+  if (slug && CENTRAL_DOMAIN) return `https://${slug}.${CENTRAL_DOMAIN}`;
+  return FALLBACK_STOREFRONT_URL;
+}
 
 // Which settings fields each section type exposes, and how to render each
 // field — kept in sync with storefront-next's component props. Sections
@@ -180,6 +190,8 @@ function FaqEditor({ items, onChange }) {
 }
 
 export default function ThemeEditorPage() {
+  const { member } = useAdminAuth();
+  const STOREFRONT_URL = storefrontUrlFor(member?.store?.slug);
   const [sections, setSections] = useState(null);
   const [categories, setCategories] = useState([]);
   const [selectedKey, setSelectedKey] = useState(null);
@@ -216,7 +228,7 @@ export default function ThemeEditorPage() {
       { source: 'piaarya-theme-editor', sections, selected },
       STOREFRONT_URL
     );
-  }, [sections, selectedKey, previewReady]);
+  }, [sections, selectedKey, previewReady, STOREFRONT_URL]);
 
   function toggleVisible(key) {
     setSections((prev) => prev.map((s) => (s.key === key ? { ...s, visible: !s.visible } : s)));
