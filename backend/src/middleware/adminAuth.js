@@ -6,8 +6,12 @@ const jwt = require('jsonwebtoken');
 const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'dev-insecure-admin-secret-change-me';
 
 function signAdminToken(teamMember) {
+  // teamMember.store may be a populated Store doc (e.g. when the caller also
+  // needs its slug for the response) or a bare ObjectId — normalize so the
+  // JWT always embeds just the id, never the whole store document.
+  const storeId = teamMember.store?._id || teamMember.store;
   return jwt.sign(
-    { teamMemberId: teamMember._id, storeId: teamMember.store, role: teamMember.role },
+    { teamMemberId: teamMember._id, storeId, role: teamMember.role },
     ADMIN_JWT_SECRET,
     { expiresIn: '7d' }
   );
