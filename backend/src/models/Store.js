@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const OWNER_BUSINESS_TYPES = require('../constants/businessTypes');
 
 // A tenant on the platform — one Store = one client's shop. Every
 // store-scoped collection (Product, Order, Customer, etc.) will carry a
@@ -22,8 +23,29 @@ const storeSchema = new mongoose.Schema(
       name: { type: String, required: true, trim: true },
       email: { type: String, required: true, trim: true, lowercase: true },
       phone: { type: String, trim: true, default: '' },
+      dateOfBirth: { type: Date },
+      nationality: { type: String, trim: true, default: '' },
+      businessType: {
+        type: String,
+        enum: ['', ...OWNER_BUSINESS_TYPES.map((t) => t.key)],
+        default: '',
+      },
       address: {
         line: { type: String, trim: true, default: '' },
+        city: { type: String, trim: true, default: '' },
+        state: { type: String, trim: true, default: '' },
+        pincode: { type: String, trim: true, default: '' },
+      },
+    },
+    // Business verification details — separate from the owner's own
+    // (personal) identity above, since the registered business may have a
+    // different legal name, address and contact number.
+    business: {
+      legalName: { type: String, trim: true, default: '' },
+      phone: { type: String, trim: true, default: '' },
+      address: {
+        line: { type: String, trim: true, default: '' },
+        apartment: { type: String, trim: true, default: '' },
         city: { type: String, trim: true, default: '' },
         state: { type: String, trim: true, default: '' },
         pincode: { type: String, trim: true, default: '' },

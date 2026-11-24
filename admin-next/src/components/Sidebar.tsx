@@ -48,6 +48,7 @@ const NAV_ITEMS = [
 ];
 
 const SETTINGS_CHILDREN = [
+  { to: '/settings/general', label: 'General' },
   { to: '/settings/theme', label: 'Theme' },
   { to: '/settings/domains', label: 'Domains' },
   { to: '/settings/navigation', label: 'Navigation' },
