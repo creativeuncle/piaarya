@@ -6,6 +6,8 @@ const {
   updatePaymentSettings,
   getSmsSettings,
   updateSmsSettings,
+  getWhatsappSettings,
+  updateWhatsappSettings,
 } = require('../controllers/platformSettingsController');
 const { requirePlatformAuth } = require('../middleware/platformAuth');
 
@@ -23,5 +25,7 @@ router.get('/payment-settings', getPaymentSettings);
 router.put('/payment-settings', updatePaymentSettings);
 router.get('/sms-settings', getSmsSettings);
 router.put('/sms-settings', updateSmsSettings);
+router.get('/whatsapp-settings', getWhatsappSettings);
+router.put('/whatsapp-settings', updateWhatsappSettings);
 
 module.exports = router;

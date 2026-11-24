@@ -117,4 +117,72 @@ async function updateSmsSettings(req, res, next) {
   }
 }
 
-module.exports = { getPaymentSettings, updatePaymentSettings, getSmsSettings, updateSmsSettings };
+async function getWhatsappSettings(req, res, next) {
+  try {
+    const settings = await PlatformSettings.findOne();
+    res.json({
+      whatsapp: {
+        accessTokenMasked: maskSecret(settings?.whatsapp?.accessToken),
+        hasAccessToken: Boolean(settings?.whatsapp?.accessToken),
+        phoneNumberId: settings?.whatsapp?.phoneNumberId || '',
+        otpTemplateName: settings?.whatsapp?.otpTemplateName || 'otp_login',
+        otpTemplateLang: settings?.whatsapp?.otpTemplateLang || 'en_US',
+        hasCopyCodeButton: settings?.whatsapp?.hasCopyCodeButton ?? true,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function updateWhatsappSettings(req, res, next) {
+  try {
+    const { whatsapp } = req.body;
+    const existing = await PlatformSettings.findOne();
+    const update = {};
+
+    if (whatsapp) {
+      update.whatsapp = {
+        phoneNumberId:
+          whatsapp.phoneNumberId !== undefined ? whatsapp.phoneNumberId : existing?.whatsapp?.phoneNumberId,
+        otpTemplateName:
+          whatsapp.otpTemplateName !== undefined ? whatsapp.otpTemplateName : existing?.whatsapp?.otpTemplateName,
+        otpTemplateLang:
+          whatsapp.otpTemplateLang !== undefined ? whatsapp.otpTemplateLang : existing?.whatsapp?.otpTemplateLang,
+        hasCopyCodeButton:
+          whatsapp.hasCopyCodeButton !== undefined ? Boolean(whatsapp.hasCopyCodeButton) : existing?.whatsapp?.hasCopyCodeButton ?? true,
+        // Blank access token in the request means "keep the existing one" —
+        // the UI never sends the real token back, only a masked placeholder.
+        accessToken: whatsapp.accessToken ? whatsapp.accessToken : existing?.whatsapp?.accessToken,
+      };
+    }
+
+    const settings = await PlatformSettings.findOneAndUpdate({}, update, {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true,
+    });
+
+    res.json({
+      whatsapp: {
+        accessTokenMasked: maskSecret(settings.whatsapp?.accessToken),
+        hasAccessToken: Boolean(settings.whatsapp?.accessToken),
+        phoneNumberId: settings.whatsapp?.phoneNumberId || '',
+        otpTemplateName: settings.whatsapp?.otpTemplateName || 'otp_login',
+        otpTemplateLang: settings.whatsapp?.otpTemplateLang || 'en_US',
+        hasCopyCodeButton: settings.whatsapp?.hasCopyCodeButton ?? true,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  getPaymentSettings,
+  updatePaymentSettings,
+  getSmsSettings,
+  updateSmsSettings,
+  getWhatsappSettings,
+  updateWhatsappSettings,
+};

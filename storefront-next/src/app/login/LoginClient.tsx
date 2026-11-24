@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { GoogleIcon, AppleIcon } from '@hugeicons/core-free-icons';
+import { WhatsappIcon } from '@hugeicons/core-free-icons';
 import { useAuth } from '../../context/AuthContext';
 import { forgotPassword, requestOtp } from '../../lib/api/auth';
 
@@ -161,25 +161,16 @@ function Login() {
         <button
           type="button"
           onClick={() => setMode(mode === 'password' ? 'otp' : 'password')}
-          className="w-full border border-gray-300 text-gray-700 font-medium py-3 rounded-md text-sm"
-        >
-          {mode === 'password' ? 'Login with OTP' : 'Login with Password'}
-        </button>
-        <button
-          type="button"
-          onClick={() => alert('Google login is coming soon — needs Google OAuth credentials.')}
           className="w-full border border-gray-300 text-gray-700 font-medium py-3 rounded-md text-sm flex items-center justify-center gap-2"
         >
-          <HugeiconsIcon icon={GoogleIcon} size={18} strokeWidth={1.5} />
-          Login with Google
-        </button>
-        <button
-          type="button"
-          onClick={() => alert('Apple login is coming soon — needs Sign in with Apple credentials.')}
-          className="w-full border border-gray-300 text-gray-700 font-medium py-3 rounded-md text-sm flex items-center justify-center gap-2"
-        >
-          <HugeiconsIcon icon={AppleIcon} size={18} strokeWidth={1.5} />
-          Login with Apple
+          {mode === 'password' ? (
+            <>
+              <HugeiconsIcon icon={WhatsappIcon} size={18} strokeWidth={1.5} />
+              Login with WhatsApp
+            </>
+          ) : (
+            'Login with Password'
+          )}
         </button>
       </div>
 
