@@ -17,6 +17,9 @@ async function createMember(req, res, next) {
     if (!password || password.length < 6) {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
+    if (role && !TeamMember.SELECTABLE_ROLES.includes(role)) {
+      return res.status(400).json({ message: 'That role cannot be assigned.' });
+    }
 
     const { maxTeamMembers } = getPlanLimits(req.store?.plan);
     const currentCount = await TeamMember.countDocuments();
@@ -38,6 +41,9 @@ async function createMember(req, res, next) {
 async function updateMember(req, res, next) {
   try {
     const { name, role, isActive } = req.body;
+    if (role && !TeamMember.SELECTABLE_ROLES.includes(role)) {
+      return res.status(400).json({ message: 'That role cannot be assigned.' });
+    }
     const member = await TeamMember.findByIdAndUpdate(
       req.params.id,
       { name, role, isActive },

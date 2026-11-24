@@ -6,12 +6,7 @@ import { UserMultiple02Icon } from '@hugeicons/core-free-icons';
 import { fetchTeamMembers, fetchTeamRoles, createTeamMember, updateTeamMember, deleteTeamMember } from '../../../lib/api/team';
 import { fetchSettings } from '../../../lib/api/settings';
 import { SkeletonTableRows } from '../../../components/Skeleton';
-
-const ROLE_LABELS = {
-  super_admin: 'Super Admin',
-  manager: 'Manager',
-  support_staff: 'Support Staff',
-};
+import RoleSelect from '../../../components/RoleSelect';
 
 export default function Team() {
   const [members, setMembers] = useState([]);
@@ -115,11 +110,11 @@ export default function Team() {
                 <td className="px-4 py-3 font-medium text-gray-900">{member.name}</td>
                 <td className="px-4 py-3">{member.email}</td>
                 <td className="px-4 py-3">
-                  <select className="input" value={member.role} onChange={(e) => handleRoleChange(member._id, e.target.value)}>
-                    {roles.map((r) => (
-                      <option key={r} value={r}>{ROLE_LABELS[r] || r}</option>
-                    ))}
-                  </select>
+                  {member.role === 'super_admin' ? (
+                    <span className="text-sm text-gray-700">Store Owner</span>
+                  ) : (
+                    <RoleSelect value={member.role} roles={roles} onChange={(role) => handleRoleChange(member._id, role)} />
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   {member.isActive ? (
@@ -158,7 +153,7 @@ function TeamMemberForm({ roles, onClose, onSaved }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState(roles[0] || 'support_staff');
+  const [role, setRole] = useState(roles[0] || 'customer_support');
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -195,11 +190,7 @@ function TeamMemberForm({ roles, onClose, onSaved }) {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-          <select className="input" value={role} onChange={(e) => setRole(e.target.value)}>
-            {roles.map((r) => (
-              <option key={r} value={r}>{ROLE_LABELS[r] || r}</option>
-            ))}
-          </select>
+          <RoleSelect value={role} roles={roles} onChange={setRole} />
         </div>
         <div className="flex gap-3">
           <button type="submit" disabled={saving} className="bg-gray-900 text-white px-4 py-2 rounded-md text-sm disabled:opacity-50">

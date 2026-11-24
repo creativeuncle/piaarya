@@ -290,7 +290,7 @@ async function seedData() {
   const seedPasswordHash = await bcrypt.hash('seed-placeholder', 10);
   const teamMembers = await TeamMember.insertMany([
     { name: 'Tanvir', email: 'tanvir@piaarya.com', passwordHash: seedPasswordHash, role: 'super_admin' },
-    { name: 'Sharan', email: 'sharan@piaarya.com', passwordHash: seedPasswordHash, role: 'manager' },
+    { name: 'Sharan', email: 'sharan@piaarya.com', passwordHash: seedPasswordHash, role: 'store_administrator' },
   ]);
 
   const wishlistEntries = await Wishlist.insertMany([
