@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const Customer = require('../models/Customer');
 const { signToken } = require('../middleware/auth');
-const { sendOtpSms } = require('../services/notificationService');
+const { sendWhatsAppOtp } = require('../services/notificationService');
 
 function toPublicCustomer(customer) {
   return {
@@ -100,20 +100,20 @@ async function requestOtp(req, res, next) {
     await customer.save();
 
     try {
-      const sent = await sendOtpSms(customer.phone, otpCode);
+      const sent = await sendWhatsAppOtp(customer.phone, otpCode);
       if (sent) {
-        return res.json({ message: `OTP sent to your phone number ending in ${digits.slice(-4)}.` });
+        return res.json({ message: `OTP sent to your WhatsApp number ending in ${digits.slice(-4)}.` });
       }
     } catch (err) {
-      console.error('OTP SMS send failed:', err.message);
+      console.error('OTP WhatsApp send failed:', err.message);
       return res.json({
-        message: 'Could not send the OTP by SMS right now, so it is returned here for testing.',
+        message: 'Could not send the OTP by WhatsApp right now, so it is returned here for testing.',
         otp: otpCode,
       });
     }
 
     res.json({
-      message: 'SMS is not configured yet, so the OTP is returned here for testing.',
+      message: 'WhatsApp is not configured yet, so the OTP is returned here for testing.',
       otp: otpCode,
     });
   } catch (err) {

@@ -22,6 +22,23 @@ const platformSettingsSchema = new mongoose.Schema(
     sms: {
       fast2smsApiKey: { type: String, default: '' },
     },
+    // Meta WhatsApp Business Cloud API, used to deliver the Login with
+    // WhatsApp OTP for every store — one shared "CartDodo"-branded WhatsApp
+    // Business number, same reasoning as the shared Fast2SMS key above. A
+    // cold-start OTP message (the customer hasn't messaged first) must go
+    // through a pre-approved "Authentication" template, not freeform text —
+    // otpTemplateName/otpTemplateLang must match whatever template gets
+    // approved in the Meta Business account.
+    whatsapp: {
+      accessToken: { type: String, default: '' },
+      phoneNumberId: { type: String, default: '' },
+      otpTemplateName: { type: String, default: 'otp_login' },
+      otpTemplateLang: { type: String, default: 'en_US' },
+      // Meta's default sample authentication templates include a "Copy
+      // code" button component that also needs the OTP as a parameter —
+      // turn this off if the approved template has no button.
+      hasCopyCodeButton: { type: Boolean, default: true },
+    },
     // Monthly price (in INR) CartDodo charges a store on each plan — what
     // Settings > Billing's "current cycle" amount is computed from. 0 until
     // set here.

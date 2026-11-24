@@ -58,11 +58,10 @@ export default function PlatformSmsSettings() {
     <div className="p-6 max-w-xl">
       <h1 className="text-2xl font-semibold text-gray-900 mb-2">Platform SMS Settings</h1>
       <p className="text-sm text-gray-500 mb-6">
-        CartDodo's own Fast2SMS account — used to send phone+OTP login and order/return SMS updates for every store
-        on the platform. Unlike Razorpay, this isn't money flowing to a store owner's own account, so one key here
-        covers all stores instead of each owner needing their own Fast2SMS account. Get your API key from
-        Fast2SMS → Dev API. OTP delivery uses Fast2SMS's dedicated OTP route, which doesn't require DLT template
-        registration.
+        CartDodo's own Fast2SMS account — used to send order/return SMS updates for every store on the platform.
+        (Login OTP now goes out over WhatsApp instead — see Settings → WhatsApp Settings.) Unlike Razorpay, this
+        isn't money flowing to a store owner's own account, so one key here covers all stores instead of each
+        owner needing their own Fast2SMS account. Get your API key from Fast2SMS → Dev API.
       </p>
 
       {message && <p className="text-sm text-gray-600 mb-4">{message}</p>}

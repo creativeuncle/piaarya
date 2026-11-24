@@ -6,11 +6,25 @@ const { getCurrentStoreId } = require('../middleware/tenantContext');
 const { getPlanLimits } = require('../constants/planLimits');
 
 // Fast2SMS is configured once, platform-wide (Super Admin > SMS Settings) —
-// every store's OTP logins and order-update SMS send through this one key,
-// rather than each store owner needing their own Fast2SMS account.
+// every store's order-update SMS sends through this one key, rather than
+// each store owner needing their own Fast2SMS account.
 async function getPlatformFast2SmsKey() {
   const platformSettings = await PlatformSettings.findOne();
   return platformSettings?.sms?.fast2smsApiKey || '';
+}
+
+// WhatsApp OTP login is configured once, platform-wide (Super Admin >
+// WhatsApp Settings) — one shared, "CartDodo"-branded WhatsApp Business
+// number delivers every store's login OTP.
+async function getPlatformWhatsappConfig() {
+  const platformSettings = await PlatformSettings.findOne();
+  return {
+    accessToken: platformSettings?.whatsapp?.accessToken || '',
+    phoneNumberId: platformSettings?.whatsapp?.phoneNumberId || '',
+    otpTemplateName: platformSettings?.whatsapp?.otpTemplateName || 'otp_login',
+    otpTemplateLang: platformSettings?.whatsapp?.otpTemplateLang || 'en_US',
+    hasCopyCodeButton: platformSettings?.whatsapp?.hasCopyCodeButton ?? true,
+  };
 }
 
 // Defense-in-depth: settingsController already refuses to turn SMS on for a
@@ -153,19 +167,6 @@ async function sendFast2SmsMessage({ apiKey, phone, message }) {
   return data;
 }
 
-// Sends a one-time-password via Fast2SMS's dedicated OTP route.
-async function sendFast2SmsOtp({ apiKey, phone, otp }) {
-  const number = formatIndianMobile(phone);
-  const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(apiKey)}&route=otp&variables_values=${otp}&flash=0&numbers=${number}`;
-  const response = await fetch(url, { method: 'GET' });
-
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || data.return !== true) {
-    throw new Error(`Fast2SMS error: ${data.message || response.statusText}`);
-  }
-  return data;
-}
-
 // Sends a freeform text message via Meta's WhatsApp Cloud API. Requires a
 // System User access token + phone_number_id from a WhatsApp Business
 // account (Settings > Notifications). Note: Meta only delivers freeform
@@ -195,17 +196,62 @@ async function sendWhatsAppMessage({ accessToken, phoneNumberId, phone, message 
   return data;
 }
 
-// Standalone helper used by the login-with-OTP flow. Deliberately NOT gated
-// by canUseSms()/the plan's SMS-notifications limit — phone+OTP login is a
-// core auth feature available on every plan, unlike order-update SMS
-// notifications (which the Basic plan doesn't include). Returns true if a
-// real SMS was sent, false if Fast2SMS isn't configured yet (caller should
-// fall back to returning the OTP in the response for testing, as before).
-async function sendOtpSms(phone, otp) {
-  const apiKey = await getPlatformFast2SmsKey();
-  if (!apiKey || !phone) return false;
+// Sends an OTP via Meta's WhatsApp Cloud API using a pre-approved
+// "Authentication" template — required because the customer hasn't
+// messaged the business first, so Meta won't allow freeform text here.
+async function sendWhatsAppOtpTemplate({ accessToken, phoneNumberId, phone, otp, templateName, templateLang, hasCopyCodeButton }) {
+  const to = formatIndianMobile(phone);
+  const components = [{ type: 'body', parameters: [{ type: 'text', text: otp }] }];
+  if (hasCopyCodeButton) {
+    components.push({
+      type: 'button',
+      sub_type: 'url',
+      index: '0',
+      parameters: [{ type: 'text', text: otp }],
+    });
+  }
 
-  await sendFast2SmsOtp({ apiKey, phone, otp });
+  const response = await fetch(`https://graph.facebook.com/v18.0/${phoneNumberId}/messages`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      messaging_product: 'whatsapp',
+      to: `91${to}`,
+      type: 'template',
+      template: { name: templateName, language: { code: templateLang }, components },
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(`WhatsApp API error: ${data.error?.message || response.statusText}`);
+  }
+  return data;
+}
+
+// Standalone helper used by the login-with-WhatsApp flow. Deliberately NOT
+// gated by canUseSms()/the plan's SMS-notifications limit — phone+OTP login
+// is a core auth feature available on every plan, unlike order-update SMS
+// notifications (which the Basic plan doesn't include). Returns true if a
+// real WhatsApp message was sent, false if it isn't configured yet (caller
+// should fall back to returning the OTP in the response for testing, as
+// before).
+async function sendWhatsAppOtp(phone, otp) {
+  const { accessToken, phoneNumberId, otpTemplateName, otpTemplateLang, hasCopyCodeButton } = await getPlatformWhatsappConfig();
+  if (!accessToken || !phoneNumberId || !phone) return false;
+
+  await sendWhatsAppOtpTemplate({
+    accessToken,
+    phoneNumberId,
+    phone,
+    otp,
+    templateName: otpTemplateName,
+    templateLang: otpTemplateLang,
+    hasCopyCodeButton,
+  });
   return true;
 }
 
@@ -342,4 +388,4 @@ async function triggerNotification(eventKey, { customer, order, vars }) {
   }
 }
 
-module.exports = { EVENTS, getNotificationSettings, triggerNotification, sendOtpSms, sendBrevoEmail, sendWhatsAppMessage };
+module.exports = { EVENTS, getNotificationSettings, triggerNotification, sendWhatsAppOtp, sendBrevoEmail, sendWhatsAppMessage };

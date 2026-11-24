@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Home01Icon, Store02Icon, Logout01Icon, CreditCardIcon, MessageNotificationIcon } from '@hugeicons/core-free-icons';
+import { Home01Icon, Store02Icon, Logout01Icon, CreditCardIcon, MessageNotificationIcon, WhatsappIcon } from '@hugeicons/core-free-icons';
 import { usePlatformAuth } from '../context/PlatformAuthContext';
 
 const NAV_ITEMS = [
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { to: '/stores', label: 'Stores', icon: Store02Icon },
   { to: '/settings/payments', label: 'Payment Settings', icon: CreditCardIcon },
   { to: '/settings/sms', label: 'SMS Settings', icon: MessageNotificationIcon },
+  { to: '/settings/whatsapp', label: 'WhatsApp Settings', icon: WhatsappIcon },
 ];
 
 export default function Sidebar() {
