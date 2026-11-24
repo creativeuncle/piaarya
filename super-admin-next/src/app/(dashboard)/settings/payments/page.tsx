@@ -9,6 +9,8 @@ const EMPTY_FORM = {
   keySecret: '',
   keySecretMasked: '',
   hasKeySecret: false,
+  basicPrice: 0,
+  superPrice: 0,
 };
 
 export default function PlatformPaymentSettings() {
@@ -26,6 +28,8 @@ export default function PlatformPaymentSettings() {
           keySecret: '',
           keySecretMasked: data.razorpay.keySecretMasked,
           hasKeySecret: data.razorpay.hasKeySecret,
+          basicPrice: data.planPricing?.basic || 0,
+          superPrice: data.planPricing?.super || 0,
         });
       })
       .catch(() => {})
@@ -44,6 +48,7 @@ export default function PlatformPaymentSettings() {
     try {
       const data = await updatePaymentSettings({
         razorpay: { mode: form.mode, keyId: form.keyId, keySecret: form.keySecret },
+        planPricing: { basic: form.basicPrice, super: form.superPrice },
       });
       setForm({
         mode: data.razorpay.mode,
@@ -51,6 +56,8 @@ export default function PlatformPaymentSettings() {
         keySecret: '',
         keySecretMasked: data.razorpay.keySecretMasked,
         hasKeySecret: data.razorpay.hasKeySecret,
+        basicPrice: data.planPricing?.basic || 0,
+        superPrice: data.planPricing?.super || 0,
       });
       setMessage('Platform payment settings updated.');
     } catch (err) {
@@ -97,6 +104,34 @@ export default function PlatformPaymentSettings() {
             placeholder={form.hasKeySecret ? form.keySecretMasked : 'Enter key secret'}
           />
           {form.hasKeySecret && <p className="text-xs text-gray-400 mt-1">Leave blank to keep the current secret.</p>}
+        </div>
+      </div>
+
+      <h2 className="text-lg font-semibold text-gray-900 mt-8 mb-2">Plan Pricing</h2>
+      <p className="text-sm text-gray-500 mb-4">
+        Monthly price (in ₹) charged to a store on each plan — drives the amount shown on every store's own Settings
+        → Billing page.
+      </p>
+      <div className="bg-white rounded-lg shadow border border-gray-100 p-6 grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Basic plan (₹/month)</label>
+          <input
+            type="number"
+            min="0"
+            className="input"
+            value={form.basicPrice}
+            onChange={(e) => setField('basicPrice', e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Super plan (₹/month)</label>
+          <input
+            type="number"
+            min="0"
+            className="input"
+            value={form.superPrice}
+            onChange={(e) => setField('superPrice', e.target.value)}
+          />
         </div>
       </div>
 

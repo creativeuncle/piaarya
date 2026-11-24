@@ -22,6 +22,13 @@ const platformSettingsSchema = new mongoose.Schema(
     sms: {
       fast2smsApiKey: { type: String, default: '' },
     },
+    // Monthly price (in INR) CartDodo charges a store on each plan — what
+    // Settings > Billing's "current cycle" amount is computed from. 0 until
+    // set here.
+    planPricing: {
+      basic: { type: Number, default: 0 },
+      super: { type: Number, default: 0 },
+    },
   },
   { timestamps: true }
 );
