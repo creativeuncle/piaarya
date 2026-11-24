@@ -7,10 +7,10 @@ const router = express.Router();
 
 router.use(requireAdminAuth);
 
-router.get('/roles', (req, res) => res.json(TeamMember.ROLES));
+router.get('/roles', (req, res) => res.json(TeamMember.SELECTABLE_ROLES));
 router.get('/', listMembers);
-// Only super_admin can add/change/remove team members — otherwise a manager
-// could grant themselves super_admin through this same endpoint.
+// Only super_admin can add/change/remove team members — otherwise a staff
+// member could grant themselves more access through this same endpoint.
 router.post('/', requireRole('super_admin'), createMember);
 router.put('/:id', requireRole('super_admin'), updateMember);
 router.delete('/:id', requireRole('super_admin'), deleteMember);
