@@ -16,6 +16,10 @@ async function getPaymentSettings(req, res, next) {
         keySecretMasked: maskSecret(settings?.razorpay?.keySecret),
         hasKeySecret: Boolean(settings?.razorpay?.keySecret),
       },
+      planPricing: {
+        basic: settings?.planPricing?.basic || 0,
+        super: settings?.planPricing?.super || 0,
+      },
     });
   } catch (err) {
     next(err);
@@ -24,7 +28,7 @@ async function getPaymentSettings(req, res, next) {
 
 async function updatePaymentSettings(req, res, next) {
   try {
-    const { razorpay } = req.body;
+    const { razorpay, planPricing } = req.body;
     const existing = await PlatformSettings.findOne();
     const update = {};
 
@@ -35,6 +39,13 @@ async function updatePaymentSettings(req, res, next) {
         // Blank secret in the request means "keep the existing one" — the UI
         // never sends the real secret back, only a masked placeholder.
         keySecret: razorpay.keySecret ? razorpay.keySecret : existing?.razorpay?.keySecret,
+      };
+    }
+
+    if (planPricing) {
+      update.planPricing = {
+        basic: planPricing.basic !== undefined ? Number(planPricing.basic) || 0 : existing?.planPricing?.basic || 0,
+        super: planPricing.super !== undefined ? Number(planPricing.super) || 0 : existing?.planPricing?.super || 0,
       };
     }
 
@@ -50,6 +61,10 @@ async function updatePaymentSettings(req, res, next) {
         keyId: settings.razorpay?.keyId || '',
         keySecretMasked: maskSecret(settings.razorpay?.keySecret),
         hasKeySecret: Boolean(settings.razorpay?.keySecret),
+      },
+      planPricing: {
+        basic: settings.planPricing?.basic || 0,
+        super: settings.planPricing?.super || 0,
       },
     });
   } catch (err) {
