@@ -10,7 +10,7 @@ export default function ProductTile({ product, className = '' }) {
 
   return (
     <Link href={`/products/${product._id}`} className={`block group ${className}`}>
-      <div className="aspect-[3/4] overflow-hidden rounded-2xl bg-white/5">
+      <div className="aspect-[3/4] overflow-hidden rounded-2xl bg-[#3A2E1D]/5">
         {image ? (
           <img
             src={image}
@@ -18,14 +18,14 @@ export default function ProductTile({ product, className = '' }) {
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs uppercase tracking-[0.15em] text-white/50">
+          <div className="flex h-full w-full items-center justify-center text-xs uppercase tracking-[0.15em] text-[#3A2E1D]/50">
             {product.name}
           </div>
         )}
       </div>
       <div className="mt-3 flex items-center justify-between">
-        <h3 className={`${DISPLAY_FONT} text-lg text-white truncate`}>{product.name}</h3>
-        <span className="text-sm font-medium text-white/70 shrink-0 ml-2">{formatPrice(product.price)}</span>
+        <h3 className={`${DISPLAY_FONT} text-lg text-[#3A2E1D] truncate`}>{product.name}</h3>
+        <span className="text-sm font-medium text-[#3A2E1D]/70 shrink-0 ml-2">{formatPrice(product.price)}</span>
       </div>
     </Link>
   );

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowDown01Icon } from '@hugeicons/core-free-icons';
-import { MID_BG, DISPLAY_FONT } from '../styles';
+import { BG_LIGHT_ALT, DISPLAY_FONT } from '../styles';
 
 type FaqItem = { question: string; answer: string };
 
@@ -23,24 +23,24 @@ export default function CollapsibleContent({ title = 'Frequently Asked Questions
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className={`${MID_BG} py-16 md:py-20`}>
+    <section className={`${BG_LIGHT_ALT} py-16 md:py-20`}>
       <div className="max-w-3xl mx-auto px-6">
-        <h2 className={`${DISPLAY_FONT} text-3xl text-white mb-8 text-center`}>{title}</h2>
-        <div className="divide-y divide-white/15 border-t border-b border-white/15">
+        <h2 className={`${DISPLAY_FONT} text-3xl text-[#3A2E1D] mb-8 text-center`}>{title}</h2>
+        <div className="divide-y divide-[#3A2E1D]/15 border-t border-b border-[#3A2E1D]/15">
           {faqItems.map((item, i) => (
             <div key={i}>
               <button
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                className="w-full flex items-center justify-between py-4 text-left text-sm font-medium text-white"
+                className="w-full flex items-center justify-between py-4 text-left text-sm font-medium text-[#3A2E1D]"
               >
                 {item.question}
                 <HugeiconsIcon
                   icon={ArrowDown01Icon}
                   size={18}
-                  className={`text-white/60 transition-transform shrink-0 ml-3 ${openIndex === i ? 'rotate-180' : ''}`}
+                  className={`text-[#3A2E1D]/60 transition-transform shrink-0 ml-3 ${openIndex === i ? 'rotate-180' : ''}`}
                 />
               </button>
-              {openIndex === i && <p className="pb-4 text-sm text-white/70">{item.answer}</p>}
+              {openIndex === i && <p className="pb-4 text-sm text-[#3A2E1D]/70">{item.answer}</p>}
             </div>
           ))}
         </div>

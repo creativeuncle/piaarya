@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { submitContactForm } from '../../../lib/api/forms';
-import { DARK_BG, DISPLAY_FONT } from '../styles';
+import { BG_LIGHT, DISPLAY_FONT } from '../styles';
 
 type Props = {
   heading?: string;
@@ -33,16 +33,16 @@ export default function ContactForm({
   }
 
   const fieldClass =
-    'w-full border-b border-white/30 bg-transparent px-1 py-3 text-sm text-white placeholder:text-white/50 focus:border-white focus:outline-none';
+    'w-full border-b border-[#3A2E1D]/30 bg-transparent px-1 py-3 text-sm text-[#3A2E1D] placeholder:text-[#3A2E1D]/50 focus:border-[#3A2E1D] focus:outline-none';
 
   return (
-    <section className={`${DARK_BG} py-16 md:py-20`}>
+    <section className={`${BG_LIGHT} py-16 md:py-20`}>
       <div className="mx-auto max-w-xl px-6">
-        <h2 className={`${DISPLAY_FONT} text-3xl text-white text-center md:text-4xl`}>{heading}</h2>
-        {subtext && <p className="mt-3 text-center text-sm text-white/70">{subtext}</p>}
+        <h2 className={`${DISPLAY_FONT} text-3xl text-[#3A2E1D] text-center md:text-4xl`}>{heading}</h2>
+        {subtext && <p className="mt-3 text-center text-sm text-[#3A2E1D]/70">{subtext}</p>}
 
         {status === 'done' ? (
-          <p className="mt-8 text-center text-sm font-medium text-white">We'll get back to you soon.</p>
+          <p className="mt-8 text-center text-sm font-medium text-[#3A2E1D]">We'll get back to you soon.</p>
         ) : (
           <form onSubmit={handleSubmit} className="mt-10 space-y-6">
             <input
@@ -72,7 +72,7 @@ export default function ContactForm({
             <button
               type="submit"
               disabled={status === 'submitting'}
-              className="rounded-full border-2 border-white px-7 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white transition-colors hover:bg-white/10 disabled:opacity-50"
+              className="rounded-full border-2 border-[#3A2E1D] px-7 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#3A2E1D] transition-colors hover:bg-[#3A2E1D]/10 disabled:opacity-50"
             >
               {status === 'submitting' ? 'Sending...' : 'Send Message'}
             </button>

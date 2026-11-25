@@ -3,21 +3,21 @@
 import { useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { PlayIcon, PauseIcon } from '@hugeicons/core-free-icons';
-import { DARK_BG, DISPLAY_FONT, EYEBROW } from '../styles';
+import { BG_LIGHT, DISPLAY_FONT } from '../styles';
 
 export default function VideoSection() {
   const [playing, setPlaying] = useState(false);
 
   return (
-    <section className={`${DARK_BG} py-20`}>
+    <section className={`${BG_LIGHT} py-20`}>
       <div className="mx-auto max-w-5xl px-6 md:px-10">
-        <div className="relative aspect-video overflow-hidden rounded-3xl bg-gradient-to-br from-[#41473d] via-[#4d5445] to-[#646c5f]">
+        <div className="relative aspect-video overflow-hidden rounded-3xl bg-gradient-to-br from-[#3A2E1D] via-[#2A2014] to-[#4A3C28]">
           <img
             src="https://picsum.photos/seed/stretch-studio/1600/900"
             alt=""
             className="absolute inset-0 h-full w-full object-cover opacity-60"
           />
-          <div className="absolute inset-0 bg-[#41473d]/45" />
+          <div className="absolute inset-0 bg-[#3A2E1D]/45" />
 
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center md:p-10">
             <button
@@ -29,7 +29,8 @@ export default function VideoSection() {
               <HugeiconsIcon icon={playing ? PauseIcon : PlayIcon} size={22} />
             </button>
 
-            <p className={EYEBROW}>In the Studio</p>
+            {/* On the dark photo overlay, not the page background — kept white/70 (not the shared, now-dark EYEBROW token) for legibility. */}
+            <p className="text-xs font-medium uppercase tracking-[0.3em] text-white/70">In the Studio</p>
             <h2 className={`${DISPLAY_FONT} max-w-md text-2xl leading-tight text-white md:text-3xl`}>
               See the Everyday Hoodie in motion
             </h2>

@@ -17,15 +17,15 @@ export default function SortDropdown({ value, onChange }) {
 
   return (
     <div className="relative">
-      <button onClick={() => setOpen((v) => !v)} className="inline-flex items-center gap-2 text-sm text-white">
-        <span className="text-white/60">Sort by:</span>
+      <button onClick={() => setOpen((v) => !v)} className="inline-flex items-center gap-2 text-sm text-[#3A2E1D]">
+        <span className="text-[#3A2E1D]/60">Sort by:</span>
         <span className="font-semibold">{current.label}</span>
         <HugeiconsIcon icon={ArrowDown01Icon} size={14} />
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full z-20 mt-2 w-48 overflow-hidden rounded-xl border border-white/15 bg-[#646c5f] shadow-xl">
+          <div className="absolute right-0 top-full z-20 mt-2 w-48 overflow-hidden rounded-xl border border-[#3A2E1D]/15 bg-[#EEDFBE] shadow-xl">
             {OPTIONS.map((option) => (
               <button
                 key={option.key}
@@ -33,8 +33,8 @@ export default function SortDropdown({ value, onChange }) {
                   onChange(option.key);
                   setOpen(false);
                 }}
-                className={`block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-white/10 ${
-                  option.key === value ? 'text-white' : 'text-white/70'
+                className={`block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-[#3A2E1D]/10 ${
+                  option.key === value ? 'text-[#3A2E1D]' : 'text-[#3A2E1D]/70'
                 }`}
               >
                 {option.label}

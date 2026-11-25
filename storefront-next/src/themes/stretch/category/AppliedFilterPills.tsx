@@ -5,7 +5,7 @@ import { Cancel01Icon } from '@hugeicons/core-free-icons';
 
 function Pill({ label, onRemove }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/30 px-3 py-1.5 text-xs text-white">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#3A2E1D]/30 px-3 py-1.5 text-xs text-[#3A2E1D]">
       {label}
       <button onClick={onRemove} aria-label={`Remove ${label} filter`}>
         <HugeiconsIcon icon={Cancel01Icon} size={12} />
@@ -58,11 +58,11 @@ export default function AppliedFilterPills({ filters, categories, facets, onChan
   }
 
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/10 pt-4">
+    <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[#3A2E1D]/10 pt-4">
       {pills.map((pill) => (
         <Pill key={pill.key} label={pill.label} onRemove={pill.onRemove} />
       ))}
-      <button onClick={clearAll} className="text-xs font-semibold uppercase tracking-[0.1em] text-white/60 underline-offset-2 hover:text-white hover:underline">
+      <button onClick={clearAll} className="text-xs font-semibold uppercase tracking-[0.1em] text-[#3A2E1D]/60 underline-offset-2 hover:text-[#3A2E1D] hover:underline">
         Clear All
       </button>
     </div>

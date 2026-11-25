@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { fetchProducts } from '../../../lib/api/products';
 import Carousel from '../../../components/Carousel';
-import { MID_BG, DISPLAY_FONT, EYEBROW } from '../styles';
+import { BG_LIGHT_ALT, DISPLAY_FONT, EYEBROW } from '../styles';
 import ProductTile from './ProductTile';
 import { SkeletonProductRow } from '../../../components/Skeleton';
 
@@ -29,13 +29,13 @@ export default function TrendingProducts({
   if (!loading && products.length === 0) return null;
 
   return (
-    <section className={`${MID_BG} py-16 md:py-20`}>
+    <section className={`${BG_LIGHT_ALT} py-16 md:py-20`}>
       <div className="mx-auto max-w-7xl px-6 md:px-10">
         <div className="mb-10 text-center">
           <p className={EYEBROW}>Just In</p>
-          <h2 className={`${DISPLAY_FONT} mt-2 text-3xl text-white md:text-4xl`}>{title}</h2>
+          <h2 className={`${DISPLAY_FONT} mt-2 text-3xl text-[#3A2E1D] md:text-4xl`}>{title}</h2>
         </div>
-        {loading && <SkeletonProductRow tone="dark" cardClassName="shrink-0 w-56 snap-start" />}
+        {loading && <SkeletonProductRow cardClassName="shrink-0 w-56 snap-start" />}
         {!loading && (
           <Carousel>
             {products.map((product) => (

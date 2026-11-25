@@ -17,14 +17,14 @@ export default function PriceRangeSlider({ min, max, valueMin, valueMax, onChang
 
   return (
     <div>
-      <div className="flex justify-between text-sm text-white/80 mb-3">
+      <div className="flex justify-between text-sm text-[#3A2E1D]/80 mb-3">
         <span>₹{valueMin}</span>
         <span>₹{valueMax}</span>
       </div>
       <div className="relative h-6">
-        <div className="absolute top-1/2 -translate-y-1/2 w-full h-1 bg-white/20 rounded-full" />
+        <div className="absolute top-1/2 -translate-y-1/2 w-full h-1 bg-[#3A2E1D]/20 rounded-full" />
         <div
-          className="absolute top-1/2 -translate-y-1/2 h-1 bg-white rounded-full"
+          className="absolute top-1/2 -translate-y-1/2 h-1 bg-[#3A2E1D] rounded-full"
           style={{ left: `${minPct}%`, right: `${100 - maxPct}%` }}
         />
         <input
