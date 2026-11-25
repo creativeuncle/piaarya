@@ -44,10 +44,10 @@ export default function ProductReviews({ productId }) {
   const avgRating = reviews.length ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
 
   return (
-    <div className="bg-[#41473d] py-16 md:py-20">
+    <div className="bg-[#F7EFDD] py-16 md:py-20">
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-          <h2 className={`${DISPLAY_FONT} text-2xl text-white`}>Hear what our customers say ({reviews.length})</h2>
+          <h2 className={`${DISPLAY_FONT} text-2xl text-[#3A2E1D]`}>Hear what our customers say ({reviews.length})</h2>
           <div className="flex items-center gap-4">
             {reviews.length > 0 && (
               <div className="flex items-center gap-2">
@@ -57,17 +57,17 @@ export default function ProductReviews({ productId }) {
                       key={i}
                       icon={StarIcon}
                       size={18}
-                      className={i < Math.round(avgRating) ? 'text-white' : 'text-white/25'}
+                      className={i < Math.round(avgRating) ? 'text-[#3A2E1D]' : 'text-[#3A2E1D]/25'}
                       fill={i < Math.round(avgRating) ? 'currentColor' : 'none'}
                     />
                   ))}
                 </div>
-                <span className="text-sm text-white/70">{avgRating.toFixed(1)} out of 5</span>
+                <span className="text-sm text-[#3A2E1D]/70">{avgRating.toFixed(1)} out of 5</span>
               </div>
             )}
             <button
               onClick={handleWriteReviewClick}
-              className="flex items-center gap-2 rounded-full border-2 border-white/30 text-white font-medium px-4 py-2 text-sm hover:border-white"
+              className="flex items-center gap-2 rounded-full border-2 border-[#3A2E1D]/30 text-[#3A2E1D] font-medium px-4 py-2 text-sm hover:border-[#3A2E1D]"
             >
               <HugeiconsIcon icon={PencilEdit02Icon} size={16} />
               Write a Review
@@ -76,7 +76,7 @@ export default function ProductReviews({ productId }) {
         </div>
 
         {reviews.length === 0 && (
-          <p className="text-sm text-white/50">No reviews yet — be the first to review this product.</p>
+          <p className="text-sm text-[#3A2E1D]/50">No reviews yet — be the first to review this product.</p>
         )}
 
         {reviews.length > 0 && (
@@ -89,7 +89,7 @@ export default function ProductReviews({ productId }) {
 
             <Link
               href={`/products/${productId}/reviews`}
-              className="inline-block mt-6 rounded-full border-2 border-white/30 text-white font-medium px-6 py-3 text-sm hover:border-white"
+              className="inline-block mt-6 rounded-full border-2 border-[#3A2E1D]/30 text-[#3A2E1D] font-medium px-6 py-3 text-sm hover:border-[#3A2E1D]"
             >
               View All Reviews
             </Link>

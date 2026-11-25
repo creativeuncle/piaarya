@@ -25,10 +25,10 @@ export default function RelatedProducts({ categoryId, excludeProductId }) {
   if (!loading && products.length === 0) return null;
 
   return (
-    <section className="bg-[#646c5f] py-16 md:py-20">
+    <section className="bg-[#EEDFBE] py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-6 md:px-10">
-        <h2 className={`${DISPLAY_FONT} text-2xl text-white md:text-3xl mb-8`}>You May Also Like</h2>
-        {loading && <SkeletonProductRow tone="dark" cardClassName="shrink-0 w-56 snap-start" />}
+        <h2 className={`${DISPLAY_FONT} text-2xl text-[#3A2E1D] md:text-3xl mb-8`}>You May Also Like</h2>
+        {loading && <SkeletonProductRow cardClassName="shrink-0 w-56 snap-start" />}
         {!loading && (
           <Carousel>
             {products.map((product) => (

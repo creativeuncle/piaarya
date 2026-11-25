@@ -5,7 +5,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { StarIcon } from '@hugeicons/core-free-icons';
 import { fetchFeaturedReviews } from '../../../lib/api/reviews';
 import Carousel from '../../../components/Carousel';
-import { DARK_BG, DISPLAY_FONT, EYEBROW } from '../styles';
+import { BG_LIGHT, DISPLAY_FONT, EYEBROW } from '../styles';
 import { SkeletonReviewRow } from '../../../components/Skeleton';
 
 function Stars({ rating }: { rating: number }) {
@@ -16,7 +16,7 @@ function Stars({ rating }: { rating: number }) {
           key={i}
           icon={StarIcon}
           size={14}
-          className={i < rating ? 'text-white' : 'text-white/25'}
+          className={i < rating ? 'text-[#3A2E1D]' : 'text-[#3A2E1D]/25'}
           fill={i < rating ? 'currentColor' : 'none'}
         />
       ))}
@@ -38,20 +38,20 @@ export default function ReviewsSection({ title = 'What Our Customers Say' }: { t
   if (!loading && reviews.length === 0) return null;
 
   return (
-    <section className={`${DARK_BG} py-16 md:py-20`}>
+    <section className={`${BG_LIGHT} py-16 md:py-20`}>
       <div className="mx-auto max-w-7xl px-6 md:px-10">
         <div className="mb-10 text-center">
           <p className={EYEBROW}>Reviews</p>
-          <h2 className={`${DISPLAY_FONT} mt-2 text-3xl text-white md:text-4xl`}>{title}</h2>
+          <h2 className={`${DISPLAY_FONT} mt-2 text-3xl text-[#3A2E1D] md:text-4xl`}>{title}</h2>
         </div>
-        {loading && <SkeletonReviewRow tone="dark" />}
+        {loading && <SkeletonReviewRow />}
         {!loading && (
           <Carousel>
             {reviews.map((review) => (
-              <div key={review._id} className="shrink-0 w-80 snap-start rounded-2xl border border-white/15 bg-white/5 p-6">
+              <div key={review._id} className="shrink-0 w-80 snap-start rounded-2xl border border-[#3A2E1D]/15 bg-[#3A2E1D]/5 p-6">
                 <Stars rating={review.rating} />
-                <p className="mt-3 text-sm leading-relaxed text-white/80">&ldquo;{review.comment}&rdquo;</p>
-                <p className="mt-4 text-xs font-medium uppercase tracking-[0.1em] text-white/50">
+                <p className="mt-3 text-sm leading-relaxed text-[#3A2E1D]/80">&ldquo;{review.comment}&rdquo;</p>
+                <p className="mt-4 text-xs font-medium uppercase tracking-[0.1em] text-[#3A2E1D]/50">
                   {review.customer?.name} · {review.product?.name}
                 </p>
               </div>

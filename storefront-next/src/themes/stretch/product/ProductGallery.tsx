@@ -9,7 +9,7 @@ export default function ProductGallery({ media }) {
 
   return (
     <div>
-      <div className="aspect-[4/5] overflow-hidden rounded-3xl bg-white/5 mb-3">
+      <div className="aspect-[4/5] overflow-hidden rounded-3xl bg-[#3A2E1D]/5 mb-3">
         {active.url ? (
           active.type === 'video' ? (
             <video src={active.url} controls className="w-full h-full object-cover" />
@@ -17,7 +17,7 @@ export default function ProductGallery({ media }) {
             <img src={active.url} alt={active.altText} className="w-full h-full object-cover" />
           )
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-white/40 text-sm">No image</div>
+          <div className="w-full h-full flex items-center justify-center text-[#3A2E1D]/40 text-sm">No image</div>
         )}
       </div>
 
@@ -28,7 +28,7 @@ export default function ProductGallery({ media }) {
               key={item.url || i}
               onClick={() => setActiveIndex(i)}
               className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 ${
-                i === activeIndex ? 'border-white' : 'border-transparent'
+                i === activeIndex ? 'border-[#3A2E1D]' : 'border-transparent'
               }`}
             >
               {item.type === 'video' ? (

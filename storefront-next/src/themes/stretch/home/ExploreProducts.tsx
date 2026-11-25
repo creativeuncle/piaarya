@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { fetchProducts } from '../../../lib/api/products';
-import { MID_BG, DISPLAY_FONT, EYEBROW } from '../styles';
+import { BG_LIGHT_ALT, DISPLAY_FONT, EYEBROW } from '../styles';
 import ProductTile from './ProductTile';
 import { SkeletonProductGrid } from '../../../components/Skeleton';
 
@@ -26,32 +26,32 @@ export default function ExploreProducts() {
   }, [activeTab]);
 
   return (
-    <section className={`${MID_BG} py-20`}>
+    <section className={`${BG_LIGHT_ALT} py-20`}>
       <div className="mx-auto max-w-7xl px-6 md:px-10">
         <div className="flex flex-col items-center text-center">
           <p className={EYEBROW}>Explore</p>
-          <h2 className={`${DISPLAY_FONT} mt-2 text-3xl text-white md:text-4xl`}>Find your everyday fit</h2>
+          <h2 className={`${DISPLAY_FONT} mt-2 text-3xl text-[#3A2E1D] md:text-4xl`}>Find your everyday fit</h2>
         </div>
 
-        <div className="mt-8 flex items-center justify-center gap-8 border-b border-white/15">
+        <div className="mt-8 flex items-center justify-center gap-8 border-b border-[#3A2E1D]/15">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               type="button"
               onClick={() => setActiveTab(tab.key)}
               className={`relative pb-4 text-xs font-semibold uppercase tracking-[0.2em] transition-colors ${
-                activeTab === tab.key ? 'text-white' : 'text-white/50 hover:text-white'
+                activeTab === tab.key ? 'text-[#3A2E1D]' : 'text-[#3A2E1D]/50 hover:text-[#3A2E1D]'
               }`}
             >
               {tab.label}
-              {activeTab === tab.key && <span className="absolute inset-x-0 -bottom-px h-[2px] bg-white" />}
+              {activeTab === tab.key && <span className="absolute inset-x-0 -bottom-px h-[2px] bg-[#3A2E1D]" />}
             </button>
           ))}
         </div>
 
-        {loading && <SkeletonProductGrid tone="dark" count={8} className="mt-12 grid grid-cols-2 gap-6 md:grid-cols-4" />}
+        {loading && <SkeletonProductGrid count={8} className="mt-12 grid grid-cols-2 gap-6 md:grid-cols-4" />}
         {!loading && products.length === 0 && (
-          <p className="mt-12 text-center text-white/50 text-sm">No products in this tab yet.</p>
+          <p className="mt-12 text-center text-[#3A2E1D]/50 text-sm">No products in this tab yet.</p>
         )}
         {!loading && products.length > 0 && (
           <div className="mt-12 grid grid-cols-2 gap-6 md:grid-cols-4">

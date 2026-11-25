@@ -52,8 +52,8 @@ export default function ProductDetail({ id }: { id: string }) {
     };
   }, [product]);
 
-  if (loading) return <div className="bg-[#41473d] py-16 md:py-20"><SkeletonProductDetail tone="dark" /></div>;
-  if (error) return <p className="text-center text-red-300 text-sm py-20 bg-[#41473d]">{error}</p>;
+  if (loading) return <div className="bg-[#F7EFDD] py-16 md:py-20"><SkeletonProductDetail /></div>;
+  if (error) return <p className="text-center text-red-700 text-sm py-20 bg-[#F7EFDD]">{error}</p>;
   if (!product) return null;
 
   const hasVariants = product.variants?.length > 0;
@@ -81,9 +81,9 @@ export default function ProductDetail({ id }: { id: string }) {
 
   return (
     <>
-      <section className="bg-[#41473d] py-16 md:py-20">
+      <section className="bg-[#F7EFDD] py-16 md:py-20">
         <div className="mx-auto max-w-6xl px-6 md:px-10">
-          <Link href="/products" className="inline-flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-white">
+          <Link href="/products" className="inline-flex items-center gap-2 text-sm text-[#3A2E1D]/60 transition-colors hover:text-[#3A2E1D]">
             <HugeiconsIcon icon={ArrowLeft02Icon} size={16} />
             Back to Shop
           </Link>
@@ -101,23 +101,23 @@ export default function ProductDetail({ id }: { id: string }) {
 
             <div>
               <p className={EYEBROW}>{product.category?.name || 'Stretch'}</p>
-              <h1 className={`${DISPLAY_FONT} mt-2 text-3xl text-white md:text-4xl`}>{product.name}</h1>
+              <h1 className={`${DISPLAY_FONT} mt-2 text-3xl text-[#3A2E1D] md:text-4xl`}>{product.name}</h1>
 
               <div className="flex items-center gap-3 mt-3">
-                <span className="text-xl font-medium text-white">{formatPrice(price)}</span>
+                <span className="text-xl font-medium text-[#3A2E1D]">{formatPrice(price)}</span>
                 {product.compareAtPrice > price && (
-                  <span className="text-lg text-white/40 line-through">{formatPrice(product.compareAtPrice)}</span>
+                  <span className="text-lg text-[#3A2E1D]/40 line-through">{formatPrice(product.compareAtPrice)}</span>
                 )}
               </div>
 
-              <hr className="my-6 border-white/15" />
+              <hr className="my-6 border-[#3A2E1D]/15" />
 
               {hasVariants && (
                 <div className="mb-6">
                   <VariantSelector variants={product.variants} onChange={setSelectedVariant} />
                   <button
                     onClick={() => setShowSizeChart(true)}
-                    className="mt-3 text-sm text-white/70 underline flex items-center gap-1 hover:text-white"
+                    className="mt-3 text-sm text-[#3A2E1D]/70 underline flex items-center gap-1 hover:text-[#3A2E1D]"
                   >
                     <HugeiconsIcon icon={RulerIcon} size={16} />
                     Size Chart
@@ -126,13 +126,13 @@ export default function ProductDetail({ id }: { id: string }) {
               )}
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-white/60">Quantity</p>
-                <div className="mt-3 inline-flex items-center gap-4 rounded-full border-2 border-white/30 px-4 py-2">
-                  <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} aria-label="Decrease quantity" className="text-white">
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#3A2E1D]/60">Quantity</p>
+                <div className="mt-3 inline-flex items-center gap-4 rounded-full border-2 border-[#3A2E1D]/30 px-4 py-2">
+                  <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} aria-label="Decrease quantity" className="text-[#3A2E1D]">
                     −
                   </button>
-                  <span className="w-4 text-center text-sm text-white">{quantity}</span>
-                  <button onClick={() => setQuantity((q) => q + 1)} aria-label="Increase quantity" className="text-white">
+                  <span className="w-4 text-center text-sm text-[#3A2E1D]">{quantity}</span>
+                  <button onClick={() => setQuantity((q) => q + 1)} aria-label="Increase quantity" className="text-[#3A2E1D]">
                     +
                   </button>
                 </div>
@@ -142,7 +142,7 @@ export default function ProductDetail({ id }: { id: string }) {
                 <button
                   onClick={handleAddToCart}
                   disabled={!canAddToCart || !inStock}
-                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-full border-2 border-white py-4 text-xs font-semibold uppercase tracking-[0.2em] text-white transition-colors hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed sm:flex-initial sm:px-10"
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-full border-2 border-[#3A2E1D] py-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#3A2E1D] transition-colors hover:bg-[#3A2E1D]/10 disabled:opacity-40 disabled:cursor-not-allowed sm:flex-initial sm:px-10"
                 >
                   <HugeiconsIcon icon={ShoppingBag01Icon} size={18} />
                   {!inStock ? 'Out of Stock' : !canAddToCart ? 'Select Options' : addedMessage ? 'Added!' : 'Add to Cart'}
@@ -151,22 +151,22 @@ export default function ProductDetail({ id }: { id: string }) {
                 <button
                   onClick={() => toggle(product._id)}
                   aria-label="Toggle wishlist"
-                  className="w-14 h-14 flex items-center justify-center rounded-full border-2 border-white/30"
+                  className="w-14 h-14 flex items-center justify-center rounded-full border-2 border-[#3A2E1D]/30"
                 >
                   <HugeiconsIcon
                     icon={HeartIcon}
                     size={20}
-                    className={isWishlisted(product._id) ? 'text-white' : 'text-white/50'}
+                    className={isWishlisted(product._id) ? 'text-[#3A2E1D]' : 'text-[#3A2E1D]/50'}
                     fill={isWishlisted(product._id) ? 'currentColor' : 'none'}
                   />
                 </button>
               </div>
 
-              <p className="mt-4 text-xs text-white/50">
+              <p className="mt-4 text-xs text-[#3A2E1D]/50">
                 {inStock ? 'In stock, ready to ship in 1–2 business days.' : 'Currently out of stock.'}
               </p>
 
-              <div className="mt-8 border-t border-white/15 pt-6">
+              <div className="mt-8 border-t border-[#3A2E1D]/15 pt-6">
                 <PincodeChecker />
               </div>
 
@@ -182,8 +182,8 @@ export default function ProductDetail({ id }: { id: string }) {
                     <dl className="space-y-2">
                       {Object.entries(product.specifications).map(([key, value]) => (
                         <div key={key} className="flex items-center justify-between">
-                          <dt className="text-white/50">{key}</dt>
-                          <dd className="text-white">{value}</dd>
+                          <dt className="text-[#3A2E1D]/50">{key}</dt>
+                          <dd className="text-[#3A2E1D]">{value}</dd>
                         </div>
                       ))}
                     </dl>

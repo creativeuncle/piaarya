@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { subscribeNewsletter } from '../../../lib/api/forms';
-import { MID_BG, DISPLAY_FONT } from '../styles';
+import { BG_LIGHT_ALT, DISPLAY_FONT } from '../styles';
 
 type Props = {
   heading?: string;
@@ -31,13 +31,13 @@ export default function EmailSubscriber({
   }
 
   return (
-    <section className={`${MID_BG} py-16`}>
+    <section className={`${BG_LIGHT_ALT} py-16`}>
       <div className="mx-auto max-w-3xl px-6 text-center md:px-10">
-        <h2 className={`${DISPLAY_FONT} text-3xl text-white md:text-4xl`}>{heading}</h2>
-        {subtext && <p className="mt-3 text-sm text-white/70">{subtext}</p>}
+        <h2 className={`${DISPLAY_FONT} text-3xl text-[#3A2E1D] md:text-4xl`}>{heading}</h2>
+        {subtext && <p className="mt-3 text-sm text-[#3A2E1D]/70">{subtext}</p>}
 
         {status === 'done' ? (
-          <p className="mt-7 text-sm font-medium text-white">Thanks for subscribing!</p>
+          <p className="mt-7 text-sm font-medium text-[#3A2E1D]">Thanks for subscribing!</p>
         ) : (
           <form onSubmit={handleSubmit} className="mt-7 flex flex-col gap-3 sm:mx-auto sm:max-w-md sm:flex-row">
             <input
@@ -46,12 +46,12 @@ export default function EmailSubscriber({
               placeholder="Your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-full border border-white/30 bg-transparent px-5 py-3 text-sm text-white placeholder:text-white/50 focus:border-white focus:outline-none"
+              className="w-full rounded-full border border-[#3A2E1D]/30 bg-transparent px-5 py-3 text-sm text-[#3A2E1D] placeholder:text-[#3A2E1D]/50 focus:border-[#3A2E1D] focus:outline-none"
             />
             <button
               type="submit"
               disabled={status === 'submitting'}
-              className="shrink-0 rounded-full border-2 border-white px-7 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white transition-colors hover:bg-white/10 disabled:opacity-50"
+              className="shrink-0 rounded-full border-2 border-[#3A2E1D] px-7 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#3A2E1D] transition-colors hover:bg-[#3A2E1D]/10 disabled:opacity-50"
             >
               {status === 'submitting' ? '...' : buttonLabel}
             </button>

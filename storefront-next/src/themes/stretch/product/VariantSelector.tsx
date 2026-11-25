@@ -33,8 +33,8 @@ export default function VariantSelector({ variants, onChange }: VariantSelectorP
     <div className="space-y-5">
       {colors.length > 0 && (
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-white/60 mb-2">
-            Color: <span className="normal-case font-normal text-white">{selectedColor}</span>
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#3A2E1D]/60 mb-2">
+            Color: <span className="normal-case font-normal text-[#3A2E1D]">{selectedColor}</span>
           </p>
           <div className="flex flex-wrap gap-2">
             {colors.map((color) => (
@@ -42,7 +42,7 @@ export default function VariantSelector({ variants, onChange }: VariantSelectorP
                 key={color}
                 onClick={() => setSelectedColor(color)}
                 className={`px-4 py-2 rounded-full text-sm border ${
-                  selectedColor === color ? 'border-white bg-white text-[#41473d] font-semibold' : 'border-white/30 text-white hover:border-white'
+                  selectedColor === color ? 'border-[#3A2E1D] bg-[#3A2E1D] text-white font-semibold' : 'border-[#3A2E1D]/30 text-[#3A2E1D] hover:border-[#3A2E1D]'
                 }`}
               >
                 {color}
@@ -54,8 +54,8 @@ export default function VariantSelector({ variants, onChange }: VariantSelectorP
 
       {sizes.length > 0 && (
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-white/60 mb-2">
-            Size: <span className="normal-case font-normal text-white">{selectedSize}</span>
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#3A2E1D]/60 mb-2">
+            Size: <span className="normal-case font-normal text-[#3A2E1D]">{selectedSize}</span>
           </p>
           <div className="flex flex-wrap gap-2">
             {sizes.map((size) => {
@@ -67,10 +67,10 @@ export default function VariantSelector({ variants, onChange }: VariantSelectorP
                   disabled={!available}
                   className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-xs font-semibold transition-colors ${
                     selectedSize === size
-                      ? 'border-white bg-white text-[#41473d]'
+                      ? 'border-[#3A2E1D] bg-[#3A2E1D] text-white'
                       : available
-                      ? 'border-white/30 text-white hover:border-white'
-                      : 'border-white/10 text-white/25 line-through cursor-not-allowed'
+                      ? 'border-[#3A2E1D]/30 text-[#3A2E1D] hover:border-[#3A2E1D]'
+                      : 'border-[#3A2E1D]/10 text-[#3A2E1D]/25 line-through cursor-not-allowed'
                   }`}
                 >
                   {size}

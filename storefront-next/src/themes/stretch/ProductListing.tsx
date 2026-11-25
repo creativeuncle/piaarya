@@ -102,29 +102,29 @@ export default function ProductListing() {
 
   return (
     <div>
-      <section className="bg-[#646c5f] py-16 text-center md:py-20">
+      <section className="bg-[#EEDFBE] py-16 text-center md:py-20">
         <p className={EYEBROW}>Stretch</p>
-        <h1 className={`${DISPLAY_FONT} mt-3 text-4xl text-white md:text-5xl`}>
+        <h1 className={`${DISPLAY_FONT} mt-3 text-4xl text-[#3A2E1D] md:text-5xl`}>
           {searchQuery ? `Search results for "${searchQuery}"` : 'Shop All'}
         </h1>
-        <p className="mx-auto mt-3 max-w-md px-6 text-[15px] leading-relaxed text-white/70">
+        <p className="mx-auto mt-3 max-w-md px-6 text-[15px] leading-relaxed text-[#3A2E1D]/70">
           Considered essentials in durable, natural fabrics — browse the full collection.
         </p>
       </section>
 
-      <section className="bg-[#41473d] py-16 md:py-20">
+      <section className="bg-[#F7EFDD] py-16 md:py-20">
         <div className="mx-auto max-w-7xl px-6 md:px-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <button
               onClick={() => setFilterOpen(true)}
-              className="inline-flex items-center gap-2 rounded-full border-2 border-white/30 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-white transition-colors hover:border-white"
+              className="inline-flex items-center gap-2 rounded-full border-2 border-[#3A2E1D]/30 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-[#3A2E1D] transition-colors hover:border-[#3A2E1D]"
             >
               <HugeiconsIcon icon={PreferenceHorizontalIcon} size={16} />
               All Filters
             </button>
 
             <div className="flex items-center gap-5">
-              <span className="text-sm text-white/60">{total} items</span>
+              <span className="text-sm text-[#3A2E1D]/60">{total} items</span>
               <SortDropdown value={sort} onChange={setSort} />
             </div>
           </div>
@@ -132,10 +132,10 @@ export default function ProductListing() {
           <AppliedFilterPills filters={filters} categories={categories} facets={facets} onChange={handleFiltersChange} />
 
           {loading && (
-            <SkeletonProductGrid tone="dark" className="mt-10 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4" />
+            <SkeletonProductGrid className="mt-10 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4" />
           )}
           {!loading && products.length === 0 && (
-            <p className="text-center text-white/50 text-sm py-10">No products match these filters.</p>
+            <p className="text-center text-[#3A2E1D]/50 text-sm py-10">No products match these filters.</p>
           )}
           {!loading && products.length > 0 && (
             <div className="mt-10 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">

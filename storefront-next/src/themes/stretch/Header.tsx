@@ -49,9 +49,9 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#646c5f]/95 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-[#3A2E1D]/10 bg-[#EEDFBE]/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:px-10">
-        <Link href="/" className={`${DISPLAY_FONT} text-2xl font-semibold tracking-wide text-white`}>
+        <Link href="/" className={`${DISPLAY_FONT} text-2xl font-semibold tracking-wide text-[#3A2E1D]`}>
           Stretch
         </Link>
 
@@ -60,7 +60,7 @@ export default function Header() {
             <Link
               key={menu.label}
               href={menu.route || '#'}
-              className="text-[13px] font-medium uppercase tracking-[0.18em] text-white transition-colors hover:text-white/60"
+              className="text-[13px] font-medium uppercase tracking-[0.18em] text-[#3A2E1D] transition-colors hover:text-[#3A2E1D]/60"
             >
               {menu.label}
             </Link>
@@ -68,15 +68,15 @@ export default function Header() {
         </nav>
 
         <div className="hidden items-center gap-5 md:flex">
-          <button type="button" aria-label="Search" onClick={() => setSearchOpen(true)} className="text-white transition-colors hover:text-white/60">
+          <button type="button" aria-label="Search" onClick={() => setSearchOpen(true)} className="text-[#3A2E1D] transition-colors hover:text-[#3A2E1D]/60">
             <HugeiconsIcon icon={Search01Icon} size={20} strokeWidth={1.5} />
           </button>
-          <Link href="/dashboard/wishlist" aria-label="Wishlist" className="text-white transition-colors hover:text-white/60">
+          <Link href="/dashboard/wishlist" aria-label="Wishlist" className="text-[#3A2E1D] transition-colors hover:text-[#3A2E1D]/60">
             <HugeiconsIcon icon={FavouriteIcon} size={20} strokeWidth={1.5} />
           </Link>
           {isAuthenticated ? (
             <div className="relative" onMouseEnter={() => setAccountMenuOpen(true)} onMouseLeave={() => setAccountMenuOpen(false)}>
-              <Link href="/dashboard/profile" aria-label="Account" className="text-white transition-colors hover:text-white/60">
+              <Link href="/dashboard/profile" aria-label="Account" className="text-[#3A2E1D] transition-colors hover:text-[#3A2E1D]/60">
                 <HugeiconsIcon icon={UserIcon} size={20} strokeWidth={1.5} />
               </Link>
               {accountMenuOpen && (
@@ -93,40 +93,40 @@ export default function Header() {
               )}
             </div>
           ) : (
-            <Link href="/login" aria-label="Account" className="text-white transition-colors hover:text-white/60">
+            <Link href="/login" aria-label="Account" className="text-[#3A2E1D] transition-colors hover:text-[#3A2E1D]/60">
               <HugeiconsIcon icon={UserIcon} size={20} strokeWidth={1.5} />
             </Link>
           )}
-          <button type="button" aria-label="Cart" onClick={openDrawer} className="relative text-white transition-colors hover:text-white/60">
+          <button type="button" aria-label="Cart" onClick={openDrawer} className="relative text-[#3A2E1D] transition-colors hover:text-[#3A2E1D]/60">
             <HugeiconsIcon icon={ShoppingBag01Icon} size={20} strokeWidth={1.5} />
             {count > 0 && (
-              <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#41473d] text-[10px] font-semibold text-white ring-1 ring-white/40">
+              <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#3A2E1D] text-[10px] font-semibold text-white ring-1 ring-white/40">
                 {count}
               </span>
             )}
           </button>
         </div>
 
-        <button type="button" className="text-white md:hidden" aria-label="Toggle menu" onClick={() => setMobileOpen((o) => !o)}>
+        <button type="button" className="text-[#3A2E1D] md:hidden" aria-label="Toggle menu" onClick={() => setMobileOpen((o) => !o)}>
           <HugeiconsIcon icon={mobileOpen ? Cancel01Icon : Menu01Icon} size={24} strokeWidth={1.5} />
         </button>
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-white/10 bg-[#646c5f] px-6 pb-6 md:hidden">
+        <div className="border-t border-[#3A2E1D]/10 bg-[#EEDFBE] px-6 pb-6 md:hidden">
           <nav className="flex flex-col gap-4 pt-4">
             {menus.map((menu) => (
               <Link
                 key={menu.label}
                 href={menu.route || '#'}
-                className="text-sm font-medium uppercase tracking-[0.18em] text-white"
+                className="text-sm font-medium uppercase tracking-[0.18em] text-[#3A2E1D]"
                 onClick={() => setMobileOpen(false)}
               >
                 {menu.label}
               </Link>
             ))}
           </nav>
-          <div className="mt-5 flex items-center gap-6 border-t border-white/10 pt-5 text-white">
+          <div className="mt-5 flex items-center gap-6 border-t border-[#3A2E1D]/10 pt-5 text-[#3A2E1D]">
             <button type="button" aria-label="Search" onClick={() => { setMobileOpen(false); setSearchOpen(true); }}>
               <HugeiconsIcon icon={Search01Icon} size={20} strokeWidth={1.5} />
             </button>
@@ -144,7 +144,7 @@ export default function Header() {
             >
               <HugeiconsIcon icon={ShoppingBag01Icon} size={20} strokeWidth={1.5} />
               {count > 0 && (
-                <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#41473d] text-[10px] font-semibold text-white ring-1 ring-white/40">
+                <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#3A2E1D] text-[10px] font-semibold text-white ring-1 ring-white/40">
                   {count}
                 </span>
               )}
