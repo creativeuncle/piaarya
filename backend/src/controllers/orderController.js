@@ -8,7 +8,15 @@ const Coupon = require('../models/Coupon');
 const GiftCard = require('../models/GiftCard');
 const StoreCreditLog = require('../models/StoreCreditLog');
 const PaymentTransaction = require('../models/PaymentTransaction');
-const { createStripeCheckoutSession, retrieveStripeSession, isStripeConfigured } = require('../services/paymentGateway');
+const {
+  createStripeCheckoutSession,
+  retrieveStripeSession,
+  isStripeConfigured,
+  createRazorpayOrder,
+  isRazorpayConfigured,
+  verifyRazorpaySignature,
+  getActiveGateway,
+} = require('../services/paymentGateway');
 const { triggerNotification } = require('../services/notificationService');
 const { getRatesForState } = require('../services/shippingService');
 const { computeOrderTax } = require('../services/taxService');
@@ -112,6 +120,19 @@ async function getInvoice(req, res, next) {
   }
 }
 
+// Public — tells the storefront which online gateway (if any) to offer at
+// checkout, following whichever one is set Active in Settings > Payments,
+// without exposing any secret keys.
+async function getPaymentConfig(req, res, next) {
+  try {
+    const gateway = await getActiveGateway();
+    const configured = gateway === 'stripe' ? await isStripeConfigured() : await isRazorpayConfigured();
+    res.json({ gateway, configured });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function createOrder(req, res, next) {
   try {
     const { customer: customerInfo, shippingAddress, items, couponCode, paymentMethod, shippingRateLabel, giftCardCode, useStoreCredit } = req.body;
@@ -122,11 +143,14 @@ async function createOrder(req, res, next) {
     if (!items?.length) {
       return res.status(400).json({ message: 'Cart is empty' });
     }
-    if (!['cod', 'stripe'].includes(paymentMethod)) {
-      return res.status(400).json({ message: 'Payment method must be cod or stripe' });
+    if (!['cod', 'stripe', 'razorpay'].includes(paymentMethod)) {
+      return res.status(400).json({ message: 'Payment method must be cod, stripe or razorpay' });
     }
     if (paymentMethod === 'stripe' && !(await isStripeConfigured())) {
       return res.status(400).json({ message: 'Stripe is not configured yet. Add a Stripe secret key in Settings > Payments.' });
+    }
+    if (paymentMethod === 'razorpay' && !(await isRazorpayConfigured())) {
+      return res.status(400).json({ message: 'Razorpay is not configured yet. Add a Razorpay key in Settings > Payments.' });
     }
 
     let customer = await Customer.findOne({ email: customerInfo.email.toLowerCase().trim() });
@@ -302,6 +326,20 @@ async function createOrder(req, res, next) {
       return res.status(201).json({ orderNumber: order.orderNumber, orderId: order._id, totalAmount, checkoutUrl: session.url });
     }
 
+    if (paymentMethod === 'razorpay' && !coveredByCredits) {
+      const rzpOrder = await createRazorpayOrder({ amount: totalAmount, receipt: order.orderNumber });
+
+      order.paymentReference = { gateway: 'razorpay', razorpayOrderId: rzpOrder.id };
+      await order.save();
+
+      return res.status(201).json({
+        orderNumber: order.orderNumber,
+        orderId: order._id,
+        totalAmount,
+        razorpay: { orderId: rzpOrder.id, amount: rzpOrder.amount, currency: rzpOrder.currency, keyId: rzpOrder.keyId },
+      });
+    }
+
     triggerNotification('order_placed', {
       customer,
       order,
@@ -353,4 +391,58 @@ async function confirmStripeOrder(req, res, next) {
   }
 }
 
-module.exports = { listOrders, getOrder, createOrder, updateOrderStatus, updateOrderTracking, getInvoice, confirmStripeOrder };
+// Called by the storefront right after Razorpay's Checkout widget reports a
+// successful payment. The signature is the only proof this response really
+// came from Razorpay and wasn't forged in the browser — the widget itself
+// never confirms the charge actually went through.
+async function verifyRazorpayPayment(req, res, next) {
+  try {
+    const { razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
+    if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
+      return res.status(400).json({ message: 'Missing Razorpay payment details' });
+    }
+
+    const valid = await verifyRazorpaySignature({ razorpayOrderId, razorpayPaymentId, razorpaySignature });
+    if (!valid) return res.status(400).json({ message: 'Payment verification failed' });
+
+    const order = await Order.findOne({ 'paymentReference.razorpayOrderId': razorpayOrderId }).populate(
+      'customer',
+      'name email phone'
+    );
+    if (!order) return res.status(404).json({ message: 'Order not found for this Razorpay order' });
+
+    if (order.paymentStatus !== 'paid') {
+      order.paymentStatus = 'paid';
+      order.status = 'confirmed';
+      order.paymentReference.razorpayPaymentId = razorpayPaymentId;
+      await order.save();
+
+      await PaymentTransaction.findOneAndUpdate(
+        { order: order._id, type: 'charge', status: 'pending' },
+        { status: 'success' }
+      );
+
+      triggerNotification('order_placed', {
+        customer: order.customer,
+        order,
+        vars: { customerName: order.customer?.name, orderNumber: order.orderNumber, amount: order.totalAmount },
+      });
+    }
+
+    res.json({ status: 'paid', orderNumber: order.orderNumber, totalAmount: order.totalAmount });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  listOrders,
+  getOrder,
+  createOrder,
+  updateOrderStatus,
+  updateOrderTracking,
+  getInvoice,
+  confirmStripeOrder,
+  verifyRazorpayPayment,
+  getPaymentConfig,
+};
