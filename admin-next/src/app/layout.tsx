@@ -2,7 +2,7 @@ import "./globals.css";
 import { AdminAuthProvider } from "../context/AdminAuthContext";
 
 export const metadata = {
-  title: "CartDodo Admin",
+  title: "Cart Dodo",
   description: "CartDodo store admin dashboard.",
 };
 
