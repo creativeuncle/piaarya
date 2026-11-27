@@ -18,7 +18,8 @@
     "mongoose": "^8.5.1",
     "multer": "^2.2.0",
     "razorpay": "^2.9.8",
-    "stripe": "^22.3.2"
+    "stripe": "^22.3.2",
+    "web-push": "^4.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"

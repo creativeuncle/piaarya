@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { fetchTransactions, refundOrder } from '../../../lib/api/payments';
+import { fetchTransactions } from '../../../lib/api/payments';
 import { fetchCustomers } from '../../../lib/api/customers';
 import { fetchProducts } from '../../../lib/api/products';
 import { SkeletonTableRows } from '../../../components/Skeleton';
@@ -30,7 +30,6 @@ export default function Payments() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [refundTarget, setRefundTarget] = useState(null);
 
   useEffect(() => {
     fetchCustomers().then(setCustomers).catch(() => {});
@@ -125,13 +124,12 @@ export default function Payments() {
               <th className="px-4 py-3">Method</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Date</th>
-              <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {loading && <SkeletonTableRows colSpan={8} />}
+            {loading && <SkeletonTableRows colSpan={7} />}
             {!loading && transactions.length === 0 && (
-              <tr><td className="px-4 py-4 text-gray-400" colSpan={8}>No transactions found.</td></tr>
+              <tr><td className="px-4 py-4 text-gray-400" colSpan={7}>No transactions found.</td></tr>
             )}
             {transactions.map((t) => (
               <tr key={t._id}>
@@ -139,7 +137,12 @@ export default function Payments() {
                 <td className="px-4 py-3">{t.order?.customer?.name || '—'}</td>
                 <td className="px-4 py-3">{TYPE_LABELS[t.type]}</td>
                 <td className="px-4 py-3">₹{t.amount}</td>
-                <td className="px-4 py-3 uppercase text-xs">{t.method || '—'}</td>
+                <td className="px-4 py-3 uppercase text-xs">
+                  {t.method || '—'}
+                  {t.type !== 'charge' && t.simulated === true && (
+                    <span className="block normal-case text-[10px] text-gray-400">simulated — no gateway credentials</span>
+                  )}
+                </td>
                 <td className="px-4 py-3">
                   <span className={`text-xs font-medium ${
                     t.status === 'success' ? 'text-green-600' : t.status === 'failed' ? 'text-red-600' : 'text-yellow-600'
@@ -148,73 +151,11 @@ export default function Payments() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-gray-500">{new Date(t.createdAt).toLocaleDateString()}</td>
-                <td className="px-4 py-3">
-                  {t.type === 'charge' && t.status === 'success' && t.order?.paymentStatus !== 'refunded' && (
-                    <button onClick={() => setRefundTarget(t)} className="btn-action btn-action-blue">Refund</button>
-                  )}
-                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
-      {refundTarget && (
-        <RefundModal
-          transaction={refundTarget}
-          onClose={() => setRefundTarget(null)}
-          onSaved={() => {
-            setRefundTarget(null);
-            load();
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
-function RefundModal({ transaction, onClose, onSaved }) {
-  const [amount, setAmount] = useState(transaction.amount);
-  const [reason, setReason] = useState('');
-  const [error, setError] = useState(null);
-  const [saving, setSaving] = useState(false);
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setSaving(true);
-    setError(null);
-    try {
-      await refundOrder(transaction.order._id, { amount: Number(amount), reason });
-      onSaved();
-    } catch (err) {
-      setError(err.response?.data?.message || err.message);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6" onClick={onClose}>
-      <form onSubmit={handleSubmit} onClick={(e) => e.stopPropagation()} className="bg-white rounded-lg p-6 w-full max-w-sm space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900">Refund — {transaction.order?.orderNumber}</h2>
-        <p className="text-sm text-gray-500">Order total: ₹{transaction.amount}</p>
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Refund amount</label>
-          <input type="number" className="input" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-          <p className="text-xs text-gray-400 mt-1">Enter the full amount for a full refund, or less for a partial refund.</p>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
-          <input className="input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Customer requested cancellation" />
-        </div>
-        <div className="flex gap-3">
-          <button type="submit" disabled={saving} className="bg-gray-900 text-white px-4 py-2 rounded-md text-sm disabled:opacity-50">
-            {saving ? 'Processing...' : 'Process Refund'}
-          </button>
-          <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
-        </div>
-      </form>
     </div>
   );
 }
