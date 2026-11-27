@@ -79,6 +79,11 @@ async function toPublicSettings(settings, plan) {
       secretKeyMasked: maskSecret(settings?.stripe?.secretKey),
       hasSecretKey: Boolean(settings?.stripe?.secretKey),
     },
+    shiprocket: {
+      email: settings?.shiprocket?.email || '',
+      passwordMasked: maskSecret(settings?.shiprocket?.password),
+      hasPassword: Boolean(settings?.shiprocket?.password),
+    },
     notifications,
     notificationEventDefinitions: NOTIFICATION_EVENTS.map((e) => ({ key: e.key, label: e.label })),
     socialLogin,
@@ -117,7 +122,7 @@ async function getSettings(req, res, next) {
 
 async function updateSettings(req, res, next) {
   try {
-    const { theme, paymentGateway, razorpay, stripe, notifications, socialLogin, tax, currency } = req.body;
+    const { theme, paymentGateway, razorpay, stripe, shiprocket, notifications, socialLogin, tax, currency } = req.body;
 
     if (paymentGateway && !GATEWAYS.includes(paymentGateway)) {
       return res.status(400).json({ message: `paymentGateway must be one of: ${GATEWAYS.join(', ')}` });
@@ -153,6 +158,15 @@ async function updateSettings(req, res, next) {
         mode: stripe.mode || existing?.stripe?.mode || 'test',
         publishableKey: stripe.publishableKey !== undefined ? stripe.publishableKey : existing?.stripe?.publishableKey,
         secretKey: stripe.secretKey ? stripe.secretKey : existing?.stripe?.secretKey,
+      };
+    }
+
+    if (shiprocket) {
+      update.shiprocket = {
+        email: shiprocket.email !== undefined ? shiprocket.email : existing?.shiprocket?.email,
+        // Blank password in the request means "keep the existing one" — the UI
+        // never sends the real password back, only a masked placeholder.
+        password: shiprocket.password ? shiprocket.password : existing?.shiprocket?.password,
       };
     }
 

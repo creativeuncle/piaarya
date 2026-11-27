@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { fetchShippingZones, createShippingZone, updateShippingZone, deleteShippingZone } from '../../../../lib/api/shipping';
+import { fetchSettings, updateSettings } from '../../../../lib/api/settings';
 import { INDIAN_STATES } from '../../../../constants/indianStates';
 import { SkeletonPage } from '../../../../components/Skeleton';
 
 function emptyZone() {
   return { name: '', states: [], isDefault: false, rates: [{ label: '', price: '', freeAboveAmount: '' }] };
 }
+
+const EMPTY_SHIPROCKET_FORM = { email: '', password: '', passwordMasked: '', hasPassword: false };
 
 export default function ShippingSettings() {
   const [zones, setZones] = useState([]);
@@ -16,6 +19,10 @@ export default function ShippingSettings() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
+
+  const [shiprocketForm, setShiprocketForm] = useState(EMPTY_SHIPROCKET_FORM);
+  const [shiprocketSaving, setShiprocketSaving] = useState(false);
+  const [shiprocketMessage, setShiprocketMessage] = useState('');
 
   function load() {
     setLoading(true);
@@ -27,6 +34,44 @@ export default function ShippingSettings() {
   }
 
   useEffect(load, []);
+
+  useEffect(() => {
+    fetchSettings()
+      .then((data) =>
+        setShiprocketForm({
+          email: data.shiprocket.email,
+          password: '',
+          passwordMasked: data.shiprocket.passwordMasked,
+          hasPassword: data.shiprocket.hasPassword,
+        })
+      )
+      .catch(() => {});
+  }, []);
+
+  function setShiprocketField(field, value) {
+    setShiprocketForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  async function handleSaveShiprocket() {
+    setShiprocketSaving(true);
+    setShiprocketMessage('');
+    try {
+      const data = await updateSettings({
+        shiprocket: { email: shiprocketForm.email, password: shiprocketForm.password },
+      });
+      setShiprocketForm({
+        email: data.shiprocket.email,
+        password: '',
+        passwordMasked: data.shiprocket.passwordMasked,
+        hasPassword: data.shiprocket.hasPassword,
+      });
+      setShiprocketMessage('Shiprocket credentials updated.');
+    } catch (err) {
+      setShiprocketMessage(err.response?.data?.message || err.message);
+    } finally {
+      setShiprocketSaving(false);
+    }
+  }
 
   function startCreate() {
     setEditingId('new');
@@ -128,6 +173,45 @@ export default function ShippingSettings() {
         Define shipping zones by state, each with one or more rates (flat rate, optionally free above a subtotal).
         Add one zone with "Rest of India" marked as default to cover states not listed anywhere else.
       </p>
+
+      <div className="bg-white rounded-lg shadow border border-gray-100 p-5 mb-6">
+        <h2 className="text-base font-semibold text-gray-900 mb-1">Shiprocket</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Connect your own Shiprocket account (each store uses its own) to generate shipping labels and track orders.
+        </p>
+        <div className="space-y-3 max-w-md">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Shiprocket Email</label>
+            <input
+              className="input w-full"
+              placeholder="you@yourstore.com"
+              value={shiprocketForm.email}
+              onChange={(e) => setShiprocketField('email', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Shiprocket Password</label>
+            <input
+              type="password"
+              className="input w-full"
+              placeholder={shiprocketForm.hasPassword ? shiprocketForm.passwordMasked : 'Enter Password'}
+              value={shiprocketForm.password}
+              onChange={(e) => setShiprocketField('password', e.target.value)}
+            />
+            {shiprocketForm.hasPassword && (
+              <p className="text-xs text-gray-400 mt-1">Currently saved: {shiprocketForm.passwordMasked}. Leave blank to keep it.</p>
+            )}
+          </div>
+        </div>
+        {shiprocketMessage && <p className="text-sm text-gray-600 mt-3">{shiprocketMessage}</p>}
+        <button
+          onClick={handleSaveShiprocket}
+          disabled={shiprocketSaving}
+          className="mt-4 bg-gray-900 text-white text-sm font-medium px-5 py-2.5 rounded-md disabled:opacity-60"
+        >
+          {shiprocketSaving ? 'Saving...' : 'Save'}
+        </button>
+      </div>
 
       {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 

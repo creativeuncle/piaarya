@@ -17,6 +17,12 @@ const settingsSchema = new mongoose.Schema(
       publishableKey: String,
       secretKey: String,
     },
+    // Each store owner has their own Shiprocket account, unlike SMS/WhatsApp
+    // OTP which share one platform-wide account — so this lives per-store.
+    shiprocket: {
+      email: String,
+      password: String,
+    },
     notifications: {
       channels: {
         email: { type: Boolean, default: true },
