@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+const Razorpay = require('razorpay');
 const Stripe = require('stripe');
 const Settings = require('../models/Settings');
 
@@ -10,6 +12,51 @@ async function getSettingsDoc() {
 async function getActiveGateway() {
   const settings = await getSettingsDoc();
   return settings.paymentGateway || 'razorpay';
+}
+
+async function getRazorpayCredentials() {
+  const settings = await getSettingsDoc();
+  return { keyId: settings.razorpay?.keyId, keySecret: settings.razorpay?.keySecret };
+}
+
+async function getRazorpayClient() {
+  const { keyId, keySecret } = await getRazorpayCredentials();
+  if (!keyId || !keySecret) return null;
+  return new Razorpay({ key_id: keyId, key_secret: keySecret });
+}
+
+async function isRazorpayConfigured() {
+  return Boolean((await getRazorpayClient()) !== null);
+}
+
+// Creates a Razorpay Order — the first step of Razorpay's checkout flow.
+// The returned order id + amount + the (public) key id go to the storefront,
+// which opens Razorpay's Checkout widget with them.
+async function createRazorpayOrder({ amount, receipt }) {
+  const razorpay = await getRazorpayClient();
+  if (!razorpay) {
+    throw new Error('Razorpay is not configured. Add a Razorpay key in Settings > Payments.');
+  }
+  const { keyId } = await getRazorpayCredentials();
+  const rzpOrder = await razorpay.orders.create({
+    amount: Math.round(amount * 100),
+    currency: 'INR',
+    receipt,
+  });
+  return { ...rzpOrder, keyId };
+}
+
+// Verifies the HMAC-SHA256 signature Razorpay's Checkout widget returns on
+// success — this is what proves the payment response actually came from
+// Razorpay and wasn't forged by the browser.
+async function verifyRazorpaySignature({ razorpayOrderId, razorpayPaymentId, razorpaySignature }) {
+  const { keySecret } = await getRazorpayCredentials();
+  if (!keySecret) return false;
+  const expected = crypto
+    .createHmac('sha256', keySecret)
+    .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+    .digest('hex');
+  return expected === razorpaySignature;
 }
 
 async function getStripeClient() {
@@ -93,6 +140,24 @@ async function processRefund({ gateway, amount, destination, order }) {
     }
   }
 
+  if (gateway === 'razorpay' && destination?.method === 'original_payment_method' && order?.paymentReference?.razorpayPaymentId) {
+    const razorpay = await getRazorpayClient();
+    if (razorpay) {
+      const refund = await razorpay.payments.refund(order.paymentReference.razorpayPaymentId, {
+        amount: Math.round(amount * 100),
+      });
+      return {
+        success: true,
+        gateway: 'razorpay',
+        amount,
+        destination,
+        reference: refund.id,
+        processedAt: new Date(),
+        simulated: false,
+      };
+    }
+  }
+
   return {
     success: true,
     gateway,
@@ -111,5 +176,8 @@ module.exports = {
   isStripeConfigured,
   createStripeCheckoutSession,
   retrieveStripeSession,
+  isRazorpayConfigured,
+  createRazorpayOrder,
+  verifyRazorpaySignature,
   processRefund,
 };

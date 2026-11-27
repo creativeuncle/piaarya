@@ -5,10 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { createOrder } from '../../lib/api/orders';
+import { createOrder, fetchPaymentConfig, verifyRazorpayPayment } from '../../lib/api/orders';
 import { fetchAddresses, addAddress } from '../../lib/api/me';
 import { calculateShipping } from '../../lib/api/shipping';
 import { validateGiftCard } from '../../lib/api/giftCards';
+import { loadRazorpayScript } from '../../lib/razorpay';
+
+const GATEWAY_LABELS = { stripe: 'Pay Online (Card, via Stripe — test mode)', razorpay: 'Pay Online (Card, UPI, via Razorpay)' };
 
 function emptyForm() {
   return { label: '', line1: '', line2: '', city: '', state: '', pincode: '', country: 'India' };
@@ -26,6 +29,7 @@ export default function Checkout() {
   const [showNewForm, setShowNewForm] = useState(false);
   const [newAddress, setNewAddress] = useState(emptyForm());
   const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [paymentConfig, setPaymentConfig] = useState(null);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState(null);
   const [shippingRates, setShippingRates] = useState([]);
@@ -125,6 +129,12 @@ export default function Checkout() {
       .finally(() => setAddressesLoading(false));
   }, [isAuthenticated, token]);
 
+  useEffect(() => {
+    fetchPaymentConfig()
+      .then(setPaymentConfig)
+      .catch(() => setPaymentConfig({ gateway: null, configured: false }));
+  }, []);
+
   function setContactField(field, value) {
     setContact((prev) => ({ ...prev, [field]: value }));
   }
@@ -202,13 +212,51 @@ export default function Checkout() {
         return;
       }
 
+      if (paymentMethod === 'razorpay' && data.razorpay) {
+        const loaded = await loadRazorpayScript();
+        if (!loaded) {
+          setError('Could not load the payment widget. Please check your connection and try again.');
+          setPlacing(false);
+          return;
+        }
+
+        const razorpayCheckout = new window.Razorpay({
+          key: data.razorpay.keyId,
+          amount: data.razorpay.amount,
+          currency: data.razorpay.currency,
+          order_id: data.razorpay.orderId,
+          name: 'CartDodo',
+          description: `Order ${data.orderNumber}`,
+          prefill: { name: contact.name, email: contact.email, contact: contact.phone },
+          handler: async (response) => {
+            try {
+              await verifyRazorpayPayment({
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              });
+              clearCart();
+              router.push(
+                `/order-confirmation?orderNumber=${encodeURIComponent(data.orderNumber)}&totalAmount=${encodeURIComponent(data.totalAmount)}`
+              );
+            } catch (err) {
+              setError(err.response?.data?.message || err.message);
+              setPlacing(false);
+            }
+          },
+          modal: { ondismiss: () => setPlacing(false) },
+        });
+        razorpayCheckout.open();
+        return; // leaves placing=true while the widget is open; its own handlers reset it
+      }
+
       clearCart();
       router.push(
         `/order-confirmation?orderNumber=${encodeURIComponent(data.orderNumber)}&totalAmount=${encodeURIComponent(data.totalAmount)}`
       );
+      setPlacing(false);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
-    } finally {
       setPlacing(false);
     }
   }
@@ -425,15 +473,19 @@ export default function Checkout() {
               />
               <span className="text-sm text-gray-900 font-medium">Cash on Delivery</span>
             </label>
-            <label className="flex items-center gap-3 border border-gray-300 rounded-md px-4 py-3 cursor-pointer">
-              <input
-                type="radio"
-                name="paymentMethod"
-                checked={paymentMethod === 'stripe'}
-                onChange={() => setPaymentMethod('stripe')}
-              />
-              <span className="text-sm text-gray-900 font-medium">Pay Online (Card, via Stripe — test mode)</span>
-            </label>
+            {paymentConfig?.configured && paymentConfig.gateway && (
+              <label className="flex items-center gap-3 border border-gray-300 rounded-md px-4 py-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  checked={paymentMethod === paymentConfig.gateway}
+                  onChange={() => setPaymentMethod(paymentConfig.gateway)}
+                />
+                <span className="text-sm text-gray-900 font-medium">
+                  {GATEWAY_LABELS[paymentConfig.gateway] || 'Pay Online'}
+                </span>
+              </label>
+            )}
           </div>
         </div>
 
