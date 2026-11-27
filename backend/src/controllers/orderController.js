@@ -264,7 +264,7 @@ async function createOrder(req, res, next) {
       customer: customer._id,
       items: orderItems,
       totalAmount,
-      status: paymentMethod === 'stripe' && !coveredByCredits ? 'pending' : 'new',
+      status: ['stripe', 'razorpay'].includes(paymentMethod) && !coveredByCredits ? 'pending' : 'new',
       shippingAddress,
       paymentStatus: coveredByCredits ? 'paid' : 'pending',
       paymentMethod,

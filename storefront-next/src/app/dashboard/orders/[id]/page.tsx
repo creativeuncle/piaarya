@@ -75,7 +75,9 @@ export default function OrderDetail() {
     }
   }
 
-  const canRefundToOriginalMethod = order?.paymentMethod === 'stripe' && Boolean(order?.paymentReference?.paymentIntentId);
+  const canRefundToOriginalMethod =
+    (order?.paymentMethod === 'stripe' && Boolean(order?.paymentReference?.paymentIntentId)) ||
+    (order?.paymentMethod === 'razorpay' && Boolean(order?.paymentReference?.razorpayPaymentId));
 
   function openRequestModal(type) {
     setRequestModal(type);
