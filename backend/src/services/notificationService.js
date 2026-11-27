@@ -4,6 +4,7 @@ const NotificationLog = require('../models/NotificationLog');
 const Store = require('../models/Store');
 const { getCurrentStoreId } = require('../middleware/tenantContext');
 const { getPlanLimits } = require('../constants/planLimits');
+const { sendPushToStoreAdmins } = require('./pushNotificationService');
 
 // Fast2SMS is configured once, platform-wide (Super Admin > SMS Settings) —
 // every store's order-update SMS sends through this one key, rather than
@@ -384,6 +385,18 @@ async function triggerNotification(eventKey, { customer, order, vars }) {
       if (channels.whatsapp && whatsappConfig.adminPhone) {
         await dispatch({ channel: 'whatsapp', to: whatsappConfig.adminPhone }, ctx);
       }
+    }
+
+    // Push notification to the store's admin app (PWA today, a native app
+    // later) — independent of the email/SMS/WhatsApp channel toggles above,
+    // since it has its own opt-in (the admin installing the app and
+    // allowing notifications) rather than a Settings toggle.
+    if (eventKey === 'order_placed') {
+      await sendPushToStoreAdmins({
+        title: 'New order received',
+        body: `${vars?.customerName || 'A customer'} placed order ${vars?.orderNumber} for ₹${vars?.amount}`,
+        data: { orderId: String(order?._id || ''), type: 'order_placed' },
+      });
     }
   } catch (err) {
     // Notifications must never break the order/return flow they're attached to.

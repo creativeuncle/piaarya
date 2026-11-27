@@ -46,6 +46,14 @@ const platformSettingsSchema = new mongoose.Schema(
       basic: { type: Number, default: 0 },
       super: { type: Number, default: 0 },
     },
+    // One shared VAPID key pair powers Web Push for every store's admin app
+    // (PWA) — infrastructure-level, not a per-store credential, same
+    // reasoning as the shared SMS/WhatsApp keys above. Auto-generated on
+    // first use if empty (see pushNotificationService.getVapidKeys).
+    webPush: {
+      vapidPublicKey: { type: String, default: '' },
+      vapidPrivateKey: { type: String, default: '' },
+    },
   },
   { timestamps: true }
 );
