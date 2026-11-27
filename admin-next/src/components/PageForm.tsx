@@ -143,7 +143,7 @@ export default function PageForm({ id }: { id?: string }) {
             value={form.content}
             onChange={(value) => setField('content', value)}
             modules={QUILL_MODULES}
-            className="bg-white [&_.ql-container]:rounded-b-md [&_.ql-toolbar]:rounded-t-md"
+            className="bg-white [&_.ql-container]:rounded-b-md [&_.ql-toolbar]:rounded-t-md [&_.ql-editor]:min-h-[320px]"
           />
         </div>
 
