@@ -120,7 +120,7 @@ async function getNotificationSettings() {
 
 // Sends a transactional email through Brevo's REST API. Requires a Brevo API
 // key and a sender email verified in the Brevo account (Settings > Notifications).
-async function sendBrevoEmail({ apiKey, senderName, senderEmail, to, toName, subject, text }) {
+async function sendBrevoEmail({ apiKey, senderName, senderEmail, to, toName, subject, text, html }) {
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: {
@@ -132,7 +132,10 @@ async function sendBrevoEmail({ apiKey, senderName, senderEmail, to, toName, sub
       sender: { name: senderName || 'CartDodo', email: senderEmail },
       to: [{ email: to, name: toName || undefined }],
       subject,
-      textContent: text,
+      // `html` (e.g. a campaign body written in the rich text editor) takes
+      // priority — Brevo renders htmlContent as actual markup, whereas
+      // textContent would show raw "<p>...</p>" tags to the recipient.
+      ...(html ? { htmlContent: html } : { textContent: text }),
     }),
   });
 

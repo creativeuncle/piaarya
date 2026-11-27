@@ -117,7 +117,7 @@ async function sendCampaign(req, res, next) {
             to: customer.email,
             toName: customer.name,
             subject: campaign.subject,
-            text: campaign.body,
+            html: campaign.body,
           });
           sentCount += 1;
         } catch (err) {

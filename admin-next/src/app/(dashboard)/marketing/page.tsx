@@ -1,14 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { SkeletonTableRows } from '../../../components/Skeleton';
+import { SEGMENT_LABELS } from '../../../constants/marketingSegments';
 import {
   fetchAbandonedCarts,
   sendRecoveryEmail,
   setCartStatus,
   fetchCampaigns,
-  fetchCampaignSegments,
-  createCampaign,
   deleteCampaign,
   sendCampaign,
   fetchWhatsAppCampaigns,
@@ -18,15 +19,23 @@ import {
   sendWhatsAppCampaign,
 } from '../../../lib/api/marketing';
 
-const SEGMENT_LABELS = {
-  all_customers: 'All Customers',
-  abandoned_cart: 'Abandoned Cart Customers',
-  no_orders_30d: 'No Orders in 30 Days',
-  first_time_buyers: 'First-Time Buyers',
-};
-
 export default function Marketing() {
-  const [tab, setTab] = useState('cart-recovery');
+  return (
+    <Suspense fallback={null}>
+      <MarketingClient />
+    </Suspense>
+  );
+}
+
+function MarketingClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState(searchParams.get('tab') || 'cart-recovery');
+
+  function selectTab(next) {
+    setTab(next);
+    router.replace(`/marketing?tab=${next}`);
+  }
 
   return (
     <div className="p-6">
@@ -34,7 +43,7 @@ export default function Marketing() {
 
       <div className="flex gap-2 mb-4 border-b border-gray-200">
         <button
-          onClick={() => setTab('cart-recovery')}
+          onClick={() => selectTab('cart-recovery')}
           className={`px-3 py-2 text-sm border-b-2 -mb-px ${
             tab === 'cart-recovery' ? 'border-gray-900 text-gray-900 font-medium' : 'border-transparent text-gray-500'
           }`}
@@ -42,7 +51,7 @@ export default function Marketing() {
           Abandoned Cart Recovery
         </button>
         <button
-          onClick={() => setTab('email')}
+          onClick={() => selectTab('email')}
           className={`px-3 py-2 text-sm border-b-2 -mb-px ${
             tab === 'email' ? 'border-gray-900 text-gray-900 font-medium' : 'border-transparent text-gray-500'
           }`}
@@ -50,7 +59,7 @@ export default function Marketing() {
           Email Marketing
         </button>
         <button
-          onClick={() => setTab('whatsapp')}
+          onClick={() => selectTab('whatsapp')}
           className={`px-3 py-2 text-sm border-b-2 -mb-px ${
             tab === 'whatsapp' ? 'border-gray-900 text-gray-900 font-medium' : 'border-transparent text-gray-500'
           }`}
@@ -153,10 +162,8 @@ function AbandonedCartRecovery() {
 
 function EmailMarketing() {
   const [campaigns, setCampaigns] = useState([]);
-  const [segments, setSegments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showForm, setShowForm] = useState(false);
 
   function load() {
     setLoading(true);
@@ -168,9 +175,6 @@ function EmailMarketing() {
   }
 
   useEffect(load, []);
-  useEffect(() => {
-    fetchCampaignSegments().then(setSegments).catch(() => {});
-  }, []);
 
   async function handleSend(id) {
     try {
@@ -194,9 +198,9 @@ function EmailMarketing() {
   return (
     <div>
       <div className="flex justify-end mb-4">
-        <button onClick={() => setShowForm(true)} className="bg-gray-900 text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800">
+        <Link href="/marketing/email/new" className="bg-gray-900 text-white text-sm px-4 py-2 rounded-md hover:bg-gray-800">
           New Campaign
-        </button>
+        </Link>
       </div>
 
       {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
@@ -263,17 +267,6 @@ function EmailMarketing() {
         the Brevo API key / sender email isn't configured there, the campaign is still marked sent but no real
         emails go out — the "Delivered" column shows "Not configured" in that case.
       </p>
-
-      {showForm && (
-        <CampaignForm
-          segments={segments}
-          onClose={() => setShowForm(false)}
-          onSaved={(campaign) => {
-            setCampaigns((prev) => [campaign, ...prev]);
-            setShowForm(false);
-          }}
-        />
-      )}
     </div>
   );
 }
@@ -459,60 +452,3 @@ function WhatsAppCampaignForm({ segments, onClose, onSaved }) {
   );
 }
 
-function CampaignForm({ segments, onClose, onSaved }) {
-  const [name, setName] = useState('');
-  const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('');
-  const [segment, setSegment] = useState(segments[0] || 'all_customers');
-  const [error, setError] = useState(null);
-  const [saving, setSaving] = useState(false);
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setSaving(true);
-    setError(null);
-    try {
-      const campaign = await createCampaign({ name, subject, body, segment });
-      onSaved(campaign);
-    } catch (err) {
-      setError(err.response?.data?.message || err.message);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6" onClick={onClose}>
-      <form onSubmit={handleSubmit} onClick={(e) => e.stopPropagation()} className="bg-white rounded-lg p-6 w-full max-w-md space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900">New Email Campaign</h2>
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Name</label>
-          <input className="input" value={name} onChange={(e) => setName(e.target.value)} required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-          <input className="input" value={subject} onChange={(e) => setSubject(e.target.value)} required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Body</label>
-          <textarea className="input" rows={4} value={body} onChange={(e) => setBody(e.target.value)} required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Audience Segment</label>
-          <select className="input" value={segment} onChange={(e) => setSegment(e.target.value)}>
-            {segments.map((s) => (
-              <option key={s} value={s}>{SEGMENT_LABELS[s] || s}</option>
-            ))}
-          </select>
-        </div>
-        <div className="flex gap-3">
-          <button type="submit" disabled={saving} className="bg-gray-900 text-white px-4 py-2 rounded-md text-sm disabled:opacity-50">
-            {saving ? 'Saving...' : 'Save Draft'}
-          </button>
-          <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
-        </div>
-      </form>
-    </div>
-  );
-}
