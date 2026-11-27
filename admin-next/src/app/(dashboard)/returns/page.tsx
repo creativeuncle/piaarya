@@ -195,7 +195,9 @@ export default function Returns() {
                     </p>
                   )}
                   {selected.refundMethod === 'original_payment_method' && (
-                    <p className="text-gray-800">Original Payment Method (Stripe)</p>
+                    <p className="text-gray-800">
+                      Original Payment Method{selected.refundResult?.gateway ? ` (${selected.refundResult.gateway})` : ''}
+                    </p>
                   )}
                   {!selected.refundMethod && <p className="text-gray-400">Not provided</p>}
                 </div>
@@ -209,7 +211,7 @@ export default function Returns() {
                   </p>
                   <p className="text-green-600 text-xs mt-1">
                     {selected.refundResult.simulated === false
-                      ? 'Real refund issued via Stripe.'
+                      ? `Real refund issued via ${selected.refundResult.gateway}.`
                       : 'Simulated transfer — no live gateway credentials are connected yet.'}
                   </p>
                 </div>

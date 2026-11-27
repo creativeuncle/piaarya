@@ -158,6 +158,18 @@ async function processRefund({ gateway, amount, destination, order }) {
     }
   }
 
+  // Reaching here for stripe/razorpay (instead of returning a real refund
+  // above) means a real refund was expected but one of the conditions
+  // wasn't met — log why, since it otherwise fails silently and looks
+  // identical to "no gateway configured" (UPI/Bank/Store Credit).
+  if (['stripe', 'razorpay'].includes(gateway) && destination?.method === 'original_payment_method') {
+    const hasReference = gateway === 'stripe' ? Boolean(order?.paymentReference?.paymentIntentId) : Boolean(order?.paymentReference?.razorpayPaymentId);
+    const client = gateway === 'stripe' ? await getStripeClient() : await getRazorpayClient();
+    console.error(
+      `processRefund: falling back to simulated for ${gateway} — hasPaymentReference=${hasReference}, hasClient=${Boolean(client)}, orderGateway=${order?.paymentReference?.gateway}`
+    );
+  }
+
   return {
     success: true,
     gateway,
