@@ -1,5 +1,6 @@
 const PaymentTransaction = require('../models/PaymentTransaction');
 const Order = require('../models/Order');
+const { getActiveGateway, processRefund } = require('../services/paymentGateway');
 
 async function listTransactions(req, res, next) {
   try {
@@ -55,12 +56,27 @@ async function refundOrder(req, res, next) {
     }
 
     const isFullRefund = refundAmount === remaining;
+
+    // This is a direct refund on a specific charge, so it always targets that
+    // charge's original payment method — unlike a return request, there's no
+    // separate UPI/bank/store-credit choice here.
+    const gateway = order.paymentReference?.gateway || (await getActiveGateway());
+    const result = await processRefund({
+      gateway,
+      amount: refundAmount,
+      destination: { method: 'original_payment_method' },
+      order,
+    });
+
     const transaction = await PaymentTransaction.create({
       order: order._id,
       type: isFullRefund ? 'refund' : 'partial_refund',
       amount: refundAmount,
       status: 'success',
+      method: gateway,
       reason,
+      gatewayReference: result.reference,
+      simulated: result.simulated,
     });
 
     order.paymentStatus = isFullRefund ? 'refunded' : 'partially_refunded';
