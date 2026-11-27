@@ -4,7 +4,19 @@ const WhatsAppCampaign = require('../models/WhatsAppCampaign');
 const Customer = require('../models/Customer');
 const Order = require('../models/Order');
 const Settings = require('../models/Settings');
+const Store = require('../models/Store');
+const { getCurrentStoreId } = require('../middleware/tenantContext');
 const { sendBrevoEmail, sendWhatsAppMessage } = require('../services/notificationService');
+
+const CENTRAL_DOMAIN = (process.env.CENTRAL_DOMAIN || '').toLowerCase().trim();
+
+async function storefrontCartUrl() {
+  const storeId = getCurrentStoreId();
+  if (!storeId || !CENTRAL_DOMAIN) return null;
+  const store = await Store.findById(storeId).select('slug').lean();
+  if (!store?.slug) return null;
+  return `https://${store.slug}.${CENTRAL_DOMAIN}/cart`;
+}
 
 async function listAbandonedCarts(req, res, next) {
   try {
@@ -20,12 +32,48 @@ async function listAbandonedCarts(req, res, next) {
 
 async function sendRecoveryEmail(req, res, next) {
   try {
-    const cart = await Cart.findById(req.params.id);
+    const cart = await Cart.findById(req.params.id)
+      .populate('customer', 'name email')
+      .populate('items.product', 'name price');
     if (!cart) return res.status(404).json({ message: 'Cart not found' });
+
+    const settings = await Settings.findOne();
+    const emailConfig = settings?.notifications?.email || {};
+    const canSendRealEmail = Boolean(emailConfig.brevoApiKey && emailConfig.senderEmail && cart.customer?.email);
+    let deliveryMode = 'simulated';
+
+    if (canSendRealEmail) {
+      try {
+        const cartUrl = await storefrontCartUrl();
+        const itemsHtml = cart.items
+          .map((i) => `<li>${i.product?.name || 'Item'} × ${i.quantity}</li>`)
+          .join('');
+        const html = `
+          <p>Hi ${cart.customer.name || 'there'},</p>
+          <p>You left some items in your cart. Come back and complete your order:</p>
+          <ul>${itemsHtml}</ul>
+          ${cartUrl ? `<p><a href="${cartUrl}">Return to your cart</a></p>` : ''}
+        `;
+        await sendBrevoEmail({
+          apiKey: emailConfig.brevoApiKey,
+          senderName: emailConfig.senderName,
+          senderEmail: emailConfig.senderEmail,
+          to: cart.customer.email,
+          toName: cart.customer.name,
+          subject: 'You left something in your cart',
+          html,
+        });
+        deliveryMode = 'live';
+      } catch (err) {
+        deliveryMode = 'failed';
+        console.error('Abandoned-cart recovery email failed:', err.message);
+      }
+    }
+
     cart.recoveryEmailCount += 1;
     cart.recoveryEmailSentAt = new Date();
     await cart.save();
-    res.json(cart);
+    res.json({ ...cart.toObject(), deliveryMode });
   } catch (err) {
     next(err);
   }

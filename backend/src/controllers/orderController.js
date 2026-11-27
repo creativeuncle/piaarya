@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const Order = require('../models/Order');
+const Cart = require('../models/Cart');
 const Customer = require('../models/Customer');
 const Product = require('../models/Product');
 const Coupon = require('../models/Coupon');
@@ -259,6 +260,13 @@ async function createOrder(req, res, next) {
       giftCard: giftCardUsed || undefined,
       storeCreditUsed: storeCreditUsed || undefined,
     });
+
+    // This customer just checked out, so any synced cart of theirs is no
+    // longer "abandoned" — mark it converted so it drops off the recovery list.
+    await Cart.findOneAndUpdate(
+      { customer: customer._id, status: { $in: ['active', 'abandoned'] } },
+      { status: 'converted' }
+    );
 
     await PaymentTransaction.create({
       order: order._id,

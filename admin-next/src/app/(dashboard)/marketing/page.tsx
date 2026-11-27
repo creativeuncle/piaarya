@@ -154,7 +154,7 @@ function AbandonedCartRecovery() {
         </table>
       </div>
       <p className="text-xs text-gray-400 mt-3">
-        "Send Recovery Email" logs the attempt here; wiring it to a real inbox needs an email provider (SMTP/SendGrid) added later.
+        A cart is marked abandoned after an hour of inactivity. "Send Recovery Email" emails the customer via Brevo (Settings &gt; Notifications) if it's configured, and otherwise just logs the attempt here.
       </p>
     </div>
   );
